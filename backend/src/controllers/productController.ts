@@ -1,0 +1,129 @@
+import { Request, Response } from 'express';
+import { query, queryOne } from '../config/database';
+import { getCache, setCache } from '../config/redis';
+import { success, error } from '../utils/helpers';
+import { getPaginationParams, getPaginationMeta, getOffset } from '../utils/pagination';
+import { Product } from '../types';
+
+export async function getProducts(req: Request, res: Response): Promise<void> {
+  try {
+    const { category, search, condition, min_price, max_price, customer_type } = req.query;
+    const { page, limit } = getPaginationParams(req.query as Record<string, unknown>);
+    const offset = getOffset(page, limit);
+
+    // Build cache key from all query params
+    const cacheKey = `products:list:${JSON.stringify(req.query)}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
+    const conditions: string[] = ['p.is_active = true'];
+    const params: unknown[] = [];
+    let paramIdx = 1;
+
+    if (category) {
+      conditions.push(`c.slug = $${paramIdx++}`);
+      params.push(category);
+    }
+    if (search) {
+      conditions.push(`(p.name ILIKE $${paramIdx} OR p.brand ILIKE $${paramIdx} OR p.description ILIKE $${paramIdx})`);
+      params.push(`%${search}%`);
+      paramIdx++;
+    }
+    if (condition) {
+      conditions.push(`p.condition = $${paramIdx++}`);
+      params.push(condition);
+    }
+    if (min_price) {
+      conditions.push(`p.selling_price >= $${paramIdx++}`);
+      params.push(parseFloat(String(min_price)));
+    }
+    if (max_price) {
+      conditions.push(`p.selling_price <= $${paramIdx++}`);
+      params.push(parseFloat(String(max_price)));
+    }
+    if (customer_type === 'b2c') {
+      conditions.push('p.is_b2c_available = true');
+    } else if (customer_type === 'b2b') {
+      conditions.push('p.is_b2b_available = true');
+    }
+
+    const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const countResult = await query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM products p
+       JOIN categories c ON c.id = p.category_id
+       ${whereClause}`,
+      params
+    );
+    const total = parseInt(countResult[0].count);
+
+    const products = await query<Product & { category_name: string; category_slug: string }>(
+      `SELECT p.*,
+              c.name as category_name,
+              c.slug as category_slug
+       FROM products p
+       JOIN categories c ON c.id = p.category_id
+       ${whereClause}
+       ORDER BY p.is_featured DESC, p.created_at DESC
+       LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
+      [...params, limit, offset]
+    );
+
+    const meta = getPaginationMeta(total, page, limit);
+    const result = success(products, meta as unknown as Record<string, unknown>);
+
+    await setCache(cacheKey, result, 300); // 5 minutes
+
+    res.json(result);
+  } catch (err) {
+    console.error('getProducts error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function getProductBySlug(req: Request, res: Response): Promise<void> {
+  try {
+    const { slug } = req.params;
+    const cacheKey = `products:slug:${slug}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
+    const product = await queryOne<Product & { category_name: string; category_slug: string; category_parent_id: number | null }>(
+      `SELECT p.*,
+              c.name as category_name,
+              c.slug as category_slug,
+              c.parent_id as category_parent_id
+       FROM products p
+       JOIN categories c ON c.id = p.category_id
+       WHERE p.slug = $1 AND p.is_active = true`,
+      [slug]
+    );
+
+    if (!product) {
+      res.status(404).json(error('Product not found'));
+      return;
+    }
+
+    const specTemplates = await query(
+      `SELECT id, spec_key, spec_label, spec_type, spec_options, is_required, sort_order
+       FROM category_spec_templates
+       WHERE category_id = $1
+       ORDER BY sort_order ASC`,
+      [product.category_id]
+    );
+
+    const result = success({ ...product, spec_templates: specTemplates });
+    await setCache(cacheKey, result, 300);
+
+    res.json(result);
+  } catch (err) {
+    console.error('getProductBySlug error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
