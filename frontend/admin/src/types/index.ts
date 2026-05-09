@@ -65,6 +65,7 @@ export interface Product {
   buying_price: number;
   selling_price: number;
   discount_percent: number;
+  discount_percentage: number;
   is_b2c_available: boolean;
   is_b2b_available: boolean;
   b2b_price: number | null;
@@ -108,15 +109,18 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  order_number: string;
+  order_number?: string;        // alias, not in DB
   customer_id: string;
   customer_name: string;
   customer_email: string;
   order_type: OrderType;
   status: OrderStatus;
-  subtotal: number;
-  discount_amount: number;
-  total_amount: number;
+  subtotal?: number;
+  discount_amount?: number;
+  total_amount?: number;        // alias
+  total_mrp: number;
+  total_selling_price: number;  // actual DB column
+  total_savings: number;
   items: OrderItem[];
   shipping_address: ShippingAddress | null;
   notes: string | null;

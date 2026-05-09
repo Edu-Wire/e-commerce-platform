@@ -107,7 +107,7 @@ export default function OrdersPage() {
                       onClick={() => navigate(`/orders/${order.id}`)}
                       className={`cursor-pointer hover:bg-blue-50 transition-colors ${i % 2 === 1 ? 'bg-gray-50/50' : 'bg-white'}`}
                     >
-                      <td className="px-4 py-3 font-mono text-xs text-blue-600 font-medium">{order.order_number}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-blue-600 font-medium">#{order.id}</td>
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-800">{order.customer_name}</div>
                         <div className="text-xs text-gray-400">{order.customer_email}</div>
@@ -125,9 +125,9 @@ export default function OrdersPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 font-semibold text-gray-900">
-                        ₹{order.total_amount.toLocaleString('en-IN')}
+                        ₹{parseFloat(String(order.total_selling_price ?? order.total_amount ?? 0)).toLocaleString('en-IN')}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{order.items.length} item{order.items.length !== 1 ? 's' : ''}</td>
+                      <td className="px-4 py-3 text-gray-600">{Array.isArray(order.items) ? order.items.length : 0} item{(Array.isArray(order.items) ? order.items.length : 0) !== 1 ? 's' : ''}</td>
                       <td className="px-4 py-3 text-xs text-gray-400">
                         {new Date(order.created_at).toLocaleDateString('en-IN')}
                       </td>

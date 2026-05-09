@@ -22,11 +22,11 @@ const useAdminAuthStore = create<AdminAuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         try {
-          const response = await api.post<{ token: string; admin: AdminUser }>('/admin/auth/login', {
+          const response = await api.post<{ success: boolean; data: { token: string; admin: AdminUser } }>('/auth/admin/login', {
             email,
             password,
           });
-          const { token, admin } = response.data;
+          const { token, admin } = response.data.data;
           set({ admin, token, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
