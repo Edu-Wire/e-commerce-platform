@@ -51,6 +51,12 @@ export interface Customer {
   customer_type: 'b2c' | 'b2b';
   company_name?: string;
   gst_number?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+  };
   is_active: boolean;
   created_at: string;
 }

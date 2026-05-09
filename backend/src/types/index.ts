@@ -49,6 +49,12 @@ export interface SpecTemplate {
 
 export type ProductCondition = 'new' | 'new_with_minor_damage' | 'new_with_defect';
 
+export interface ProductImage {
+  url: string;
+  is_primary: boolean;
+  sort_order?: number;
+}
+
 export interface Product {
   id: number;
   category_id: number;
@@ -70,7 +76,7 @@ export interface Product {
   is_b2c_available: boolean;
   b2b_price: number | null;
   b2b_minimum_quantity: number;
-  images: string[];
+  images: any[];
   specifications: Record<string, unknown>;
   weight_grams: number | null;
   dimensions_cm: Record<string, unknown> | null;

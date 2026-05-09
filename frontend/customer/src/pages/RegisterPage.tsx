@@ -44,7 +44,17 @@ export default function RegisterPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (customer) navigate('/', { replace: true });
+    const params = new URLSearchParams(window.location.search);
+    const isB2BRequest = params.get('type') === 'b2b';
+    
+    // Only redirect if NOT specifically requesting a B2B account
+    if (customer && !isB2BRequest) {
+      navigate('/', { replace: true });
+    }
+    
+    if (isB2BRequest) {
+      setCustomerType('b2b');
+    }
   }, [customer, navigate]);
 
   const {
@@ -80,7 +90,7 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold">S</span>
             </div>
             <span className="text-2xl font-bold text-gray-900">ShopNow</span>
@@ -97,7 +107,7 @@ export default function RegisterPage() {
               onClick={() => handleTypeChange('b2c')}
               className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
                 customerType === 'b2c'
-                  ? 'bg-primary-600 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -108,7 +118,7 @@ export default function RegisterPage() {
               onClick={() => handleTypeChange('b2b')}
               className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
                 customerType === 'b2b'
-                  ? 'bg-primary-600 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -211,7 +221,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors disabled:opacity-60 text-base"
+              className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors disabled:opacity-60 text-base"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -226,7 +236,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary-600 font-medium hover:text-primary-700">
+            <Link to="/login" className="text-blue-600 font-medium hover:text-blue-700">
               Sign in
             </Link>
           </p>

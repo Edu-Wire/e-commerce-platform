@@ -72,8 +72,25 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
       [...params, limit, offset]
     );
 
+    // Safety: Parse images if they are stored as JSON string or handle string arrays
+    const formattedProducts = products.map(p => {
+      let images = p.images;
+      if (typeof images === 'string') {
+        try { images = JSON.parse(images); } catch { images = []; }
+      }
+      
+      // Ensure each image is an object { url: string }
+      if (Array.isArray(images)) {
+        images = images.map(img => typeof img === 'string' ? { url: img, is_primary: true } : img);
+      } else {
+        images = [];
+      }
+
+      return { ...p, images };
+    });
+
     const meta = getPaginationMeta(total, page, limit);
-    const result = success(products, meta as unknown as Record<string, unknown>);
+    const result = success(formattedProducts, meta as unknown as Record<string, unknown>);
 
     await setCache(cacheKey, result, 300); // 5 minutes
 
@@ -110,6 +127,18 @@ export async function getProductBySlug(req: Request, res: Response): Promise<voi
       return;
     }
 
+    // Safety: Parse images
+    let images = product.images;
+    if (typeof images === 'string') {
+      try { images = JSON.parse(images); } catch { images = []; }
+    }
+    if (Array.isArray(images)) {
+      images = images.map(img => typeof img === 'string' ? { url: img, is_primary: true } : img);
+    } else {
+      images = [];
+    }
+    const formattedProduct = { ...product, images };
+
     const specTemplates = await query(
       `SELECT id, spec_key, spec_label, spec_type, spec_options, is_required, sort_order
        FROM category_spec_templates
@@ -118,7 +147,7 @@ export async function getProductBySlug(req: Request, res: Response): Promise<voi
       [product.category_id]
     );
 
-    const result = success({ ...product, spec_templates: specTemplates });
+    const result = success({ ...formattedProduct, spec_templates: specTemplates });
     await setCache(cacheKey, result, 300);
 
     res.json(result);
