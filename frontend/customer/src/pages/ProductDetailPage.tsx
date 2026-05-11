@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useLanguageStore, translations } from '../store/languageStore';
 import { useProduct, useProducts } from '../hooks/useProducts';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
@@ -11,12 +12,18 @@ const fmt = (amount: number) =>
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const { language } = useLanguageStore();
+  const t = translations[language] || translations['EN'];
   const { data: product, isLoading, error } = useProduct(slug!);
   const { data: relatedData } = useProducts({
     category: product?.category?.slug,
     limit: 12
   });
   const addItem = useCartStore(s => s.addItem);
+  const setBuyNowItem = useCartStore(s => s.setBuyNowItem);
+  const setDrawerOpen = useCartStore(s => s.setDrawerOpen);
+  const setLastAddedItem = useCartStore(s => s.setLastAddedItem);
   const customer = useAuthStore(s => s.customer);
 
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
@@ -49,7 +56,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    addItem({
+    const item = {
       product_id: product.id,
       name: product.name,
       slug: product.slug,
@@ -60,7 +67,10 @@ export default function ProductDetailPage() {
       condition: product.condition,
       sku: product.sku,
       stock_quantity: product.stock_quantity
-    });
+    };
+    addItem(item);
+    setLastAddedItem({ ...item, category_slug: (product as any).category_slug });
+    setDrawerOpen(true);
     toast.success(`${product.name} added to cart!`);
   };
 
@@ -265,7 +275,7 @@ export default function ProductDetailPage() {
                   M.R.P.: <span className="line-through">{fmt(product.mrp)}</span>
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <img src="https://m.media-amazon.com/images/G/31/marketing/fba/fba-badge_18x.png" alt="Fulfilled" className="h-4" />
+                  <img src="https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-logo.png" alt="Fulfilled" className="h-4" />
                   <span className="text-sm text-[#0f1111]">Inclusive of all taxes</span>
                 </div>
                 <p className="text-sm mt-2">
@@ -417,7 +427,7 @@ export default function ProductDetailPage() {
                     {/* Sponsored Card */}
                     <div className="mt-8 border border-gray-200 rounded-xl p-4 bg-white relative flex gap-4 hover:shadow-md transition-shadow cursor-pointer group">
                       <div className="w-32 h-32 flex-shrink-0">
-                        <img src="https://m.media-amazon.com/images/I/51BqG6WkYHL._SL1000_.jpg" alt="Sponsored" className="w-full h-full object-contain" />
+                        <img src="https://images.unsplash.com/photo-1591123720164-de1348028a82?w=800" alt="Sponsored" className="w-full h-full object-contain" />
                       </div>
                       <div className="flex-1 space-y-1">
                         <h4 className="text-[14px] text-[#007185] group-hover:text-[#c45500] group-hover:underline leading-tight">Daikin 1.5 Ton 3 Star, New Star rated, Inverter Split AC (Copper, PM2.5 Filter, MTKL50XV16, White)</h4>
@@ -427,7 +437,7 @@ export default function ProductDetailPage() {
                           <span className="ml-1 text-[#007185]">203</span>
                         </div>
                         <div className="text-[17px] font-medium text-[#b12704]">₹37,490.00</div>
-                        <img src="https://m.media-amazon.com/images/G/31/marketing/fba/fba-badge_18x.png" alt="Prime" className="h-4" />
+                        <img src="https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-logo.png" alt="Prime" className="h-4" />
                       </div>
                       <span className="absolute bottom-2 right-4 text-[10px] text-gray-400">Sponsored ⓘ</span>
                     </div>
@@ -501,12 +511,28 @@ export default function ProductDetailPage() {
                       onClick={handleAddToCart}
                       className="w-full py-2 px-4 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-full text-[13px] font-medium shadow-sm transition-colors"
                     >
-                      Add to Cart
+                      {t.addToCart || "Add to Cart"}
                     </button>
                     <button
+                      onClick={() => {
+                        if (isOutOfStock) return;
+                        setBuyNowItem({
+                          product_id: product.id,
+                          name: product.name,
+                          slug: product.slug,
+                          image: currentImage ?? undefined,
+                          mrp: product.mrp,
+                          price: product.selling_price,
+                          quantity,
+                          condition: product.condition,
+                          sku: product.sku,
+                          stock_quantity: product.stock_quantity
+                        });
+                        navigate('/checkout');
+                      }}
                       className="w-full py-2 px-4 bg-[#FFA41C] hover:bg-[#FA8900] border border-[#FF8F00] rounded-full text-[13px] font-medium shadow-sm transition-colors"
                     >
-                      Buy Now
+                      {t.buyNow || "Buy Now"}
                     </button>
                   </div>
                 </div>

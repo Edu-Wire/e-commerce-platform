@@ -78,6 +78,8 @@ async function seed() {
     );
     const adminId = adminRes.rows[0].id;
 
+    // test
+
     console.log('Seeding categories...');
     const catRows = await client.query(
       `INSERT INTO categories (name, slug, parent_id, is_active) VALUES

@@ -87,11 +87,25 @@ async function bootstrap() {
     console.warn('Starting server without confirmed DB connection...');
   }
 
-  app.listen(env.port, () => {
-    console.log(`Server running on port ${env.port} in ${env.nodeEnv} mode`);
-    console.log(`API docs: http://localhost:${env.port}/api/docs`);
-    console.log(`Health check: http://localhost:${env.port}/health`);
-  });
+    const server = app.listen(env.port, () => {
+      console.log(`Server running on port ${env.port} in ${env.nodeEnv} mode`);
+      console.log(`API docs: http://localhost:${env.port}/api/docs`);
+      console.log(`Health check: http://localhost:${env.port}/health`);
+    });
+
+    process.on('SIGINT', () => {
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGTERM', () => {
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
 }
 
 bootstrap();

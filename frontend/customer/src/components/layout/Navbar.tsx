@@ -2,16 +2,60 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
+import toast from 'react-hot-toast';
 import { useCategories } from '../../hooks/useCategories';
+import { useLanguageStore, translations, Language } from '../../store/languageStore';
 
 export default function Navbar() {
-  const { customer, logout } = useAuthStore();
+  const { customer, logout, updateProfile } = useAuthStore();
   const totalItems = useCartStore(s => s.totalItems());
+  const { language, setLanguage } = useLanguageStore();
+  const t = translations[language] || translations['EN'];
   const { data: categories } = useCategories();
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState('');
+  const searchRef = useRef<HTMLDivElement>(null);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const history = localStorage.getItem('searchHistory');
+    if (history) {
+      setSearchHistory(JSON.parse(history));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim().length > 1) {
+      const timer = setTimeout(async () => {
+        setIsSearching(true);
+        try {
+          const res = await fetch(`/api/products?search=${encodeURIComponent(searchQuery.trim())}&limit=5`);
+          const json = await res.json();
+          if (json.success) {
+            setSuggestions(json.data);
+          }
+        } catch (err) {
+          console.error('Failed to fetch suggestions:', err);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchQuery]);
+  const [newLocation, setNewLocation] = useState('');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
@@ -25,6 +69,12 @@ export default function Navbar() {
       if (langDropdownRef.current && !langDropdownRef.current.contains(e.target as Node)) {
         setLangDropdownOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearchHistory(false);
+      }
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -33,8 +83,16 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/category/all?search=${encodeURIComponent(searchQuery.trim())}`);
+      const query = searchQuery.trim();
+      const slug = selectedCategorySlug || 'all';
+      navigate(`/category/${slug}?search=${encodeURIComponent(query)}`);
+      
+      const updatedHistory = [query, ...searchHistory.filter(h => h !== query)].slice(0, 5);
+      setSearchHistory(updatedHistory);
+      localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+      
       setSearchQuery('');
+      setShowSearchHistory(false);
       setMobileMenuOpen(false);
     }
   };
@@ -76,49 +134,151 @@ export default function Navbar() {
         </Link>
 
         {/* Delivery Location */}
-        <div className="hidden md:flex flex-col p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all ml-2">
-          <span className="text-[11px] text-gray-300 ml-4 leading-none">Delivering to {customer?.address?.city || 'Bhopal 462010'}</span>
+        <div 
+          onClick={() => setShowLocationModal(true)}
+          className="hidden md:flex flex-col p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all ml-2"
+        >
+          <span className="text-[11px] text-gray-300 ml-4 leading-none">Deliver to {customer?.name || 'Aish'}</span>
           <div className="flex items-center gap-1 leading-none">
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-sm font-bold">Update location</span>
+            <span className="text-sm font-bold">{customer?.address?.city || 'Bhopal'} {customer?.address?.pincode || '462010'}</span>
           </div>
         </div>
 
         {/* Search Bar */}
         <div className="flex-1 flex items-center h-10 ml-2">
           <form onSubmit={handleSearch} className="w-full flex h-full group">
-            <div className="relative flex w-full h-full bg-white rounded-md overflow-hidden ring-offset-0 focus-within:ring-2 focus-within:ring-[#febd69]">
-              {/* Category Dropdown (Simplified) */}
-              <button
-                type="button"
-                className="hidden lg:flex items-center gap-1 px-3 bg-gray-100 text-gray-600 text-xs border-r border-gray-300 hover:bg-gray-200 transition-colors"
-              >
-                All
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+            <div ref={searchRef} className="relative flex w-full h-full bg-white rounded-md ring-offset-0 focus-within:ring-2 focus-within:ring-[#febd69]">
+              {/* Category Dropdown */}
+              <div ref={categoryDropdownRef} className="relative hidden lg:block h-full">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCategoryDropdown(!showCategoryDropdown);
+                    setShowSearchHistory(false);
+                  }}
+                  className="flex items-center gap-1 h-full px-3 bg-gray-100 text-gray-600 text-xs border-r border-gray-300 hover:bg-gray-200 transition-colors rounded-l-md"
+                >
+                  <span className="truncate max-w-[80px]">{selectedCategory}</span>
+                  <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {showCategoryDropdown && (
+                  <div className="absolute top-full left-0 w-52 bg-white shadow-lg border border-gray-200 mt-1 rounded-md z-50 max-h-60 overflow-y-auto">
+                    <div
+                      onClick={() => {
+                        setSelectedCategory('All');
+                        setSelectedCategorySlug('');
+                        setShowCategoryDropdown(false);
+                      }}
+                      className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer"
+                    >
+                      All Categories
+                    </div>
+                    {categories?.map((cat: any) => (
+                      <div
+                        key={cat.id}
+                        onClick={() => {
+                          setSelectedCategory(cat.name);
+                          setSelectedCategorySlug(cat.slug);
+                          setShowCategoryDropdown(false);
+                        }}
+                        className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer"
+                      >
+                        {cat.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search ShopNow.in"
+                onFocus={() => {
+                  setShowSearchHistory(true);
+                  setShowCategoryDropdown(false);
+                }}
+                placeholder={t.searchPlaceholder || "Search ShopNow.in"}
                 className="flex-1 px-3 py-2 text-black text-sm focus:outline-none placeholder-gray-500"
               />
 
               <button
                 type="submit"
-                className="px-4 bg-[#febd69] hover:bg-[#f3a847] text-[#131921] transition-colors"
+                className="px-4 bg-[#febd69] hover:bg-[#f3a847] text-[#131921] transition-colors rounded-r-md"
                 aria-label="Search"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
+
+              {/* Search History & Suggestions Dropdown */}
+              {showSearchHistory && (searchQuery.trim().length > 1 ? suggestions.length > 0 : searchHistory.length > 0) && (
+                <div className="absolute top-full left-0 right-0 bg-white shadow-lg border border-gray-200 mt-1 rounded-md z-50">
+                  {searchQuery.trim().length > 1 ? (
+                    <>
+                      <div className="p-2 text-xs text-gray-500 border-b border-gray-100">Suggestions</div>
+                      {suggestions.map((product, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            setSearchQuery(product.name);
+                            navigate(`/category/all?search=${encodeURIComponent(product.name)}`);
+                            setShowSearchHistory(false);
+                          }}
+                          className="px-3 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          <span>{product.name}</span>
+                          <span className="text-xs text-gray-500 ml-auto">{product.category_name}</span>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-2 text-xs text-gray-500 border-b border-gray-100">Recent Searches</div>
+                      {searchHistory.map((query, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            setSearchQuery(query);
+                            navigate(`/category/all?search=${encodeURIComponent(query)}`);
+                            setShowSearchHistory(false);
+                          }}
+                          className="px-3 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {query}
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updatedHistory = searchHistory.filter(h => h !== query);
+                              setSearchHistory(updatedHistory);
+                              localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+                            }}
+                            className="text-xs text-gray-400 hover:text-red-500"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </form>
         </div>
@@ -131,12 +291,12 @@ export default function Navbar() {
               onClick={() => setLangDropdownOpen(v => !v)}
               className="hidden lg:flex items-center p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all gap-1"
             >
-              <div className="flex flex-col gap-0.5 shadow-sm border border-gray-700/10">
-                <div className="w-5 h-1 bg-orange-400"></div>
-                <div className="w-5 h-1 bg-white flex items-center justify-center"><div className="w-1 h-1 bg-blue-900 rounded-full"></div></div>
-                <div className="w-5 h-1 bg-green-600"></div>
+              <div className="flex flex-col shadow-sm border border-gray-300 overflow-hidden rounded-sm">
+                <div className="w-6 h-1.5 bg-[#FF9933]"></div>
+                <div className="w-6 h-1.5 bg-white flex items-center justify-center"><div className="w-1 h-1 bg-[#000080] rounded-full"></div></div>
+                <div className="w-6 h-1.5 bg-[#138808]"></div>
               </div>
-              <span className="text-sm font-bold uppercase ml-0.5">EN</span>
+              <span className="text-sm font-bold uppercase ml-0.5">{language}</span>
               <svg className="w-3 h-3 text-gray-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -149,17 +309,26 @@ export default function Navbar() {
                   <p className="text-xs font-semibold text-gray-600 mb-3">Change Language</p>
                   <div className="space-y-3">
                     {[
-                      { id: 'en', label: 'English - EN', active: true },
-                      { id: 'hi', label: 'हिन्दी - HI' },
-                      { id: 'ta', label: 'தமிழ் - TA' },
-                      { id: 'te', label: 'తెలుగు - TE' },
-                      { id: 'kn', label: 'ಕನ್ನಡ - KN' },
-                      { id: 'ml', label: 'മലയാളം - ML' },
-                      { id: 'bn', label: 'বাংলা - BN' },
-                      { id: 'mr', label: 'मराठी - MR' },
+                      { id: 'EN', label: 'English - EN' },
+                      { id: 'HI', label: 'हिन्दी - HI' },
+                      { id: 'TA', label: 'தமிழ் - TA' },
+                      { id: 'TE', label: 'తెలుగు - TE' },
+                      { id: 'KN', label: 'ಕನ್ನಡ - KN' },
+                      { id: 'ML', label: 'മലയാളം - ML' },
+                      { id: 'BN', label: 'বাংলা - BN' },
+                      { id: 'MR', label: 'मराठी - MR' },
                     ].map(lang => (
                       <label key={lang.id} className="flex items-center gap-2 cursor-pointer group">
-                        <input type="radio" name="lang" checked={lang.active} className="w-4 h-4 accent-orange-600" readOnly />
+                        <input 
+                          type="radio" 
+                          name="lang" 
+                          checked={language === lang.id} 
+                          onChange={() => {
+                            setLanguage(lang.id as Language);
+                            setLangDropdownOpen(false);
+                          }}
+                          className="w-4 h-4 accent-orange-600" 
+                        />
                         <span className="text-xs text-gray-700 group-hover:text-orange-600 group-hover:underline">{lang.label}</span>
                       </label>
                     ))}
@@ -187,9 +356,9 @@ export default function Navbar() {
               onClick={() => setUserDropdownOpen(v => !v)}
               className="flex flex-col p-2 border border-transparent hover:border-white rounded-sm transition-all text-left min-w-[120px]"
             >
-              <span className="text-[11px] text-gray-300 leading-none">Hello, {customer ? customer.name.split(' ')[0] : 'sign in'}</span>
+              <span className="text-[11px] text-gray-300 leading-none">{t.hello || 'Hello'}, {customer ? customer.name.split(' ')[0] : 'sign in'}</span>
               <div className="flex items-center gap-1 leading-none mt-1">
-                <span className="text-sm font-bold">Account & Lists</span>
+                <span className="text-sm font-bold">{t.accountsLists || 'Account & Lists'}</span>
                 <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -238,8 +407,8 @@ export default function Navbar() {
 
           {/* Returns & Orders */}
           <Link to="/orders" className="hidden sm:flex flex-col p-2 border border-transparent hover:border-white rounded-sm transition-all text-left">
-            <span className="text-[11px] text-gray-300 leading-none">Returns</span>
-            <span className="text-sm font-bold leading-none mt-1">& Orders</span>
+            <span className="text-[11px] text-gray-300 leading-none">{t.returns || 'Returns'}</span>
+            <span className="text-sm font-bold leading-none mt-1">{t.orders || '& Orders'}</span>
           </Link>
 
           {/* Cart */}
@@ -254,7 +423,7 @@ export default function Navbar() {
                   {totalItems}
                 </span>
               </div>
-              <span className="text-sm font-bold self-end mb-1.5 hidden lg:inline">Cart</span>
+              <span className="text-sm font-bold self-end mb-1.5 hidden lg:inline">{t.cart || 'Cart'}</span>
             </div>
           </Link>
         </div>
@@ -359,6 +528,190 @@ export default function Navbar() {
                     <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Sign In</Link>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Location Modal */}
+      {showLocationModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowLocationModal(false)}
+          />
+          <div className="relative bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+              <h2 className="text-lg font-bold text-gray-900">Choose your location</h2>
+              <button
+                onClick={() => setShowLocationModal(false)}
+                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-600">Select a delivery location to see product availability and delivery options</p>
+              
+              {/* Address List */}
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {customer?.address?.addresses?.map((addr: any, index: number) => (
+                  <div 
+                    key={index}
+                    onClick={async () => {
+                      try {
+                        await updateProfile({ 
+                          address: { 
+                            ...customer?.address, 
+                            city: addr.city,
+                            pincode: addr.pincode
+                          } 
+                        });
+                        setShowLocationModal(false);
+                        toast.success('Location updated!');
+                      } catch (err) {
+                        toast.error('Failed to update location');
+                      }
+                    }}
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      customer?.address?.pincode === addr.pincode 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex flex-col text-sm">
+                      <span className="font-bold text-black">{addr.name} <span className="font-normal text-gray-600">{addr.details}</span></span>
+                      <span className="text-gray-600">{addr.city} {addr.state} {addr.pincode}</span>
+                      {customer?.address?.pincode === addr.pincode && (
+                        <span className="text-xs text-blue-600 font-medium mt-1">Default address</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                {(!customer?.address?.addresses || customer.address.addresses.length === 0) && (
+                  <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center text-sm text-gray-500">
+                    No saved addresses found.
+                  </div>
+                )}
+              </div>
+
+              <button 
+                onClick={() => {
+                  const details = prompt('Enter your address (House/Street):');
+                  const pincode = prompt('Enter 6-digit pincode:');
+                  if (details && pincode && /^\d{6}$/.test(pincode)) {
+                    fetch(`https://api.postalpincode.in/pincode/${pincode}`)
+                      .then(res => res.json())
+                      .then(json => {
+                        if (json[0]?.Status === 'Success' && json[0]?.PostOffice?.length > 0) {
+                          const city = json[0].PostOffice[0].District || json[0].PostOffice[0].Taluk;
+                          const state = json[0].PostOffice[0].Circle;
+                          
+                          const newAddr = {
+                            name: customer?.name || 'User',
+                            details: details,
+                            city: city,
+                            state: state,
+                            pincode: pincode
+                          };
+                          
+                          const currentAddresses = (customer?.address as any)?.addresses || [];
+                          const updatedAddresses = [...currentAddresses, newAddr];
+                          
+                          updateProfile({ 
+                            address: { 
+                              ...customer?.address, 
+                              city: city,
+                              pincode: pincode,
+                              addresses: updatedAddresses
+                            } 
+                          });
+                          toast.success('Address saved!');
+                        } else {
+                          toast.error('Invalid pincode');
+                        }
+                      })
+                      .catch(err => {
+                        console.error('Pincode fetch failed:', err);
+                        toast.error('Failed to validate pincode');
+                      });
+                  }
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Add an address or pick-up point
+              </button>
+
+              <div className="relative flex items-center py-2">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="flex-shrink mx-4 text-xs text-gray-500">or enter an Indian pincode</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newLocation}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^\d*$/.test(val) && val.length <= 6) {
+                      setNewLocation(val);
+                    }
+                  }}
+                  placeholder="Enter pincode"
+                  className="flex-1 h-10 px-3 border border-gray-300 rounded-md focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm text-black"
+                />
+                <button
+                  onClick={async () => {
+                    if (newLocation.length === 6) {
+                      try {
+                        const res = await fetch(`https://api.postalpincode.in/pincode/${newLocation}`);
+                        const json = await res.json();
+                        
+                        if (json[0]?.Status === 'Success' && json[0]?.PostOffice?.length > 0) {
+                          const city = json[0].PostOffice[0].District || json[0].PostOffice[0].Taluk;
+                          const state = json[0].PostOffice[0].Circle;
+                          
+                          const newAddr = {
+                            name: customer?.name || 'User',
+                            details: 'Pincode Area',
+                            city: city,
+                            state: state,
+                            pincode: newLocation
+                          };
+                          
+                          const currentAddresses = customer?.address?.addresses || [];
+                          const updatedAddresses = [...currentAddresses, newAddr];
+                          
+                          await updateProfile({ 
+                            address: { 
+                              ...customer?.address, 
+                              city: city,
+                              pincode: newLocation,
+                              addresses: updatedAddresses
+                            } 
+                          });
+                          
+                          setShowLocationModal(false);
+                          setNewLocation('');
+                          toast.success('Location updated and saved!');
+                        } else {
+                          toast.error('Invalid pincode or city not found');
+                        }
+                      } catch (err: any) {
+                        console.error('Failed to update location:', err);
+                        toast.error('Failed to update location. Please try again.');
+                      }
+                    }
+                  }}
+                  className="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-100 text-black"
+                >
+                  Apply
+                </button>
               </div>
             </div>
           </div>

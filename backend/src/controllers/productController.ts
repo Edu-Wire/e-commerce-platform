@@ -24,7 +24,14 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
     let paramIdx = 1;
 
     if (category) {
-      conditions.push(`c.slug = $${paramIdx++}`);
+      conditions.push(`p.category_id IN (
+        WITH RECURSIVE cat_tree AS (
+          SELECT id FROM categories WHERE slug = $${paramIdx++}
+          UNION ALL
+          SELECT c.id FROM categories c JOIN cat_tree ct ON ct.id = c.parent_id
+        )
+        SELECT id FROM cat_tree
+      )`);
       params.push(category);
     }
     if (search) {
@@ -156,3 +163,58 @@ export async function getProductBySlug(req: Request, res: Response): Promise<voi
     res.status(500).json(error('Internal server error'));
   }
 }
+
+export async function getSuggestedProducts(req: Request, res: Response): Promise<void> {
+  try {
+    const { productIds } = req.query;
+    if (!productIds) {
+      res.json(success([]));
+      return;
+    }
+
+    const ids = String(productIds)
+      .split(',')
+      .map(id => parseInt(id.trim()))
+      .filter(id => !isNaN(id));
+
+    if (ids.length === 0) {
+      res.json(success([]));
+      return;
+    }
+
+    const products = await query<Product & { category_name: string; category_slug: string }>(
+      `SELECT p.*,
+              c.name as category_name,
+              c.slug as category_slug
+       FROM products p
+       JOIN categories c ON c.id = p.category_id
+       WHERE p.category_id IN (
+         SELECT category_id FROM products WHERE id = ANY($1)
+       )
+       AND p.id != ANY($1)
+       AND p.is_active = true
+       ORDER BY p.is_featured DESC, p.created_at DESC
+       LIMIT 4`,
+      [ids]
+    );
+
+    const formattedProducts = products.map(p => {
+      let images = p.images;
+      if (typeof images === 'string') {
+        try { images = JSON.parse(images); } catch { images = [] as any; }
+      }
+      if (Array.isArray(images)) {
+        images = images.map(img => typeof img === 'string' ? { url: img, is_primary: true } : img);
+      } else {
+        images = [];
+      }
+      return { ...p, images };
+    });
+
+    res.json(success(formattedProducts));
+  } catch (err) {
+    console.error('getSuggestedProducts error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+

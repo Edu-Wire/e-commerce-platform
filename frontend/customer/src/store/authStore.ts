@@ -13,6 +13,7 @@ interface AuthActions {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   initialize: () => void;
+  updateProfile: (data: { name?: string; phone?: string; address?: Record<string, unknown> }) => Promise<void>;
 }
 
 interface RegisterData {
@@ -82,5 +83,21 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_customer');
     set({ token: null, customer: null });
+  },
+
+  updateProfile: async (data: { name?: string; phone?: string; address?: Record<string, unknown> }) => {
+    set({ isLoading: true });
+    try {
+      const res = await api.patch<{ success: boolean; data: Customer }>(
+        '/auth/profile',
+        data
+      );
+      const customer = res.data.data;
+      localStorage.setItem('auth_customer', JSON.stringify(customer));
+      set({ customer, isLoading: false });
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
   }
 }));
