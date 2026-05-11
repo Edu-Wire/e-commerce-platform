@@ -24,7 +24,14 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
     let paramIdx = 1;
 
     if (category) {
-      conditions.push(`c.slug = $${paramIdx++}`);
+      conditions.push(`p.category_id IN (
+        WITH RECURSIVE cat_tree AS (
+          SELECT id FROM categories WHERE slug = $${paramIdx++}
+          UNION ALL
+          SELECT c.id FROM categories c JOIN cat_tree ct ON ct.id = c.parent_id
+        )
+        SELECT id FROM cat_tree
+      )`);
       params.push(category);
     }
     if (search) {
