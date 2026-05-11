@@ -119,6 +119,7 @@ export interface CartItem {
   condition: ProductCondition;
   sku: string;
   stock_quantity: number;
+  category_slug?: string;
 }
 
 export interface CheckoutForm {
@@ -164,4 +165,8 @@ export interface ProductFilters {
   page?: number;
   limit?: number;
   is_featured?: boolean;
+  ram?: string;
+  storage?: string;
+  size?: string;
+  color?: string;
 }
