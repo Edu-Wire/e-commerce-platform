@@ -139,7 +139,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
       </div>
 
       {/* Brand */}
-      <div>
+      <div className="pt-4 border-t border-gray-100">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Brand</label>
         <div className="flex gap-2">
           <input
@@ -157,6 +157,125 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             Go
           </button>
         </div>
+      </div>
+
+      {/* Deals & Discounts */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Deals & Discounts</label>
+        <label className="flex items-center gap-2 cursor-pointer group">
+          <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
+          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">Great Summer Deals</span>
+        </label>
+      </div>
+
+      {/* Aspect Ratio */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Aspect Ratio</label>
+        <label className="flex items-center gap-2 cursor-pointer group">
+          <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
+          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">16:9</span>
+        </label>
+      </div>
+
+      {/* Customer Reviews */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Customer Reviews</label>
+        <div className="space-y-1">
+          {[4, 3, 2, 1].map(stars => (
+            <button key={stars} className="flex items-center gap-2 group w-full text-left">
+              <div className="flex text-[#febd69]">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span key={i} className={i < stars ? 'fill-current' : 'text-gray-200'}>★</span>
+                ))}
+              </div>
+              <span className="text-xs text-gray-600 group-hover:text-[#c45500] transition-colors">& Up</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Wireless Technology */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Wireless Technology</label>
+        <div className="space-y-2">
+          {['Bluetooth', 'Radio Frequency', 'Wi-Fi'].map(tech => (
+            <label key={tech} className="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
+              <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">{tech}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Connectivity */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Connectivity</label>
+        <div className="space-y-2">
+          {['USB', 'HDMI', 'Ethernet'].map(conn => (
+            <label key={conn} className="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
+              <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">{conn}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Purpose */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Purpose</label>
+        <div className="space-y-2">
+          {['Streaming', 'Video Gaming'].map(p => (
+            <label key={p} className="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
+              <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">{p}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Supported Internet Services */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Supported Internet Services</label>
+        <label className="flex items-center gap-2 cursor-pointer group">
+          <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
+          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">Netflix</span>
+        </label>
+      </div>
+
+      {/* Electronic Specifics - Only for Electronics */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-bold text-[#0f1111] mb-3 uppercase tracking-tighter text-[11px]">Electronic Features</label>
+        
+        <div className="mb-4">
+          <label className="block text-xs font-semibold text-gray-500 mb-2">RAM Capacity</label>
+          <div className="flex flex-wrap gap-2">
+            {['4GB', '8GB', '16GB', '32GB'].map(size => (
+              <button key={size} className="px-3 py-1 text-xs border border-gray-300 rounded-md hover:border-[#e77600] hover:bg-[#fff9f2] transition-all">
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 mb-2">Internal Storage</label>
+          <div className="flex flex-wrap gap-2">
+            {['128GB', '256GB', '512GB', '1TB'].map(size => (
+              <button key={size} className="px-3 py-1 text-xs border border-gray-300 rounded-md hover:border-[#e77600] hover:bg-[#fff9f2] transition-all">
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Availability */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Availability</label>
+        <label className="flex items-center gap-2 cursor-pointer group">
+          <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">Include Out of Stock</span>
+        </label>
       </div>
     </aside>
   );
