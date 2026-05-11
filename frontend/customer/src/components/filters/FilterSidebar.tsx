@@ -26,11 +26,28 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
   const [maxPrice, setMaxPrice] = useState(filters.max_price?.toString() ?? '');
   const [brand, setBrand] = useState(filters.brand ?? '');
 
+  const currentCategory = filters.category?.toLowerCase() || 'all';
+
+  // Determine which sections to show
+  const isElectronics = ['electronics', 'smartphones', 'laptops', 'audio', 'cameras', 'smart-tvs'].includes(currentCategory);
+  const isClothing = ['clothing', 'mens-wear', 'womens-wear', 'kids-wear'].includes(currentCategory);
+  const isFootwear = ['footwear', 'sneakers', 'formal-shoes', 'sandals'].includes(currentCategory);
+
   useEffect(() => {
     setMinPrice(filters.min_price?.toString() ?? '');
     setMaxPrice(filters.max_price?.toString() ?? '');
     setBrand(filters.brand ?? '');
-  }, [filters]);
+  }, [filters.min_price, filters.max_price, filters.brand]);
+
+  // Debounced brand filter
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (brand !== (filters.brand ?? '')) {
+        onFilterChange({ brand: brand || undefined });
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [brand]);
 
   const handleConditionChange = (value: string) => {
     const current = filters.condition ? filters.condition.split(',') : [];
@@ -47,8 +64,9 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
     });
   };
 
-  const handleBrandApply = () => {
-    onFilterChange({ brand: brand || undefined });
+  const handleAttributeChange = (key: keyof ProductFilters, value: string) => {
+    const current = (filters[key] as string) || '';
+    onFilterChange({ [key]: current === value ? undefined : value });
   };
 
   const handleClear = () => {
@@ -60,7 +78,11 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
       min_price: undefined,
       max_price: undefined,
       brand: undefined,
-      sort: undefined
+      sort: undefined,
+      ram: undefined,
+      storage: undefined,
+      size: undefined,
+      color: undefined
     });
   };
 
@@ -78,7 +100,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
         </button>
       </div>
 
-      {/* Sort */}
+      {/* Basic Filters (Shown for all) */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
         <select
@@ -90,24 +112,6 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-      </div>
-
-      {/* Condition */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Condition</label>
-        <div className="space-y-2">
-          {conditions.map(c => (
-            <label key={c.value} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedConditions.includes(c.value)}
-                onChange={() => handleConditionChange(c.value)}
-                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-              />
-              <span className="text-sm text-gray-700">{c.label}</span>
-            </label>
-          ))}
-        </div>
       </div>
 
       {/* Price Range */}
@@ -138,46 +142,164 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
         </button>
       </div>
 
+      {/* Item Condition */}
+      <div className="pt-4 border-t border-gray-100">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Item Condition</label>
+        <div className="space-y-2">
+          {conditions.map(c => (
+            <label key={c.value} className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={selectedConditions.includes(c.value)}
+                onChange={() => handleConditionChange(c.value)}
+                className="w-4 h-4 rounded border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer"
+              />
+              <span className={`text-sm transition-colors ${
+                selectedConditions.includes(c.value) ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'
+              }`}>
+                {c.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* Brand */}
       <div className="pt-4 border-t border-gray-100">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Brand</label>
-        <div className="flex gap-2">
+        <div className="relative">
           <input
             type="text"
             placeholder="Search brand..."
             value={brand}
             onChange={e => setBrand(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleBrandApply()}
-            className="flex-1 rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-gray-300 text-sm py-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <button
-            onClick={handleBrandApply}
-            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition-colors"
-          >
-            Go
-          </button>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
         </div>
       </div>
 
-      {/* Deals & Discounts */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Deals & Discounts</label>
-        <label className="flex items-center gap-2 cursor-pointer group">
-          <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
-          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">Great Summer Deals</span>
-        </label>
-      </div>
+      {/* Electronics Specific Filters */}
+      {isElectronics && (
+        <div className="pt-4 border-t border-gray-100 space-y-6">
+          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-tighter text-[11px]">Electronic Specs</label>
+          
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">RAM Capacity</label>
+            <div className="flex flex-wrap gap-2">
+              {['4GB', '8GB', '16GB', '32GB'].map(size => (
+                <button 
+                  key={size} 
+                  onClick={() => handleAttributeChange('ram', size)}
+                  className={`px-3 py-1 text-xs border rounded-md transition-all ${
+                    filters.ram === size 
+                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
+                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {/* Aspect Ratio */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Aspect Ratio</label>
-        <label className="flex items-center gap-2 cursor-pointer group">
-          <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
-          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">16:9</span>
-        </label>
-      </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">Internal Storage</label>
+            <div className="flex flex-wrap gap-2">
+              {['128GB', '256GB', '512GB', '1TB'].map(size => (
+                <button 
+                  key={size} 
+                  onClick={() => handleAttributeChange('storage', size)}
+                  className={`px-3 py-1 text-xs border rounded-md transition-all ${
+                    filters.storage === size 
+                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
+                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Customer Reviews */}
+      {/* Clothing Specific Filters */}
+      {isClothing && (
+        <div className="pt-4 border-t border-gray-100 space-y-6">
+          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-tighter text-[11px]">Clothing Specs</label>
+          
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">Size</label>
+            <div className="flex flex-wrap gap-2">
+              {['S', 'M', 'L', 'XL', 'XXL'].map(s => (
+                <button 
+                  key={s} 
+                  onClick={() => handleAttributeChange('size', s)}
+                  className={`px-3 py-1 text-xs border rounded-md transition-all ${
+                    filters.size === s 
+                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
+                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">Color</label>
+            <div className="flex flex-wrap gap-2">
+              {['Black', 'White', 'Blue', 'Red', 'Green'].map(c => (
+                <button 
+                  key={c} 
+                  onClick={() => handleAttributeChange('color', c)}
+                  className={`px-3 py-1 text-xs border rounded-md transition-all ${
+                    filters.color === c 
+                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
+                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footwear Specific Filters */}
+      {isFootwear && (
+        <div className="pt-4 border-t border-gray-100 space-y-6">
+          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-tighter text-[11px]">Footwear Specs</label>
+          
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-2">Shoe Size (UK/India)</label>
+            <div className="flex flex-wrap gap-2">
+              {['6', '7', '8', '9', '10', '11'].map(s => (
+                <button 
+                  key={s} 
+                  onClick={() => handleAttributeChange('size', s)}
+                  className={`px-3 py-1 text-xs border rounded-md transition-all ${
+                    filters.size === s 
+                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
+                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shared Filters (Reviews, Availability) */}
       <div className="pt-4 border-t border-gray-100">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Customer Reviews</label>
         <div className="space-y-1">
@@ -194,82 +316,6 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
         </div>
       </div>
 
-      {/* Wireless Technology */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Wireless Technology</label>
-        <div className="space-y-2">
-          {['Bluetooth', 'Radio Frequency', 'Wi-Fi'].map(tech => (
-            <label key={tech} className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
-              <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">{tech}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Connectivity */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Connectivity</label>
-        <div className="space-y-2">
-          {['USB', 'HDMI', 'Ethernet'].map(conn => (
-            <label key={conn} className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
-              <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">{conn}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Purpose */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Purpose</label>
-        <div className="space-y-2">
-          {['Streaming', 'Video Gaming'].map(p => (
-            <label key={p} className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
-              <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">{p}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Supported Internet Services */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Supported Internet Services</label>
-        <label className="flex items-center gap-2 cursor-pointer group">
-          <input type="checkbox" className="rounded border-gray-300 text-[#e77600] focus:ring-[#e77600]" />
-          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">Netflix</span>
-        </label>
-      </div>
-
-      {/* Electronic Specifics - Only for Electronics */}
-      <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-bold text-[#0f1111] mb-3 uppercase tracking-tighter text-[11px]">Electronic Features</label>
-        
-        <div className="mb-4">
-          <label className="block text-xs font-semibold text-gray-500 mb-2">RAM Capacity</label>
-          <div className="flex flex-wrap gap-2">
-            {['4GB', '8GB', '16GB', '32GB'].map(size => (
-              <button key={size} className="px-3 py-1 text-xs border border-gray-300 rounded-md hover:border-[#e77600] hover:bg-[#fff9f2] transition-all">
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-2">Internal Storage</label>
-          <div className="flex flex-wrap gap-2">
-            {['128GB', '256GB', '512GB', '1TB'].map(size => (
-              <button key={size} className="px-3 py-1 text-xs border border-gray-300 rounded-md hover:border-[#e77600] hover:bg-[#fff9f2] transition-all">
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Availability */}
       <div className="pt-4 border-t border-gray-100">
         <label className="block text-sm font-semibold text-gray-700 mb-2">Availability</label>
         <label className="flex items-center gap-2 cursor-pointer group">
