@@ -4,6 +4,9 @@ import type { CartItem } from '../types';
 
 interface CartState {
   items: CartItem[];
+  buyNowItem: CartItem | null;
+  isDrawerOpen: boolean;
+  lastAddedItem: (CartItem & { category_slug?: string }) | null;
 }
 
 interface CartActions {
@@ -11,6 +14,9 @@ interface CartActions {
   removeItem: (product_id: number) => void;
   updateQuantity: (product_id: number, quantity: number) => void;
   clearCart: () => void;
+  setBuyNowItem: (item: CartItem | null) => void;
+  setDrawerOpen: (open: boolean) => void;
+  setLastAddedItem: (item: CartItem | null) => void;
 }
 
 interface CartComputed {
@@ -26,6 +32,13 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      buyNowItem: null,
+      isDrawerOpen: false,
+      lastAddedItem: null,
+
+      setBuyNowItem: (item: CartItem | null) => set({ buyNowItem: item }),
+      setDrawerOpen: (open: boolean) => set({ isDrawerOpen: open }),
+      setLastAddedItem: (item: CartItem | null) => set({ lastAddedItem: item }),
 
       addItem: (item: CartItem) => {
         set(state => {
@@ -63,7 +76,7 @@ export const useCartStore = create<CartStore>()(
 
       clearCart: () => set({ items: [] }),
 
-      totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
+      totalItems: () => get().items.length,
       totalMrp: () => get().items.reduce((sum, i) => sum + i.mrp * i.quantity, 0),
       totalPrice: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       totalSavings: () => {
@@ -73,7 +86,8 @@ export const useCartStore = create<CartStore>()(
       }
     }),
     {
-      name: 'cart-storage'
+      name: 'cart-storage',
+      partialize: (state) => ({ items: state.items })
     }
   )
 );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useLanguageStore, translations } from '../store/languageStore';
 import { useProduct, useProducts } from '../hooks/useProducts';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
@@ -11,12 +12,18 @@ const fmt = (amount: number) =>
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const { language } = useLanguageStore();
+  const t = translations[language] || translations['EN'];
   const { data: product, isLoading, error } = useProduct(slug!);
   const { data: relatedData } = useProducts({
     category: product?.category?.slug,
     limit: 12
   });
   const addItem = useCartStore(s => s.addItem);
+  const setBuyNowItem = useCartStore(s => s.setBuyNowItem);
+  const setDrawerOpen = useCartStore(s => s.setDrawerOpen);
+  const setLastAddedItem = useCartStore(s => s.setLastAddedItem);
   const customer = useAuthStore(s => s.customer);
 
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
@@ -49,7 +56,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    addItem({
+    const item = {
       product_id: product.id,
       name: product.name,
       slug: product.slug,
@@ -60,7 +67,10 @@ export default function ProductDetailPage() {
       condition: product.condition,
       sku: product.sku,
       stock_quantity: product.stock_quantity
-    });
+    };
+    addItem(item);
+    setLastAddedItem({ ...item, category_slug: (product as any).category_slug });
+    setDrawerOpen(true);
     toast.success(`${product.name} added to cart!`);
   };
 
@@ -501,12 +511,28 @@ export default function ProductDetailPage() {
                       onClick={handleAddToCart}
                       className="w-full py-2 px-4 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-full text-[13px] font-medium shadow-sm transition-colors"
                     >
-                      Add to Cart
+                      {t.addToCart || "Add to Cart"}
                     </button>
                     <button
+                      onClick={() => {
+                        if (isOutOfStock) return;
+                        setBuyNowItem({
+                          product_id: product.id,
+                          name: product.name,
+                          slug: product.slug,
+                          image: currentImage ?? undefined,
+                          mrp: product.mrp,
+                          price: product.selling_price,
+                          quantity,
+                          condition: product.condition,
+                          sku: product.sku,
+                          stock_quantity: product.stock_quantity
+                        });
+                        navigate('/checkout');
+                      }}
                       className="w-full py-2 px-4 bg-[#FFA41C] hover:bg-[#FA8900] border border-[#FF8F00] rounded-full text-[13px] font-medium shadow-sm transition-colors"
                     >
-                      Buy Now
+                      {t.buyNow || "Buy Now"}
                     </button>
                   </div>
                 </div>
