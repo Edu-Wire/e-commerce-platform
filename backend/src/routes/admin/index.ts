@@ -5,6 +5,7 @@ import productRoutes from './products';
 import userRoutes from './users';
 import dashboardRoutes from './dashboard';
 import inventoryRoutes from './inventory';
+import orderRoutes from './orders';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/products', productRoutes);
 router.use('/users', userRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/inventory', inventoryRoutes);
+router.use('/orders', orderRoutes);
 
 export default router;

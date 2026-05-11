@@ -33,7 +33,9 @@ export default function ProductDetailPage() {
   }
 
   const images = product.images ?? [];
-  const currentImage = images[selectedImageIdx]?.url ?? null;
+  const currentImage = typeof images[selectedImageIdx] === 'string' 
+    ? images[selectedImageIdx] as unknown as string
+    : (images[selectedImageIdx] as any)?.url ?? null;
   const isOutOfStock = product.stock_quantity <= 0;
   const isB2B = customer?.customer_type === 'b2b';
   const relatedProducts = relatedData?.data.filter(p => p.id !== product.id).slice(0, 4) ?? [];
@@ -98,13 +100,16 @@ export default function ProductDetailPage() {
             <div className="flex gap-2 overflow-x-auto pb-1">
               {images.map((img, idx) => (
                 <button
-                  key={img.id}
+                  key={idx}
                   onClick={() => setSelectedImageIdx(idx)}
-                  className={`flex-shrink-0 w-16 h-16 rounded-xl border-2 overflow-hidden transition-all ${
-                    idx === selectedImageIdx ? 'border-primary-500 shadow-md' : 'border-gray-200 hover:border-gray-400'
-                  }`}
+                  className={`flex-shrink-0 w-16 h-16 rounded-xl border-2 overflow-hidden transition-all ${idx === selectedImageIdx ? 'border-primary-500 shadow-md' : 'border-gray-200 hover:border-gray-400'
+                    }`}
                 >
-                  <img src={img.url} alt={img.alt ?? ''} className="w-full h-full object-cover" />
+                  <img 
+                    src={typeof img === 'string' ? img : (img as any).url} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover" 
+                  />
                 </button>
               ))}
             </div>
@@ -129,11 +134,10 @@ export default function ProductDetailPage() {
 
           {/* Condition description alert */}
           {product.condition !== 'new' && product.condition_description && (
-            <div className={`rounded-xl p-4 border text-sm ${
-              product.condition === 'new_with_minor_damage'
+            <div className={`rounded-xl p-4 border text-sm ${product.condition === 'new_with_minor_damage'
                 ? 'bg-amber-50 border-amber-200 text-amber-800'
                 : 'bg-orange-50 border-orange-200 text-orange-800'
-            }`}>
+              }`}>
               <p className="font-semibold mb-1">
                 {product.condition === 'new_with_minor_damage' ? '⚠ Condition Note' : '⚡ Defect Note'}
               </p>
@@ -197,11 +201,10 @@ export default function ProductDetailPage() {
             <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className={`flex-1 py-3 px-6 rounded-xl font-semibold text-base transition-colors ${
-                isOutOfStock
+              className={`flex-1 py-3 px-6 rounded-xl font-semibold text-base transition-colors ${isOutOfStock
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800'
-              }`}
+                }`}
             >
               {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             </button>

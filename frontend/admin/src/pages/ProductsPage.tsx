@@ -152,8 +152,8 @@ export default function ProductsPage() {
                       return (
                         <tr key={p.id} className={i % 2 === 1 ? 'bg-gray-50/50' : 'bg-white'}>
                           <td className="px-3 py-2">
-                            {p.images[0] ? (
-                              <img src={p.images[0].url} alt={p.name} className="w-10 h-10 object-cover rounded-lg border border-gray-200" />
+                            {p.images?.[0] ? (
+                              <img src={typeof p.images[0] === 'string' ? p.images[0] : p.images[0].url} alt={p.name} className="w-10 h-10 object-cover rounded-lg border border-gray-200" />
                             ) : (
                               <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">📦</div>
                             )}
@@ -170,8 +170,8 @@ export default function ProductsPage() {
                           <td className="px-3 py-2 text-gray-700 whitespace-nowrap">{fmt(p.buying_price)}</td>
                           <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">{fmt(p.selling_price)}</td>
                           <td className="px-3 py-2">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${p.discount_percent > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                              {p.discount_percent.toFixed(0)}%
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${(p.discount_percentage ?? p.discount_percent ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                              {parseFloat(String(p.discount_percentage ?? p.discount_percent ?? 0)).toFixed(0)}%
                             </span>
                           </td>
                           <td className="px-3 py-2">

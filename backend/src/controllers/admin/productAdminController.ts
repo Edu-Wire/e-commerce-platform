@@ -58,7 +58,7 @@ export async function getAll(req: Request, res: Response): Promise<void> {
     );
 
     const meta = getPaginationMeta(total, page, limit);
-    res.json(success(products, meta as unknown as Record<string, unknown>));
+    res.json(success({ products, meta }));
   } catch (err) {
     console.error('admin getAll products error:', err);
     res.status(500).json(error('Internal server error'));

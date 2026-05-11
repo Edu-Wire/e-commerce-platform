@@ -94,29 +94,39 @@ export async function getStats(req: Request, res: Response): Promise<void> {
     );
 
     const result = success({
-      summary: {
-        total_products: parseInt(productStats?.total_products || '0'),
-        active_products: parseInt(productStats?.active_products || '0'),
-        low_stock_count: parseInt(productStats?.low_stock_count || '0'),
-        today_orders: parseInt(todayOrders?.today_orders || '0'),
-        total_revenue: parseFloat(revenueStats?.total_revenue || '0'),
-        total_customers: parseInt(customerStats?.total_customers || '0'),
-      },
+      // flat fields matching frontend DashboardStats type
+      total_products:  parseInt(productStats?.total_products  || '0'),
+      active_products: parseInt(productStats?.active_products || '0'),
+      low_stock_items: parseInt(productStats?.low_stock_count || '0'),
+      todays_orders:   parseInt(todayOrders?.today_orders     || '0'),
+      total_revenue:   parseFloat(revenueStats?.total_revenue || '0'),
+      total_customers: parseInt(customerStats?.total_customers || '0'),
+
+      // chart: category → "category", total_sales → "revenue"
       sales_by_category: salesByCategory.map((r) => ({
-        category_name: r.category_name,
-        total_sales: parseFloat(r.total_sales),
+        category: r.category_name,
+        revenue:  parseFloat(r.total_sales),
         order_count: parseInt(r.order_count),
       })),
+
+      // chart: count → "orders"
       orders_last_30_days: ordersLast30Days.map((r) => ({
-        date: r.date,
-        count: parseInt(r.count),
+        date:    r.date,
+        orders:  parseInt(r.count),
         revenue: parseFloat(r.revenue),
       })),
+
       condition_breakdown: conditionBreakdown.map((r) => ({
         condition: r.condition,
         count: parseInt(r.count),
       })),
-      recent_orders: recentOrders,
+
+      // recent orders: normalise field names
+      recent_orders: recentOrders.map((o) => ({
+        ...o,
+        order_number:  `#${o.id}`,
+        total_amount:  parseFloat(String(o.total_selling_price)),
+      })),
     });
 
     await setCache(cacheKey, result, 120); // 2 minutes

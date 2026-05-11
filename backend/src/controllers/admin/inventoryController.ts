@@ -71,7 +71,7 @@ export async function getInventory(req: Request, res: Response): Promise<void> {
     );
 
     const meta = getPaginationMeta(total, page, limit);
-    res.json(success(products, meta as unknown as Record<string, unknown>));
+    res.json(success({ items: products, meta }));
   } catch (err) {
     console.error('getInventory error:', err);
     res.status(500).json(error('Internal server error'));
