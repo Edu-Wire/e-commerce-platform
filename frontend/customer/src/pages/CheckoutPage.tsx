@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,9 +31,24 @@ type Step = 'address' | 'review' | 'payment' | 'confirmation';
 export default function CheckoutPage() {
   const [step, setStep] = useState<Step>('address');
   const [confirmedOrder, setConfirmedOrder] = useState<{ id: number; order_number: string } | null>(null);
-  const { items, totalMrp, totalPrice, totalSavings, clearCart } = useCartStore();
+  const { items: cartItems, buyNowItem, clearCart, setBuyNowItem } = useCartStore();
+  const customer = useAuthStore(s => s.customer);
+  
+  const items = buyNowItem ? [buyNowItem] : cartItems;
+
+  const totalMrp = () => items.reduce((sum, i) => sum + i.mrp * i.quantity, 0);
+  const totalPrice = () => items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const totalSavings = () => totalMrp() - totalPrice();
+
+  useEffect(() => {
+    return () => {
+      setBuyNowItem(null);
+    };
+  }, [setBuyNowItem]);
   const createOrder = useCreateOrder();
   const navigate = useNavigate();
+
+  const savedAddress = (customer?.address as any)?.addresses?.[0] || customer?.address;
 
   const {
     register,
@@ -42,7 +57,16 @@ export default function CheckoutPage() {
     formState: { errors }
   } = useForm<AddressForm>({
     resolver: zodResolver(addressSchema),
-    defaultValues: { country: 'India', payment_method: 'cod' }
+    defaultValues: {
+      country: 'India',
+      payment_method: 'cod',
+      name: savedAddress?.name || customer?.name || '',
+      phone: customer?.phone || '',
+      address_line1: savedAddress?.details || savedAddress?.street || '',
+      city: savedAddress?.city || '',
+      state: savedAddress?.state || '',
+      pincode: savedAddress?.pincode || '',
+    }
   });
 
   if (items.length === 0 && step !== 'confirmation') {
@@ -81,7 +105,11 @@ export default function CheckoutPage() {
     try {
       const order = await createOrder.mutateAsync(payload);
       setConfirmedOrder({ id: order.id, order_number: order.order_number });
-      clearCart();
+      if (buyNowItem) {
+        setBuyNowItem(null);
+      } else {
+        clearCart();
+      }
       setStep('confirmation');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to place order';

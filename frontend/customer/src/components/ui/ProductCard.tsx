@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import type { Product } from '../../types';
 import { useCartStore } from '../../store/cartStore';
 import ConditionBadge from './ConditionBadge';
+import { useState, useEffect } from 'react';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +15,29 @@ const fmt = (amount: number) =>
 
 export default function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore(s => s.addItem);
+  const setDrawerOpen = useCartStore(s => s.setDrawerOpen);
+  const setLastAddedItem = useCartStore(s => s.setLastAddedItem);
+  const { language } = useLanguageStore();
+  const [translatedName, setTranslatedName] = useState(product.name);
+
+  useEffect(() => {
+    if (language !== 'EN') {
+      const fetchTranslation = async () => {
+        try {
+          const res = await fetch(`https://api.mymemory.com/get?q=${encodeURIComponent(product.name)}&langpair=en|${language.toLowerCase()}`);
+          const json = await res.json();
+          if (json.responseData?.translatedText) {
+            setTranslatedName(json.responseData.translatedText);
+          }
+        } catch (err) {
+          console.error('Translation error:', err);
+        }
+      };
+      fetchTranslation();
+    } else {
+      setTranslatedName(product.name);
+    }
+  }, [language, product.name]);
 
   const primaryImage = product.images?.find(img => (typeof img === 'object' && img !== null && img.is_primary))?.url
     ?? (typeof product.images?.[0] === 'string' ? product.images[0] : product.images?.[0]?.url)
@@ -23,7 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isOutOfStock) return;
-    addItem({
+    const item = {
       product_id: product.id,
       name: product.name,
       slug: product.slug,
@@ -34,7 +59,10 @@ export default function ProductCard({ product }: ProductCardProps) {
       condition: product.condition,
       sku: product.sku,
       stock_quantity: product.stock_quantity
-    });
+    };
+    addItem(item);
+    setLastAddedItem({ ...item, category_slug: (product as any).category_slug });
+    setDrawerOpen(true);
     toast.success(`${product.name} added to cart!`);
   };
 
@@ -85,7 +113,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Title */}
       <h3 className="text-sm text-gray-800 line-clamp-2 mb-1 group-hover:text-orange-700 transition-colors">
-        {product.name}
+        {translatedName}
       </h3>
 
       {/* Ratings Placeholder */}
