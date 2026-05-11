@@ -395,7 +395,7 @@ export default function HomePage() {
 
               {/* View more deals bar */}
               <div className="mt-8 border-t border-gray-100 pt-6">
-                <Link 
+                <Link
                   to="/category/all?is_featured=true"
                   className="block w-full py-3 bg-[#f7f8f8] hover:bg-gray-100 border border-gray-200 rounded-sm text-center text-sm font-medium text-gray-700 transition-colors"
                 >
@@ -414,16 +414,16 @@ export default function HomePage() {
             <h2 className="text-xl font-bold text-gray-900">Inspired by your browsing history</h2>
             <span className="text-xs text-gray-500">Page 1 of 7</span>
           </div>
-          
+
           <div className="relative group">
-            <button 
+            <button
               onClick={() => scroll(historyRef, 'left')}
               className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
-            
-            <div 
+
+            <div
               ref={historyRef}
               className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth"
             >
@@ -434,7 +434,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            <button 
+            <button
               onClick={() => scroll(historyRef, 'right')}
               className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex"
             >
@@ -451,16 +451,16 @@ export default function HomePage() {
             <h2 className="text-xl font-bold text-gray-900">Customers who viewed items in your browsing history also viewed</h2>
             <span className="text-xs text-gray-500">Page 1 of 5</span>
           </div>
-          
+
           <div className="relative group">
-            <button 
+            <button
               onClick={() => scroll(viewedRef, 'left')}
               className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
-            
-            <div 
+
+            <div
               ref={viewedRef}
               className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth"
             >
@@ -471,7 +471,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            <button 
+            <button
               onClick={() => scroll(viewedRef, 'right')}
               className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex"
             >

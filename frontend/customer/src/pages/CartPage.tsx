@@ -1,25 +1,34 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
-import ConditionBadge from '../components/ui/ConditionBadge';
 import EmptyState from '../components/ui/EmptyState';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, totalMrp, totalPrice, totalSavings } = useCartStore();
+  const { items, removeItem, updateQuantity, totalPrice, addItem } = useCartStore();
   const customer = useAuthStore(s => s.customer);
   const navigate = useNavigate();
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
-
-  const productIdsStr = items.map(item => item.product_id).join(',');
+  const [selectedItems, setSelectedItems] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
-    if (productIdsStr) {
-      fetch(`/api/products/suggestions?productIds=${productIdsStr}`)
+    // Initialize selected items
+    const initialSelected: Record<number, boolean> = {};
+    items.forEach(item => {
+      initialSelected[item.product_id] = true;
+    });
+    setSelectedItems(initialSelected);
+  }, [items.length]);
+
+  useEffect(() => {
+    // Fetch suggestions based on first item in cart
+    if (items.length > 0) {
+      fetch(`/api/products?limit=10`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -27,10 +36,8 @@ export default function CartPage() {
           }
         })
         .catch(err => console.error('Error fetching suggestions:', err));
-    } else {
-      setSuggestions([]);
     }
-  }, [productIdsStr]);
+  }, [items.length]);
 
   const handleCheckout = () => {
     if (!customer) {
@@ -40,181 +47,248 @@ export default function CartPage() {
     }
   };
 
+  const toggleSelect = (id: number) => {
+    setSelectedItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const selectAll = (select: boolean) => {
+    const next: Record<number, boolean> = {};
+    items.forEach(item => {
+      next[item.product_id] = select;
+    });
+    setSelectedItems(next);
+  };
+
   if (items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <EmptyState
-          icon="🛒"
-          title="Your cart is empty"
-          description="Looks like you haven't added anything to your cart yet."
-          action={
-            <Link
-              to="/category/all"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700"
-            >
-              Continue Shopping
-            </Link>
-          }
-        />
+      <div className="bg-[#EAEDED] min-h-screen pt-8">
+        <div className="max-w-[1480px] mx-auto px-4">
+          <div className="bg-white p-8 rounded shadow-sm">
+            <EmptyState
+              icon="🛒"
+              title="Your Shopping Cart is empty."
+              description="Your Shopping Cart lives to serve. Give it purpose — fill it with groceries, clothing, household supplies, electronics, and more."
+              action={
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-2 px-6 py-2 bg-[#FFD814] hover:bg-[#F7CA00] text-[#0f1111] font-medium rounded-lg border border-[#FCD200] shadow-sm"
+                >
+                  Continue Shopping
+                </Link>
+              }
+            />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Cart ({items.length} item{items.length !== 1 ? 's' : ''})</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-4">
-          {items.map(item => (
-            <div key={item.product_id} className="bg-white rounded-2xl border border-gray-100 p-4 flex gap-4">
-              {/* Image */}
-              <Link to={`/product/${item.slug}`} className="flex-shrink-0">
-                <div className="w-24 h-24 bg-gray-50 rounded-xl overflow-hidden">
-                  {item.image ? (
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-200">
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </Link>
-
-              {/* Details */}
-              <div className="flex-1 min-w-0">
-                <Link to={`/product/${item.slug}`}>
-                  <h3 className="font-semibold text-gray-900 hover:text-primary-600 line-clamp-2">{item.name}</h3>
-                </Link>
-                <p className="text-xs text-gray-400 mt-0.5 mb-2">SKU: {item.sku}</p>
-                <ConditionBadge condition={item.condition} />
-
-                <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                  {/* Quantity controls */}
-                  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
-                      className="px-3 py-1.5 text-gray-600 hover:bg-gray-50 font-medium text-base"
-                    >
-                      −
-                    </button>
-                    <span className="w-10 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
-                      disabled={item.quantity >= item.stock_quantity}
-                      className="px-3 py-1.5 text-gray-600 hover:bg-gray-50 font-medium text-base disabled:opacity-40"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* Price */}
-                  <div className="text-right">
-                    <p className="font-bold text-gray-900">{fmt(item.price * item.quantity)}</p>
-                    {item.mrp > item.price && (
-                      <p className="text-xs text-gray-400 line-through">{fmt(item.mrp * item.quantity)}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Remove */}
-              <button
-                onClick={() => removeItem(item.product_id)}
-                className="text-gray-400 hover:text-red-500 transition-colors self-start"
-                aria-label="Remove item"
+    <div className="bg-[#EAEDED] min-h-screen py-8 font-sans text-[#0f1111]">
+      <div className="max-w-[1480px] mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
+          
+          {/* Main Cart Section */}
+          <div className="bg-white p-6 shadow-sm rounded-sm">
+            <div className="flex justify-between items-end border-b border-gray-200 pb-2 mb-4">
+              <h1 className="text-[28px] font-medium">Shopping Cart</h1>
+              <span className="text-[14px] text-gray-500 mb-1 hidden md:block">Price</span>
+            </div>
+            
+            <div className="flex justify-between items-center mb-4">
+              <button 
+                onClick={() => selectAll(false)}
+                className="text-[13px] text-[#007185] hover:text-[#c45500] hover:underline"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                Deselect all items
               </button>
             </div>
-          ))}
 
-          <Link
-            to="/category/all"
-            className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
-          >
-            &larr; Continue Shopping
-          </Link>
+            {/* Cart Items List */}
+            <div className="space-y-6">
+              {items.map(item => (
+                <div key={item.product_id} className="flex gap-4 pb-6 border-b border-gray-200 last:border-0 relative">
+                  {/* Checkbox */}
+                  <div className="pt-8">
+                    <input 
+                      type="checkbox" 
+                      checked={!!selectedItems[item.product_id]}
+                      onChange={() => toggleSelect(item.product_id)}
+                      className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
+                    />
+                  </div>
 
-          {suggestions.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">You might also like</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {suggestions.map(product => (
-                  <div key={product.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex gap-4">
-                    <Link to={`/product/${product.slug}`} className="flex-shrink-0">
-                      <div className="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden">
-                        {product.images && product.images[0] ? (
-                          <img src={product.images[0].url} alt={product.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-200">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                    <div className="flex-1 min-w-0">
-                      <Link to={`/product/${product.slug}`}>
-                        <h3 className="font-semibold text-gray-900 hover:text-primary-600 line-clamp-1 text-sm">{product.name}</h3>
+                  {/* Product Image */}
+                  <div className="w-44 h-44 flex-shrink-0 flex items-center justify-center p-2">
+                    <img 
+                      src={item.image || 'https://via.placeholder.com/150'} 
+                      alt={item.name} 
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="flex-1 space-y-1">
+                    <div className="flex justify-between items-start gap-4">
+                      <Link to={`/product/${item.slug}`} className="text-[18px] font-medium text-[#007185] hover:text-[#c45500] hover:underline leading-tight line-clamp-2">
+                        {item.name}
                       </Link>
-                      <p className="font-bold text-gray-900 text-sm mt-1">{fmt(product.selling_price)}</p>
+                      <span className="text-[18px] font-bold text-right whitespace-nowrap">
+                        {fmt(item.price * item.quantity)}
+                      </span>
+                    </div>
+
+                    <div className="text-[12px] text-[#007600] font-medium mt-1">In stock</div>
+                    
+                    <div className="flex items-center gap-2 mt-1">
+                      <img src="https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-logo.png" alt="Prime" className="h-4" />
+                      <span className="text-[12px] text-gray-600">FREE delivery as soon as <span className="font-bold">Wed, 13 May, 7 am - 9 pm</span></span>
+                    </div>
+
+                    {item.mrp > item.price && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="bg-[#cc0c39] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm">Great Summer Deal</span>
+                        <span className="text-[#cc0c39] text-[12px] font-bold">-{Math.round((1 - item.price/item.mrp)*100)}% {fmt(item.price)}</span>
+                      </div>
+                    )}
+
+                    <div className="text-[12px] text-gray-500 mt-1 uppercase">
+                      Style Name: <span className="font-bold">{item.sku.split('-')[0]} series 2025</span>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="flex items-center gap-4 mt-4 text-[13px]">
+                      <div className="flex items-center bg-[#F0F2F2] border border-[#D5D9D9] rounded-lg shadow-sm">
+                        <span className="px-3 py-1 text-[13px] border-r border-[#D5D9D9]">Qty: {item.quantity}</span>
+                        <div className="flex">
+                          <button 
+                            onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
+                            className="px-2 py-1 hover:bg-[#E3E6E6] transition-colors"
+                          >
+                            −
+                          </button>
+                          <button 
+                            onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
+                            className="px-2 py-1 hover:bg-[#E3E6E6] transition-colors border-l border-[#D5D9D9]"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      <span className="text-gray-300">|</span>
+                      <button 
+                        onClick={() => removeItem(item.product_id)}
+                        className="text-[#007185] hover:text-[#c45500] hover:underline"
+                      >
+                        Delete
+                      </button>
+                      <span className="text-gray-300">|</span>
+                      <button className="text-[#007185] hover:text-[#c45500] hover:underline">Save for later</button>
+                      <span className="text-gray-300">|</span>
+                      <button className="text-[#007185] hover:text-[#c45500] hover:underline">Share</button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 sticky top-24">
-            <h2 className="font-bold text-gray-900 text-lg mb-4">Order Summary</h2>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal MRP</span>
-                <span>{fmt(totalMrp())}</span>
-              </div>
-              <div className="flex justify-between text-green-600">
-                <span>Discount</span>
-                <span>− {fmt(totalSavings())}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Shipping</span>
-                <span className="text-green-600 font-medium">FREE</span>
-              </div>
-              <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900 text-base">
-                <span>Total</span>
-                <span>{fmt(totalPrice())}</span>
-              </div>
+                </div>
+              ))}
             </div>
 
-            {totalSavings() > 0 && (
-              <div className="mt-3 bg-green-50 text-green-700 text-sm font-medium rounded-xl px-3 py-2 text-center">
-                You save {fmt(totalSavings())} on this order!
+            {/* Subtotal Bottom */}
+            <div className="text-right mt-4 pt-4">
+              <span className="text-[18px]">
+                Subtotal ({items.length} items): <span className="font-bold">{fmt(totalPrice())}</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            {/* Proceed to Buy Box */}
+            <div className="bg-white p-5 shadow-sm rounded-sm space-y-4">
+              <div className="flex items-center gap-2 text-[14px]">
+                <div className="w-5 h-5 bg-[#008a00] rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span className="text-[#008a00]">Your order is eligible for FREE Delivery.</span>
               </div>
-            )}
+              
+              <div className="text-[18px]">
+                Subtotal ({items.length} items): <span className="font-bold">{fmt(totalPrice())}</span>
+              </div>
 
-            <button
-              onClick={handleCheckout}
-              className="mt-5 w-full py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors text-base"
-            >
-              Proceed to Checkout
-            </button>
+              <div className="flex items-center gap-2 text-[13px]">
+                <input type="checkbox" className="w-3.5 h-3.5 rounded border-gray-300" />
+                <span>This order contains a gift</span>
+              </div>
 
-            {!customer && (
-              <p className="text-xs text-gray-500 text-center mt-2">
-                You'll be asked to log in before checkout
-              </p>
+              <button 
+                onClick={handleCheckout}
+                className="w-full py-2 px-4 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-lg text-[13px] font-medium shadow-sm transition-colors"
+              >
+                Proceed to Buy
+              </button>
+
+              <div className="border border-gray-200 rounded p-2 text-[13px] flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                <span>EMI Available</span>
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Cross-sell Recommendations */}
+            {suggestions.length > 0 && (
+              <div className="bg-white p-5 shadow-sm rounded-sm">
+                <h3 className="text-[16px] font-bold mb-4">Customers Who Bought Items in Your Cart Also Bought</h3>
+                <div className="space-y-6">
+                  {suggestions.slice(0, 6).map((p, idx) => (
+                    <div key={p.id} className="flex gap-3 group">
+                      <div className="w-20 h-20 flex-shrink-0 bg-gray-50 p-1 flex items-center justify-center">
+                        <img 
+                          src={p.images?.[0]?.url || 'https://via.placeholder.com/100'} 
+                          alt={p.name} 
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <Link to={`/product/${p.slug}`} className="text-[13px] text-[#007185] hover:text-[#c45500] hover:underline line-clamp-2 leading-tight">
+                          {p.name}
+                        </Link>
+                        <div className="flex text-[#e47911] text-[12px]">
+                          {[1, 2, 3, 4].map(s => <span key={s}>★</span>)}
+                          <span className="text-gray-300">★</span>
+                          <span className="ml-1 text-[#007185] hover:underline">{Math.floor(Math.random()*1000)}</span>
+                        </div>
+                        <div className="text-[14px] font-medium text-[#b12704]">
+                          {fmt(p.selling_price)}
+                        </div>
+                        <button 
+                          onClick={() => {
+                            addItem({
+                              product_id: p.id,
+                              name: p.name,
+                              slug: p.slug,
+                              image: p.images?.[0]?.url,
+                              mrp: p.mrp,
+                              price: p.selling_price,
+                              quantity: 1,
+                              condition: p.condition,
+                              sku: p.sku,
+                              stock_quantity: p.stock_quantity,
+                              category_slug: p.category?.slug
+                            });
+                            toast.success(`${p.name} added to cart`);
+                          }}
+                          className="text-[12px] bg-[#FFD814] hover:bg-[#F7CA00] px-3 py-0.5 rounded border border-[#FCD200] shadow-sm transition-colors active:scale-95"
+                        >
+                          Add to cart
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -275,7 +275,7 @@ export default function ProductDetailPage() {
                   M.R.P.: <span className="line-through">{fmt(product.mrp)}</span>
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <img src="https://m.media-amazon.com/images/G/31/marketing/fba/fba-badge_18x.png" alt="Fulfilled" className="h-4" />
+                  <img src="https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-logo.png" alt="Fulfilled" className="h-4" />
                   <span className="text-sm text-[#0f1111]">Inclusive of all taxes</span>
                 </div>
                 <p className="text-sm mt-2">
@@ -427,7 +427,7 @@ export default function ProductDetailPage() {
                     {/* Sponsored Card */}
                     <div className="mt-8 border border-gray-200 rounded-xl p-4 bg-white relative flex gap-4 hover:shadow-md transition-shadow cursor-pointer group">
                       <div className="w-32 h-32 flex-shrink-0">
-                        <img src="https://m.media-amazon.com/images/I/51BqG6WkYHL._SL1000_.jpg" alt="Sponsored" className="w-full h-full object-contain" />
+                        <img src="https://images.unsplash.com/photo-1591123720164-de1348028a82?w=800" alt="Sponsored" className="w-full h-full object-contain" />
                       </div>
                       <div className="flex-1 space-y-1">
                         <h4 className="text-[14px] text-[#007185] group-hover:text-[#c45500] group-hover:underline leading-tight">Daikin 1.5 Ton 3 Star, New Star rated, Inverter Split AC (Copper, PM2.5 Filter, MTKL50XV16, White)</h4>
@@ -437,7 +437,7 @@ export default function ProductDetailPage() {
                           <span className="ml-1 text-[#007185]">203</span>
                         </div>
                         <div className="text-[17px] font-medium text-[#b12704]">₹37,490.00</div>
-                        <img src="https://m.media-amazon.com/images/G/31/marketing/fba/fba-badge_18x.png" alt="Prime" className="h-4" />
+                        <img src="https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-logo.png" alt="Prime" className="h-4" />
                       </div>
                       <span className="absolute bottom-2 right-4 text-[10px] text-gray-400">Sponsored ⓘ</span>
                     </div>
