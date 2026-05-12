@@ -558,7 +558,7 @@ export default function Navbar() {
               
               {/* Address List */}
               <div className="space-y-3 max-h-60 overflow-y-auto">
-                {customer?.address?.addresses?.map((addr: any, index: number) => (
+                {(customer?.address as any)?.addresses?.map((addr: any, index: number) => (
                   <div 
                     key={index}
                     onClick={async () => {
@@ -592,7 +592,7 @@ export default function Navbar() {
                   </div>
                 ))}
                 
-                {(!customer?.address?.addresses || customer.address.addresses.length === 0) && (
+                {(!(customer?.address as any)?.addresses || (customer?.address as any)?.addresses.length === 0) && (
                   <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center text-sm text-gray-500">
                     No saved addresses found.
                   </div>
@@ -684,7 +684,7 @@ export default function Navbar() {
                             pincode: newLocation
                           };
                           
-                          const currentAddresses = customer?.address?.addresses || [];
+                          const currentAddresses = (customer?.address as any)?.addresses || [];
                           const updatedAddresses = [...currentAddresses, newAddr];
                           
                           await updateProfile({ 
