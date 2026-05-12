@@ -11,9 +11,11 @@ frontend:
         - export VITE_APP_NAME=${VITE_APP_NAME:-"E-commerce Platform"}
         # Build the workspace specified by the environment variable (defaults to customer)
         - npm run build --workspace=${FRONTEND_WORKSPACE:-frontend/customer}
+        # Move the build output to a fixed folder because Amplify doesn't support variables in artifacts
+        - mkdir -p build_output
+        - cp -r ${FRONTEND_WORKSPACE:-frontend/customer}/dist/. build_output/
   artifacts:
-    # Set the base directory based on the workspace (defaults to customer)
-    baseDirectory: ${FRONTEND_WORKSPACE:-frontend/customer}/dist
+    baseDirectory: build_output
     files:
       - '**/*'
   cache:
