@@ -6,13 +6,14 @@ frontend:
         - npm install
     build:
       commands:
-        # Build the customer frontend.
-        # If you are deploying the admin panel, change this to: npm run build --workspace=frontend/admin
-        - npm run build --workspace=frontend/customer
+        # Set environment variables for frontend build
+        - export VITE_API_URL=${VITE_API_URL:-https://your-api-domain.com}
+        - export VITE_APP_NAME=${VITE_APP_NAME:-"E-commerce Platform"}
+        # Build the workspace specified by the environment variable (defaults to customer)
+        - npm run build --workspace=${FRONTEND_WORKSPACE:-frontend/customer}
   artifacts:
-    # Set the base directory to the build output of the customer app
-    # If deploying admin, change to: frontend/admin/dist
-    baseDirectory: frontend/customer/dist
+    # Set the base directory based on the workspace (defaults to customer)
+    baseDirectory: ${FRONTEND_WORKSPACE:-frontend/customer}/dist
     files:
       - '**/*'
   cache:

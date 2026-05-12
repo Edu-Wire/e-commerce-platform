@@ -28,7 +28,7 @@ export default function CartPage() {
   useEffect(() => {
     // Fetch suggestions based on first item in cart
     if (items.length > 0) {
-      fetch(`/api/products?limit=10`)
+      fetch(`${import.meta.env.VITE_API_URL || ''}/api/products?limit=10`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {

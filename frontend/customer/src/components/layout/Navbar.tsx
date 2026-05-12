@@ -39,7 +39,7 @@ export default function Navbar() {
       const timer = setTimeout(async () => {
         setIsSearching(true);
         try {
-          const res = await fetch(`/api/products?search=${encodeURIComponent(searchQuery.trim())}&limit=5`);
+          const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/products?search=${encodeURIComponent(searchQuery.trim())}&limit=5`);
           const json = await res.json();
           if (json.success) {
             setSuggestions(json.data);
