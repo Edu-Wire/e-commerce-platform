@@ -12,6 +12,12 @@ import RegisterPage from './pages/RegisterPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import B2BDashboardPage from './pages/B2BDashboardPage';
+import AccountPage from './pages/AccountPage';
+import CustomerServicePage from './pages/CServicePage';
+
+
+
+
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -76,7 +82,18 @@ export default function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/account"
+                  element={
+                    <ProtectedRoute>
+                      <AccountPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/customer-service" element={<CustomerServicePage />} />
                 <Route path="/b2b" element={<B2BDashboardPage />} />
+
+
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

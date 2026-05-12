@@ -390,8 +390,8 @@ export default function Navbar() {
                   <div className="flex-1 border-l border-gray-100 pl-4">
                     <h3 className="text-sm font-bold mb-2">Your Account</h3>
                     <div className="space-y-1">
+                      <Link to="/account" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-orange-600 hover:underline">Your Account</Link>
                       <Link to="/orders" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-orange-600 hover:underline">Your Orders</Link>
-                      <Link to="#" className="block text-xs text-gray-600 hover:text-orange-600 hover:underline">Your Profile</Link>
                       {customer?.customer_type === 'b2b' && (
                         <Link to="/b2b" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-orange-600 hover:underline">B2B Dashboard</Link>
                       )}
@@ -521,7 +521,8 @@ export default function Navbar() {
               <div className="p-4">
                 <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-tight">Help & Settings</h3>
                 <div className="space-y-1">
-                  <Link to="#" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
+                  <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
+                  <Link to="/customer-service" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Customer Service</Link>
                   {customer ? (
                     <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block w-full text-left text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Sign Out</button>
                   ) : (
@@ -577,8 +578,8 @@ export default function Navbar() {
                       }
                     }}
                     className={`p-4 border rounded-lg cursor-pointer transition-colors ${customer?.address?.pincode === addr.pincode
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:bg-gray-50'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:bg-gray-50'
                       }`}
                   >
                     <div className="flex flex-col text-sm">
