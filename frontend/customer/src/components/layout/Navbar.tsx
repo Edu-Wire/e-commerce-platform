@@ -86,11 +86,11 @@ export default function Navbar() {
       const query = searchQuery.trim();
       const slug = selectedCategorySlug || 'all';
       navigate(`/category/${slug}?search=${encodeURIComponent(query)}`);
-      
+
       const updatedHistory = [query, ...searchHistory.filter(h => h !== query)].slice(0, 5);
       setSearchHistory(updatedHistory);
       localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
-      
+
       setSearchQuery('');
       setShowSearchHistory(false);
       setMobileMenuOpen(false);
@@ -134,7 +134,7 @@ export default function Navbar() {
         </Link>
 
         {/* Delivery Location */}
-        <div 
+        <div
           onClick={() => setShowLocationModal(true)}
           className="hidden md:flex flex-col p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all ml-2"
         >
@@ -167,7 +167,7 @@ export default function Navbar() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                
+
                 {showCategoryDropdown && (
                   <div className="absolute top-full left-0 w-52 bg-white shadow-lg border border-gray-200 mt-1 rounded-md z-50 max-h-60 overflow-y-auto">
                     <div
@@ -319,15 +319,15 @@ export default function Navbar() {
                       { id: 'MR', label: 'मराठी - MR' },
                     ].map(lang => (
                       <label key={lang.id} className="flex items-center gap-2 cursor-pointer group">
-                        <input 
-                          type="radio" 
-                          name="lang" 
-                          checked={language === lang.id} 
+                        <input
+                          type="radio"
+                          name="lang"
+                          checked={language === lang.id}
                           onChange={() => {
                             setLanguage(lang.id as Language);
                             setLangDropdownOpen(false);
                           }}
-                          className="w-4 h-4 accent-orange-600" 
+                          className="w-4 h-4 accent-orange-600"
                         />
                         <span className="text-xs text-gray-700 group-hover:text-orange-600 group-hover:underline">{lang.label}</span>
                       </label>
@@ -431,7 +431,7 @@ export default function Navbar() {
 
       {/* Bottom Nav Bar (Secondary) */}
       <div className="bg-[#232f3e] text-white flex items-center px-4 py-1.5 gap-4 overflow-x-auto no-scrollbar whitespace-nowrap">
-        <button 
+        <button
           onClick={() => setMobileMenuOpen(true)}
           className="flex items-center gap-1 px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm font-bold"
         >
@@ -455,7 +455,7 @@ export default function Navbar() {
         <Link to="#" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden md:inline">
           Customer Service
         </Link>
-        <Link to="#" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden lg:inline">
+        <Link to="/category/todays-deals" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden lg:inline">
           Today's Deals
         </Link>
       </div>
@@ -465,12 +465,12 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50">
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/70 transition-opacity" onClick={() => setMobileMenuOpen(false)}>
-             {/* Close button for Desktop UX */}
-             <button className="absolute top-4 left-[380px] text-white hover:scale-110 transition-transform">
-               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-               </svg>
-             </button>
+            {/* Close button for Desktop UX */}
+            <button className="absolute top-4 left-[380px] text-white hover:scale-110 transition-transform">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
           {/* Content */}
@@ -503,9 +503,9 @@ export default function Navbar() {
                 <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-tight">Shop By Category</h3>
                 <div className="space-y-1">
                   {topLevelCategories.map(cat => (
-                    <Link 
-                      key={cat.id} 
-                      to={`/category/${cat.slug}`} 
+                    <Link
+                      key={cat.id}
+                      to={`/category/${cat.slug}`}
                       onClick={() => setMobileMenuOpen(false)}
                       className="block text-sm text-gray-700 flex justify-between items-center hover:bg-gray-100 -mx-4 px-4 py-3 group"
                     >
@@ -552,23 +552,23 @@ export default function Navbar() {
                 </svg>
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <p className="text-sm text-gray-600">Select a delivery location to see product availability and delivery options</p>
-              
+
               {/* Address List */}
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {(customer?.address as any)?.addresses?.map((addr: any, index: number) => (
-                  <div 
+                  <div
                     key={index}
                     onClick={async () => {
                       try {
-                        await updateProfile({ 
-                          address: { 
-                            ...customer?.address, 
+                        await updateProfile({
+                          address: {
+                            ...customer?.address,
                             city: addr.city,
                             pincode: addr.pincode
-                          } 
+                          }
                         });
                         setShowLocationModal(false);
                         toast.success('Location updated!');
@@ -576,11 +576,10 @@ export default function Navbar() {
                         toast.error('Failed to update location');
                       }
                     }}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      customer?.address?.pincode === addr.pincode 
-                        ? 'border-blue-500 bg-blue-50' 
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${customer?.address?.pincode === addr.pincode
+                        ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     <div className="flex flex-col text-sm">
                       <span className="font-bold text-black">{addr.name} <span className="font-normal text-gray-600">{addr.details}</span></span>
@@ -591,7 +590,7 @@ export default function Navbar() {
                     </div>
                   </div>
                 ))}
-                
+
                 {(!(customer?.address as any)?.addresses || (customer?.address as any)?.addresses.length === 0) && (
                   <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center text-sm text-gray-500">
                     No saved addresses found.
@@ -599,7 +598,7 @@ export default function Navbar() {
                 )}
               </div>
 
-              <button 
+              <button
                 onClick={() => {
                   const details = prompt('Enter your address (House/Street):');
                   const pincode = prompt('Enter 6-digit pincode:');
@@ -610,7 +609,7 @@ export default function Navbar() {
                         if (json[0]?.Status === 'Success' && json[0]?.PostOffice?.length > 0) {
                           const city = json[0].PostOffice[0].District || json[0].PostOffice[0].Taluk;
                           const state = json[0].PostOffice[0].Circle;
-                          
+
                           const newAddr = {
                             name: customer?.name || 'User',
                             details: details,
@@ -618,17 +617,17 @@ export default function Navbar() {
                             state: state,
                             pincode: pincode
                           };
-                          
+
                           const currentAddresses = (customer?.address as any)?.addresses || [];
                           const updatedAddresses = [...currentAddresses, newAddr];
-                          
-                          updateProfile({ 
-                            address: { 
-                              ...customer?.address, 
+
+                          updateProfile({
+                            address: {
+                              ...customer?.address,
                               city: city,
                               pincode: pincode,
                               addresses: updatedAddresses
-                            } 
+                            }
                           });
                           toast.success('Address saved!');
                         } else {
@@ -671,11 +670,11 @@ export default function Navbar() {
                       try {
                         const res = await fetch(`https://api.postalpincode.in/pincode/${newLocation}`);
                         const json = await res.json();
-                        
+
                         if (json[0]?.Status === 'Success' && json[0]?.PostOffice?.length > 0) {
                           const city = json[0].PostOffice[0].District || json[0].PostOffice[0].Taluk;
                           const state = json[0].PostOffice[0].Circle;
-                          
+
                           const newAddr = {
                             name: customer?.name || 'User',
                             details: 'Pincode Area',
@@ -683,19 +682,19 @@ export default function Navbar() {
                             state: state,
                             pincode: newLocation
                           };
-                          
+
                           const currentAddresses = (customer?.address as any)?.addresses || [];
                           const updatedAddresses = [...currentAddresses, newAddr];
-                          
-                          await updateProfile({ 
-                            address: { 
-                              ...customer?.address, 
+
+                          await updateProfile({
+                            address: {
+                              ...customer?.address,
                               city: city,
                               pincode: newLocation,
                               addresses: updatedAddresses
-                            } 
+                            }
                           });
-                          
+
                           setShowLocationModal(false);
                           setNewLocation('');
                           toast.success('Location updated and saved!');
