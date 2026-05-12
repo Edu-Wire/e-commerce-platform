@@ -126,15 +126,15 @@ async function seed() {
       { cat: 'smartphones', name: 'Apple iPhone 15 Pro Max', brand: 'Apple', mrp: 159900, bp: 125000, sp: 144999, b2b: 138000, imgs: getImages('electronics'), specs: { storage: '256GB', chip: 'A17 Pro', camera: '48MP' }, tags: ['iphone', 'apple', '5g'] },
       { cat: 'smartphones', name: 'OnePlus 12 5G', brand: 'OnePlus', mrp: 64999, bp: 46000, sp: 57999, b2b: 54000, imgs: getImages('electronics'), specs: { storage: '256GB', ram: '16GB', battery: '5400mAh' }, tags: ['oneplus', '5g', 'flagship'] },
       { cat: 'smartphones', name: 'Google Pixel 8 Pro', brand: 'Google', mrp: 106999, bp: 80000, sp: 94999, b2b: 89000, imgs: getImages('electronics'), specs: { storage: '128GB', camera: '50MP', ai: 'Google AI' }, tags: ['pixel', 'google', 'android'] },
-      
+
       // ── LAPTOPS ──────────────────────────────────────────────────────
       { cat: 'laptops', name: 'Apple MacBook Pro 14 M3', brand: 'Apple', mrp: 199900, bp: 158000, sp: 182999, b2b: 174000, imgs: getImages('electronics'), specs: { chip: 'M3 Pro', ram: '18GB', ssd: '512GB' }, tags: ['macbook', 'apple', 'm3'] },
       { cat: 'laptops', name: 'Dell XPS 15 OLED', brand: 'Dell', mrp: 189990, bp: 145000, sp: 169999, b2b: 160000, imgs: getImages('electronics'), specs: { cpu: 'Intel i7-13700H', ram: '32GB', display: '15.6 OLED' }, tags: ['dell', 'xps', 'oled'] },
-      
+
       // ── AUDIO ────────────────────────────────────────────────────────
       { cat: 'audio', name: 'Sony WH-1000XM5', brand: 'Sony', mrp: 29990, bp: 18000, sp: 24999, b2b: 22000, imgs: getImages('electronics'), specs: { type: 'Over-ear', anc: 'Yes', battery: '30hr' }, tags: ['sony', 'headphones', 'anc'] },
       { cat: 'audio', name: 'Bose QuietComfort 45', brand: 'Bose', mrp: 32990, bp: 20000, sp: 27999, b2b: 25000, imgs: getImages('electronics'), specs: { type: 'Over-ear', anc: 'Yes', battery: '24hr' }, tags: ['bose', 'headphones', 'anc'] },
-      
+
       // ── CLOTHING ─────────────────────────────────────────────────────
       { cat: 'mens-wear', name: 'Levi\'s 511 Slim Fit Jeans', brand: 'Levi\'s', mrp: 3999, bp: 1400, sp: 2999, b2b: 2600, imgs: getImages('clothing'), specs: { fit: 'Slim', material: 'Denim' }, tags: ['jeans', 'men', 'levis'] },
       { cat: 'mens-wear', name: 'H&M Slim Chino Pants', brand: 'H&M', mrp: 2999, bp: 900, sp: 1999, b2b: 1700, imgs: getImages('clothing'), specs: { fit: 'Slim', material: 'Cotton Blend' }, tags: ['chinos', 'men', 'casual'] },
@@ -149,7 +149,7 @@ async function seed() {
       { cat: 'watches', name: 'Samsung Galaxy Watch 6', brand: 'Samsung', mrp: 29999, bp: 22000, sp: 26999, b2b: 25000, imgs: getImages('electronics'), specs: { os: 'Wear OS' }, tags: ['smartwatch', 'samsung'] },
       { cat: 'bags', name: 'American Tourister Trolley Bag', brand: 'American Tourister', mrp: 8999, bp: 4000, sp: 6799, b2b: 6200, imgs: getImages('accessories'), specs: { capacity: '68L' }, tags: ['luggage', 'travel'] },
       { cat: 'bags', name: 'Lavie Women Tote Bag', brand: 'Lavie', mrp: 3499, bp: 1200, sp: 2299, b2b: 1900, imgs: getImages('accessories'), specs: { material: 'PU Leather' }, tags: ['tote', 'women'] },
-      
+
       // ── HOME ─────────────────────────────────────────────────────────
       { cat: 'kitchen', name: 'Philips Air Fryer HD9252', brand: 'Philips', mrp: 11995, bp: 6500, sp: 8999, b2b: 8200, imgs: getImages('home'), specs: { capacity: '4.1L' }, tags: ['airfryer', 'philips'] },
       { cat: 'furniture', name: 'IKEA KALLAX Shelf Unit', brand: 'IKEA', mrp: 14999, bp: 8000, sp: 11999, b2b: 10800, imgs: getImages('home'), specs: { material: 'Particleboard' }, tags: ['shelf', 'ikea'] },
@@ -165,7 +165,7 @@ async function seed() {
       const baseSlug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       slugCount[baseSlug] = (slugCount[baseSlug] || 0) + 1;
       const slug = slugCount[baseSlug] > 1 ? `${baseSlug}-${slugCount[baseSlug]}` : baseSlug;
-      const sku = `${p.cat.toUpperCase().slice(0,3)}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+      const sku = `${p.cat.toUpperCase().slice(0, 3)}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
       const cond = pick(statuses);
       const stock = rand(5, 120);

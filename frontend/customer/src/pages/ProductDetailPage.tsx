@@ -993,14 +993,6 @@ export default function ProductDetailPage() {
           </div>
         </section>
       </div>
-      
-      {/* Back to top */}
-      <button 
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="w-full py-4 bg-[#37475a] hover:bg-[#485769] text-white text-[13px] font-medium transition-colors text-center"
-      >
-        Back to top
-      </button>
 
       {/* Services Modal */}
       {showServicesModal && (
