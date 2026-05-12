@@ -87,11 +87,31 @@ async function bootstrap() {
     console.warn('Starting server without confirmed DB connection...');
   }
 
-    const server = app.listen(env.port, () => {
-      console.log(`Server running on port ${env.port} in ${env.nodeEnv} mode`);
-      console.log(`API docs: http://localhost:${env.port}/api/docs`);
-      console.log(`Health check: http://localhost:${env.port}/health`);
-    });
+    const https = require('https');
+    const fs = require('fs');
+    const keyPath = '/etc/letsencrypt/live/e-commec2.duckdns.org/privkey.pem';
+    const certPath = '/etc/letsencrypt/live/e-commec2.duckdns.org/fullchain.pem';
+
+    let server;
+
+    if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+      const certOptions = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+      };
+      server = https.createServer(certOptions, app).listen(env.port, () => {
+        console.log(`Server running on https://e-commec2.duckdns.org:${env.port} in ${env.nodeEnv} mode`);
+        console.log(`API docs: https://e-commec2.duckdns.org:${env.port}/api/docs`);
+        console.log(`Health check: https://e-commec2.duckdns.org:${env.port}/health`);
+      });
+    } else {
+      console.warn('SSL certificates not found. Starting HTTP server instead (Local Dev).');
+      server = app.listen(env.port, () => {
+        console.log(`Server running on http://localhost:${env.port} in ${env.nodeEnv} mode`);
+        console.log(`API docs: http://localhost:${env.port}/api/docs`);
+        console.log(`Health check: http://localhost:${env.port}/health`);
+      });
+    }
 
     process.on('SIGINT', () => {
       server.close(() => {
