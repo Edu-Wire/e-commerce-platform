@@ -83,6 +83,10 @@ export interface Product {
   tags: string[];
   is_active: boolean;
   is_featured: boolean;
+  average_rating: number;
+  review_count: number;
+  view_count: number;
+  popularity_score: number;
   created_at: Date;
   updated_at: Date;
   created_by: number | null;

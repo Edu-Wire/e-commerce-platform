@@ -65,7 +65,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
 
     const customer = await queryOne<Customer & { password_hash: string }>(
-      'SELECT * FROM customers WHERE email = $1 AND is_active = true',
+      'SELECT * FROM customers WHERE (email = $1 OR phone = $1) AND is_active = true',
       [email]
     );
     if (!customer) {
@@ -89,6 +89,26 @@ export async function login(req: Request, res: Response): Promise<void> {
     res.json(success({ customer: customerData, token }));
   } catch (err) {
     console.error('login error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function checkUser(req: Request, res: Response): Promise<void> {
+  try {
+    const { identifier } = req.body;
+    if (!identifier) {
+      res.status(400).json(error('identifier is required'));
+      return;
+    }
+
+    const customer = await queryOne<Customer>(
+      'SELECT id FROM customers WHERE (email = $1 OR phone = $1) AND is_active = true',
+      [identifier]
+    );
+
+    res.json(success({ exists: !!customer }));
+  } catch (err) {
+    console.error('checkUser error:', err);
     res.status(500).json(error('Internal server error'));
   }
 }

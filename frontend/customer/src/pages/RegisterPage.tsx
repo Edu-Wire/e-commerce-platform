@@ -61,11 +61,24 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(customerType === 'b2c' ? b2cSchema : b2bSchema) as never,
     defaultValues: { customer_type: 'b2c' }
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('identifier');
+    if (id) {
+      if (id.includes('@')) {
+        setValue('email', id);
+      } else {
+        setValue('phone', id);
+      }
+    }
+  }, [setValue]);
 
   const handleTypeChange = (type: 'b2c' | 'b2b') => {
     setCustomerType(type);

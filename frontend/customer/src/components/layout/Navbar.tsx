@@ -56,6 +56,14 @@ export default function Navbar() {
     }
   }, [searchQuery]);
   const [newLocation, setNewLocation] = useState('');
+  const [guestLocation, setGuestLocation] = useState<{ city: string; pincode: string } | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('guestLocation');
+    if (saved) {
+      setGuestLocation(JSON.parse(saved));
+    }
+  }, []);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
@@ -138,13 +146,17 @@ export default function Navbar() {
           onClick={() => setShowLocationModal(true)}
           className="hidden md:flex flex-col p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all ml-2"
         >
-          <span className="text-[11px] text-gray-300 ml-4 leading-none">Deliver to {customer?.name || 'Aish'}</span>
+          <span className="text-[11px] text-gray-300 ml-4 leading-none">
+            {customer ? `Deliver to ${customer.name.split(' ')[0]}` : 'Deliver to'}
+          </span>
           <div className="flex items-center gap-1 leading-none">
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-sm font-bold">{customer?.address?.city || 'Bhopal'} {customer?.address?.pincode || '462010'}</span>
+            <span className="text-sm font-bold">
+              {customer?.address?.city || guestLocation?.city || 'Bhopal'} {customer?.address?.pincode || guestLocation?.pincode || '462010'}
+            </span>
           </div>
         </div>
 
@@ -562,6 +574,10 @@ export default function Navbar() {
                   <div 
                     key={index}
                     onClick={async () => {
+                      const locationData = { city: addr.city, pincode: addr.pincode };
+                      localStorage.setItem('guestLocation', JSON.stringify(locationData));
+                      setGuestLocation(locationData);
+                      
                       try {
                         await updateProfile({ 
                           address: { 
@@ -622,14 +638,20 @@ export default function Navbar() {
                           const currentAddresses = (customer?.address as any)?.addresses || [];
                           const updatedAddresses = [...currentAddresses, newAddr];
                           
-                          updateProfile({ 
-                            address: { 
-                              ...customer?.address, 
-                              city: city,
-                              pincode: pincode,
-                              addresses: updatedAddresses
-                            } 
-                          });
+                          const locationData = { city, pincode: pincode };
+                          localStorage.setItem('guestLocation', JSON.stringify(locationData));
+                          setGuestLocation(locationData);
+
+                          if (customer) {
+                            updateProfile({ 
+                              address: { 
+                                ...customer?.address, 
+                                city: city,
+                                pincode: pincode,
+                                addresses: updatedAddresses
+                              } 
+                            });
+                          }
                           toast.success('Address saved!');
                         } else {
                           toast.error('Invalid pincode');
@@ -687,14 +709,20 @@ export default function Navbar() {
                           const currentAddresses = (customer?.address as any)?.addresses || [];
                           const updatedAddresses = [...currentAddresses, newAddr];
                           
-                          await updateProfile({ 
-                            address: { 
-                              ...customer?.address, 
-                              city: city,
-                              pincode: newLocation,
-                              addresses: updatedAddresses
-                            } 
-                          });
+                          const locationData = { city, pincode: newLocation };
+                          localStorage.setItem('guestLocation', JSON.stringify(locationData));
+                          setGuestLocation(locationData);
+
+                          if (customer) {
+                            await updateProfile({ 
+                              address: { 
+                                ...customer?.address, 
+                                city: city,
+                                pincode: newLocation,
+                                addresses: updatedAddresses
+                              } 
+                            });
+                          }
                           
                           setShowLocationModal(false);
                           setNewLocation('');
