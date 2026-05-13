@@ -815,7 +815,7 @@ export default function CategoryPage() {
                 ))}
               </div>
             </div>
-            
+
             <div className="mb-6">
               <h3 className="text-[14px] font-bold text-[#0f1111] mb-2">Amazon Prime</h3>
               <label className="flex items-center gap-2 cursor-pointer group">
@@ -849,7 +849,7 @@ export default function CategoryPage() {
               <div className="relative bg-[#FF9900] h-[350px] flex items-center justify-between p-12 overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-orange-400/20 rounded-full blur-[80px]"></div>
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-400/20 rounded-full blur-[80px]"></div>
-                
+
                 <div className="relative z-10 flex-1">
                   <h2 className="text-white text-[80px] font-black italic tracking-tighter leading-[0.8] mb-4">
                     Great <br /> Summer Sale
@@ -858,7 +858,7 @@ export default function CategoryPage() {
                     Live Now
                   </div>
                 </div>
-                
+
                 <div className="relative z-10 w-[400px] border-l-2 border-white/30 pl-10 text-white">
                   <h3 className="text-4xl font-black italic tracking-tighter leading-tight mb-4">
                     Sizzling summer savings on your kitchen & dining essentials
@@ -929,7 +929,7 @@ export default function CategoryPage() {
               <h2 className="text-xl font-bold text-gray-900">Inspired by your browsing history</h2>
               <span className="text-sm text-gray-500">Page 1 of 5</span>
             </div>
-            
+
             <div className="relative group">
               <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4">
                 {[
