@@ -116,56 +116,58 @@ export default function Navbar() {
   return (
     <header className="bg-[#131921] text-white sticky top-0 z-50 shadow-sm font-sans">
       {/* Top Bar */}
-      <div className="max-w-[1500px] mx-auto px-4 py-1 flex items-center gap-2">
-        {/* Mobile menu toggle */}
-        <button
-          onClick={() => setMobileMenuOpen(v => !v)}
-          className="lg:hidden p-2 text-white hover:bg-gray-800 rounded-sm"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+      <div className="max-w-[1500px] mx-auto px-2 sm:px-4 py-1 flex flex-wrap items-center justify-between lg:justify-start gap-y-1">
 
-        {/* Logo */}
-        <Link
-          to="/"
-          className="flex items-center p-2 border border-transparent hover:border-white rounded-sm transition-all flex-shrink-0"
-        >
-          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center mr-1.5">
-            <span className="text-white font-bold text-lg">S</span>
-          </div>
-          <div className="flex items-start">
-            <span className="text-xl font-bold tracking-tight leading-none">ShopNow</span>
-            <span className="text-orange-400 text-[10px] font-bold leading-none ml-0.5 mt-1">.in</span>
-          </div>
-        </Link>
+        {/* Left Section: Toggle & Logo */}
+        <div className="flex items-center gap-1 order-1">
+          <button
+            onClick={() => setMobileMenuOpen(v => !v)}
+            className="lg:hidden p-1.5 text-white hover:bg-gray-800 rounded-sm"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-        {/* Delivery Location */}
+          <Link
+            to="/"
+            className="flex items-center p-1 sm:p-2 border border-transparent hover:border-white rounded-sm transition-all flex-shrink-0"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-orange-500 rounded-lg flex items-center justify-center mr-1 sm:mr-1.5">
+              <span className="text-white font-bold text-base sm:text-lg">S</span>
+            </div>
+            <div className="flex items-start">
+              <span className="text-lg sm:text-xl font-bold tracking-tight leading-none">ShopNow</span>
+              <span className="text-orange-400 text-[9px] sm:text-[10px] font-bold leading-none ml-0.5 mt-1">.in</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Delivery Location - Desktop Only */}
         <div
           onClick={() => setShowLocationModal(true)}
-          className="hidden md:flex flex-col p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all ml-2"
+          className="hidden lg:flex flex-col p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all ml-2 order-2"
         >
-          <span className="text-[11px] text-gray-300 ml-4 leading-none">
-            {customer ? `Deliver to ${customer.name.split(' ')[0]}` : 'Deliver to'}
+          <span className="text-[11px] text-gray-300 ml-4 leading-none whitespace-nowrap">
+            {customer ? `${t.deliverTo || 'Deliver to'} ${customer.name.split(' ')[0]}` : t.deliverTo || 'Deliver to'}
           </span>
           <div className="flex items-center gap-1 leading-none">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-sm font-bold">
+            <span className="text-sm font-bold truncate max-w-[150px]">
               {customer?.address?.city || guestLocation?.city || 'Bhopal'} {customer?.address?.pincode || guestLocation?.pincode || '462010'}
             </span>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="flex-1 flex items-center h-10 ml-2">
+        {/* Search Bar - Full width on mobile, Flex-1 on desktop */}
+        <div className="w-full lg:flex-1 h-10 lg:mx-4 order-4 lg:order-3">
           <form onSubmit={handleSearch} className="w-full flex h-full group">
             <div ref={searchRef} className="relative flex w-full h-full bg-white rounded-md ring-offset-0 focus-within:ring-2 focus-within:ring-[#febd69]">
-              {/* Category Dropdown */}
-              <div ref={categoryDropdownRef} className="relative hidden lg:block h-full">
+              {/* Category Dropdown - Hidden on very small screens */}
+              <div ref={categoryDropdownRef} className="relative hidden sm:block h-full">
                 <button
                   type="button"
                   onClick={() => {
@@ -218,7 +220,7 @@ export default function Navbar() {
                   setShowCategoryDropdown(false);
                 }}
                 placeholder={t.searchPlaceholder || "Search ShopNow.in"}
-                className="flex-1 px-3 py-2 text-black text-sm focus:outline-none placeholder-gray-500"
+                className="flex-1 px-3 py-2 text-black text-sm focus:outline-none placeholder-gray-500 rounded-l-md sm:rounded-l-none"
               />
 
               <button
@@ -233,7 +235,7 @@ export default function Navbar() {
 
               {/* Search History & Suggestions Dropdown */}
               {showSearchHistory && (searchQuery.trim().length > 1 ? suggestions.length > 0 : searchHistory.length > 0) && (
-                <div className="absolute top-full left-0 right-0 bg-white shadow-lg border border-gray-200 mt-1 rounded-md z-50">
+                <div className="absolute top-full left-0 right-0 bg-white shadow-xl border border-gray-200 mt-1 rounded-md z-[60]">
                   {searchQuery.trim().length > 1 ? (
                     <>
                       <div className="p-2 text-xs text-gray-500 border-b border-gray-100">Suggestions</div>
@@ -250,8 +252,8 @@ export default function Navbar() {
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
-                          <span>{product.name}</span>
-                          <span className="text-xs text-gray-500 ml-auto">{product.category_name}</span>
+                          <span className="truncate flex-1">{product.name}</span>
+                          <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{product.category_name}</span>
                         </div>
                       ))}
                     </>
@@ -296,12 +298,12 @@ export default function Navbar() {
         </div>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-0.5 ml-2">
-          {/* Language Selector */}
-          <div className="relative" ref={langDropdownRef}>
+        <div className="flex items-center gap-0 sm:gap-1 order-3 lg:order-4">
+          {/* Language Selector - Desktop Only */}
+          <div className="relative hidden lg:block" ref={langDropdownRef}>
             <div
               onClick={() => setLangDropdownOpen(v => !v)}
-              className="hidden lg:flex items-center p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all gap-1"
+              className="flex items-center p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all gap-1"
             >
               <div className="flex flex-col shadow-sm border border-gray-300 overflow-hidden rounded-sm">
                 <div className="w-6 h-1.5 bg-[#FF9933]"></div>
@@ -366,19 +368,26 @@ export default function Navbar() {
           <div className="relative" ref={userDropdownRef}>
             <button
               onClick={() => setUserDropdownOpen(v => !v)}
-              className="flex flex-col p-2 border border-transparent hover:border-white rounded-sm transition-all text-left min-w-[120px]"
+              className="flex flex-col p-1.5 sm:p-2 border border-transparent hover:border-white rounded-sm transition-all text-left min-w-0 lg:min-w-[120px]"
             >
-              <span className="text-[11px] text-gray-300 leading-none">{t.hello || 'Hello'}, {customer ? customer.name.split(' ')[0] : 'sign in'}</span>
-              <div className="flex items-center gap-1 leading-none mt-1">
-                <span className="text-sm font-bold">{t.accountsLists || 'Account & Lists'}</span>
-                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span className="hidden lg:inline text-[11px] text-gray-300 leading-none">{t.hello || 'Hello'}, {customer ? customer.name.split(' ')[0] : 'sign in'}</span>
+              <div className="flex items-center gap-0.5 lg:gap-1 leading-none lg:mt-1">
+                <span className="hidden lg:inline text-sm font-bold">{t.accountsLists || 'Account & Lists'}</span>
+                {/* User Icon/Label for Mobile */}
+                <div className="lg:hidden flex flex-col items-center">
+                  <span className="text-[10px] text-gray-300 mb-0.5 truncate max-w-[50px]">{customer ? customer.name.split(' ')[0] : 'Sign In'}</span>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <svg className="hidden lg:block w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </button>
 
             {userDropdownOpen && (
-              <div className="absolute top-full right-0 mt-0 w-64 bg-white text-gray-900 shadow-xl border border-gray-200 py-4 z-50 rounded-b-sm">
+              <div className="absolute top-full right-0 mt-0 w-64 bg-white text-gray-900 shadow-2xl border border-gray-200 py-4 z-[70] rounded-b-sm animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="px-4 mb-4">
                   {!customer && (
                     <div className="text-center">
@@ -417,35 +426,51 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Returns & Orders */}
+          {/* Returns & Orders - Hidden on small screens */}
           <Link to="/orders" className="hidden sm:flex flex-col p-2 border border-transparent hover:border-white rounded-sm transition-all text-left">
             <span className="text-[11px] text-gray-300 leading-none">{t.returns || 'Returns'}</span>
             <span className="text-sm font-bold leading-none mt-1">{t.orders || '& Orders'}</span>
           </Link>
 
           {/* Cart */}
-          <Link to="/cart" className="flex items-end p-2 border border-transparent hover:border-white rounded-sm transition-all relative group">
+          <Link to="/cart" className="flex items-center lg:items-end p-1.5 sm:p-2 border border-transparent hover:border-white rounded-sm transition-all relative group">
             <div className="relative flex items-center">
               <div className="relative">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span className="absolute top-0.5 left-1/2 -translate-x-1/2 text-[#f08804] font-bold text-base leading-none">
+                <span className="absolute top-0 sm:top-0.5 left-1/2 -translate-x-1/2 text-[#f08804] font-bold text-sm sm:text-base leading-none">
                   {totalItems}
                 </span>
               </div>
-              <span className="text-sm font-bold self-end mb-1.5 hidden lg:inline">{t.cart || 'Cart'}</span>
+              <span className="text-sm font-bold self-end mb-1.5 hidden lg:inline ml-1">{t.cart || 'Cart'}</span>
             </div>
           </Link>
+        </div>
+
+        {/* Mobile Location Bar */}
+        <div
+          onClick={() => setShowLocationModal(true)}
+          className="lg:hidden w-full bg-[#37475a] -mx-2 sm:-mx-4 px-4 py-2 flex items-center gap-1.5 order-5 cursor-pointer shadow-inner"
+        >
+          <svg className="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          </svg>
+          <span className="text-sm font-medium text-white truncate flex-1">
+            {t.deliverTo || 'Deliver to'} {customer?.address?.city || guestLocation?.city || 'Bhopal'} {customer?.address?.pincode || guestLocation?.pincode || '462010'}
+          </span>
+          <svg className="w-3 h-3 text-white ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </div>
       </div>
 
       {/* Bottom Nav Bar (Secondary) */}
-      <div className="bg-[#232f3e] text-white flex items-center px-4 py-1.5 gap-4 overflow-x-auto no-scrollbar whitespace-nowrap">
+      <div className="bg-[#232f3e] text-white flex items-center px-4 py-1.5 gap-4 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth">
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="flex items-center gap-1 px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm font-bold"
+          className="flex items-center gap-1 px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm font-bold flex-shrink-0"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -456,37 +481,33 @@ export default function Navbar() {
           <Link
             key={cat.id}
             to={`/category/${cat.slug}`}
-            className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm"
+            className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm flex-shrink-0"
           >
             {cat.name}
           </Link>
         ))}
-        <Link to="/category/all" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm">
+        <Link to="/category/all" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm flex-shrink-0">
           All Products
         </Link>
-        <Link to="#" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden md:inline">
+        <Link to="#" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden md:inline flex-shrink-0">
           Customer Service
         </Link>
-        <Link to="/category/todays-deals" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden lg:inline">
+        <Link to="/category/todays-deals" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden lg:inline flex-shrink-0">
           Today's Deals
         </Link>
       </div>
 
-      {/* Global Sidebar Menu (Amazon HM Menu Style) */}
+      {/* Global Sidebar Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[100] flex">
           {/* Overlay */}
-          <div className="absolute inset-0 bg-black/70 transition-opacity" onClick={() => setMobileMenuOpen(false)}>
-            {/* Close button for Desktop UX */}
-            <button className="absolute top-4 left-[380px] text-white hover:scale-110 transition-transform">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+          <div
+            className="absolute inset-0 bg-black/70 transition-opacity animate-in fade-in duration-300"
+            onClick={() => setMobileMenuOpen(false)}
+          />
 
-          {/* Content */}
-          <div className="absolute inset-y-0 left-0 w-[365px] bg-white animate-slide-in shadow-2xl flex flex-col">
+          {/* Sidebar Content */}
+          <div className="relative w-[280px] sm:w-[365px] bg-white shadow-2xl flex flex-col animate-slide-in h-full">
             <div className="bg-[#232f3e] text-white p-4 flex items-center gap-3 shrink-0">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -494,25 +515,25 @@ export default function Navbar() {
                 </svg>
               </div>
               <span className="text-lg font-bold">Hello, {customer ? customer.name.split(' ')[0] : 'Sign In'}</span>
-              <button className="ml-auto md:hidden" onClick={() => setMobileMenuOpen(false)}>
+              <button className="ml-auto p-1 hover:bg-white/10 rounded-full" onClick={() => setMobileMenuOpen(false)}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="overflow-y-auto flex-1 pb-20">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-tight">Trending</h3>
-                <div className="space-y-4">
-                  <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-2">Best Sellers</Link>
-                  <Link to="/category/all?sort=newest" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-2">New Arrivals</Link>
-                  <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 font-bold hover:bg-gray-100 -mx-4 px-4 py-2">All Products</Link>
+            <div className="overflow-y-auto flex-1 pb-10">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Trending</h3>
+                <div className="space-y-1">
+                  <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Best Sellers</Link>
+                  <Link to="/category/all?sort=newest" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">New Arrivals</Link>
+                  <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-800 font-bold hover:bg-gray-100 -mx-4 px-4 py-3">All Products</Link>
                 </div>
               </div>
 
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-tight">Shop By Category</h3>
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Shop By Category</h3>
                 <div className="space-y-1">
                   {topLevelCategories.map(cat => (
                     <Link
@@ -530,10 +551,38 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <div className="p-4">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-tight">Help & Settings</h3>
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Help & Settings</h3>
                 <div className="space-y-1">
                   <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
+
+                  {/* Mobile Language Selector */}
+                  <div className="py-2">
+                    <p className="text-xs font-bold text-gray-500 mb-2 px-0 uppercase">Language</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { id: 'EN', label: 'English' },
+                        { id: 'HI', label: 'हिन्दी' },
+                        { id: 'TA', label: 'தமிழ்' },
+                        { id: 'TE', label: 'తెలుగు' },
+                      ].map(lang => (
+                        <button
+                          key={lang.id}
+                          onClick={() => {
+                            setLanguage(lang.id as Language);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`text-left px-3 py-2 text-sm rounded-md border ${language === lang.id
+                              ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold'
+                              : 'border-gray-200 text-gray-600'
+                            }`}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <Link to="/customer-service" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Customer Service</Link>
                   {customer ? (
                     <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block w-full text-left text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Sign Out</button>
@@ -546,19 +595,20 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
       {/* Location Modal */}
       {showLocationModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
             onClick={() => setShowLocationModal(false)}
           />
-          <div className="relative bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
               <h2 className="text-lg font-bold text-gray-900">Choose your location</h2>
               <button
                 onClick={() => setShowLocationModal(false)}
-                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
               >
                 <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -570,7 +620,7 @@ export default function Navbar() {
               <p className="text-sm text-gray-600">Select a delivery location to see product availability and delivery options</p>
 
               {/* Address List */}
-              <div className="space-y-3 max-h-60 overflow-y-auto">
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                 {(customer?.address as any)?.addresses?.map((addr: any, index: number) => (
                   <div
                     key={index}
@@ -578,7 +628,7 @@ export default function Navbar() {
                       const locationData = { city: addr.city, pincode: addr.pincode };
                       localStorage.setItem('guestLocation', JSON.stringify(locationData));
                       setGuestLocation(locationData);
-                      
+
                       try {
                         await updateProfile({
                           address: {
@@ -593,24 +643,30 @@ export default function Navbar() {
                         toast.error('Failed to update location');
                       }
                     }}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${customer?.address?.pincode === addr.pincode
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:bg-gray-50'
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${customer?.address?.pincode === addr.pincode
+                      ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                   >
                     <div className="flex flex-col text-sm">
                       <span className="font-bold text-black">{addr.name} <span className="font-normal text-gray-600">{addr.details}</span></span>
                       <span className="text-gray-600">{addr.city} {addr.state} {addr.pincode}</span>
                       {customer?.address?.pincode === addr.pincode && (
-                        <span className="text-xs text-blue-600 font-medium mt-1">Default address</span>
+                        <span className="text-xs text-blue-600 font-medium mt-1 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                          Default address
+                        </span>
                       )}
                     </div>
                   </div>
                 ))}
 
                 {(!(customer?.address as any)?.addresses || (customer?.address as any)?.addresses.length === 0) && (
-                  <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center text-sm text-gray-500">
-                    No saved addresses found.
+                  <div className="p-8 border border-dashed border-gray-300 rounded-lg text-center">
+                    <svg className="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    </svg>
+                    <p className="text-sm text-gray-500">No saved addresses found.</p>
                   </div>
                 )}
               </div>
@@ -637,19 +693,19 @@ export default function Navbar() {
 
                           const currentAddresses = (customer?.address as any)?.addresses || [];
                           const updatedAddresses = [...currentAddresses, newAddr];
-                          
+
                           const locationData = { city, pincode: pincode };
                           localStorage.setItem('guestLocation', JSON.stringify(locationData));
                           setGuestLocation(locationData);
 
                           if (customer) {
-                            updateProfile({ 
-                              address: { 
-                                ...customer?.address, 
+                            updateProfile({
+                              address: {
+                                ...customer?.address,
                                 city: city,
                                 pincode: pincode,
                                 addresses: updatedAddresses
-                              } 
+                              }
                             });
                           }
                           toast.success('Address saved!');
@@ -663,15 +719,15 @@ export default function Navbar() {
                       });
                   }
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors font-medium border border-blue-100"
               >
                 Add an address or pick-up point
               </button>
 
               <div className="relative flex items-center py-2">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="flex-shrink mx-4 text-xs text-gray-500">or enter an Indian pincode</span>
-                <div className="flex-grow border-t border-gray-300"></div>
+                <div className="flex-grow border-t border-gray-200"></div>
+                <span className="flex-shrink mx-4 text-xs text-gray-400 font-medium uppercase tracking-tighter">or enter a pincode</span>
+                <div className="flex-grow border-t border-gray-200"></div>
               </div>
 
               <div className="flex gap-2">
@@ -684,8 +740,8 @@ export default function Navbar() {
                       setNewLocation(val);
                     }
                   }}
-                  placeholder="Enter pincode"
-                  className="flex-1 h-10 px-3 border border-gray-300 rounded-md focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm text-black"
+                  placeholder="Enter 6-digit pincode"
+                  className="flex-1 h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm text-black transition-all"
                 />
                 <button
                   onClick={async () => {
@@ -708,22 +764,22 @@ export default function Navbar() {
 
                           const currentAddresses = (customer?.address as any)?.addresses || [];
                           const updatedAddresses = [...currentAddresses, newAddr];
-                          
+
                           const locationData = { city, pincode: newLocation };
                           localStorage.setItem('guestLocation', JSON.stringify(locationData));
                           setGuestLocation(locationData);
 
                           if (customer) {
-                            await updateProfile({ 
-                              address: { 
-                                ...customer?.address, 
+                            await updateProfile({
+                              address: {
+                                ...customer?.address,
                                 city: city,
                                 pincode: newLocation,
                                 addresses: updatedAddresses
-                              } 
+                              }
                             });
                           }
-                          
+
                           setShowLocationModal(false);
                           setNewLocation('');
                           toast.success('Location updated and saved!');
@@ -736,7 +792,7 @@ export default function Navbar() {
                       }
                     }
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-100 text-black"
+                  className="px-6 h-11 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-black transition-colors"
                 >
                   Apply
                 </button>

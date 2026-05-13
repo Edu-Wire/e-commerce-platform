@@ -94,7 +94,7 @@ export default function ProductDetailPage() {
   const specs = product.specifications ?? {};
 
   return (
-    <div className="bg-white min-h-screen font-sans text-[#0f1111]">
+    <div className="bg-white min-h-screen font-sans text-[#0f1111] overflow-x-hidden">
       {/* Breadcrumb */}
       <div className="max-w-[1500px] mx-auto px-4 py-2 text-[12px] text-gray-600">
         <nav className="flex items-center gap-1">
@@ -140,7 +140,7 @@ export default function ProductDetailPage() {
               )}
 
               {/* Main Image View */}
-              <div className="relative flex-1 min-w-[300px] md:min-w-[450px]">
+              <div className="relative flex-1 min-w-0 w-full md:min-w-[450px]">
                 <div
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
@@ -152,6 +152,9 @@ export default function ProductDetailPage() {
                         src={currentImage}
                         alt={product.name}
                         className="max-w-full max-h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800&q=80';
+                        }}
                       />
 
                       {/* Zoom Lens (Follows mouse) */}
@@ -213,9 +216,9 @@ export default function ProductDetailPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      'Does it have a dust filter?',
-                      'What refrigerant does it use?',
-                      'Does it have a sleep mode?'
+                      `Is the ${product.brand || 'product'} durable?`,
+                      'What is the warranty period?',
+                      'Is it worth the price?'
                     ].map((q, i) => (
                       <button key={i} className="px-3 py-1.5 border border-[#d5d9d9] rounded-full text-[12px] text-[#0f1111] bg-white hover:bg-[#f7fafa] shadow-sm transition-colors">
                         {q}
@@ -279,7 +282,7 @@ export default function ProductDetailPage() {
                   <span className="text-sm text-[#0f1111]">Inclusive of all taxes</span>
                 </div>
                 <p className="text-sm mt-2">
-                  <span className="font-bold">EMI</span> starts at ₹1,195. No Cost EMI available <span className="text-[#007185] cursor-pointer hover:underline text-xs">EMI options ⌄</span>
+                  <span className="font-bold">EMI</span> starts at {fmt(Math.round(product.selling_price / 24))}. No Cost EMI available <span className="text-[#007185] cursor-pointer hover:underline text-xs">EMI options ⌄</span>
                 </p>
               </div>
 
@@ -309,11 +312,11 @@ export default function ProductDetailPage() {
               {/* Service Icons */}
               <div className="flex justify-between items-start gap-2 py-6 border-b border-gray-200 overflow-x-auto no-scrollbar">
                 {[
-                  { label: 'Installation available', icon: '🛠️' },
-                  { label: '1 Year Warranty Care', icon: '🛡️' },
-                  { label: '10 days Replacement', icon: '🔄' },
+                  { label: '7 days Replacement', icon: '🔄' },
                   { label: 'Free Delivery', icon: '🚚' },
-                  { label: 'Amazon Delivered', icon: '📦' },
+                  { label: '1 Year Warranty', icon: '🛡️' },
+                  { label: 'Pay on Delivery', icon: '💵' },
+                  { label: 'Top Brand', icon: '🏆' },
                 ].map((item, i) => (
                   <div
                     key={i}
@@ -349,39 +352,39 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
-                {/* Installation Add-on (Mockup) */}
-                <div className="border border-gray-300 rounded-lg p-4 mb-6 bg-white">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" className="mt-1 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
-                    <div className="space-y-1">
-                      <p className="text-[14px] font-bold text-gray-900 leading-tight">
-                        Add AC installation (additional accessories chargeable) <span className="text-[#007185] hover:text-[#c45500] hover:underline cursor-pointer font-normal">Details</span>
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[14px] font-medium text-[#b12704]">Price: ₹1,650.00</span>
-                        <div className="flex text-[#e47911] text-[12px]">
-                          {[1, 2, 3, 4].map(s => <span key={s}>★</span>)}
-                          <span className="text-gray-300">★</span>
+                {/* Installation Add-on (Only for ACs) */}
+                {(product.category?.slug.includes('air-conditioner') || product.name.toLowerCase().includes(' ac ') || product.name.toLowerCase().endsWith(' ac')) && (
+                  <div className="border border-gray-300 rounded-lg p-4 mb-6 bg-white">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input type="checkbox" className="mt-1 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                      <div className="space-y-1">
+                        <p className="text-[14px] font-bold text-gray-900 leading-tight">
+                          Add AC installation (additional accessories chargeable) <span className="text-[#007185] hover:text-[#c45500] hover:underline cursor-pointer font-normal">Details</span>
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[14px] font-medium text-[#b12704]">Price: ₹1,650.00</span>
+                          <div className="flex text-[#e47911] text-[12px]">
+                            {[1, 2, 3, 4].map(s => <span key={s}>★</span>)}
+                            <span className="text-gray-300">★</span>
+                          </div>
+                          <span className="text-[#007185] text-[12px] hover:underline">(451)</span>
+                          <span className="text-[#007185] text-[12px] hover:underline">See more</span>
                         </div>
-                        <span className="text-[#007185] text-[12px] hover:underline">(451)</span>
-                        <span className="text-[#007185] text-[12px] hover:underline">See more</span>
                       </div>
-                    </div>
-                  </label>
-                </div>
+                    </label>
+                  </div>
+                )}
 
-                {/* Compact Attributes Table */}
+                {/* Dynamic Attributes Table */}
                 <div className="grid grid-cols-[120px_1fr] gap-y-2 text-[14px] mb-6">
                   <span className="font-bold">Brand</span>
-                  <span>{product.brand || 'Voltas'}</span>
-                  <span className="font-bold">Capacity</span>
-                  <span>1.5 Tons</span>
-                  <span className="font-bold">Cooling Power</span>
-                  <span>6 Kilowatts</span>
-                  <span className="font-bold">Special Feature</span>
-                  <span className="leading-snug">Convertible 5-in-1 Cooling Mode, 2-Way Air Swing, Anti-dust Filter with Anti Microbial Coating, Auto Clean, Memory Restart, Sleep Mode, Anti-Freeze t... <span className="text-[#007185] cursor-pointer hover:underline">See more ⌄</span></span>
-                  <span className="font-bold">Product Dimensions</span>
-                  <span>24D x 92.5W x 32H Centimeters</span>
+                  <span>{product.brand || 'Generic'}</span>
+                  {Object.entries(specs).slice(0, 4).map(([key, value]) => (
+                    <div key={key} className="contents">
+                      <span className="font-bold capitalize">{key.replace(/_/g, ' ')}</span>
+                      <span className="leading-snug">{value as string}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <hr className="border-gray-200 mb-6" />
@@ -402,41 +405,26 @@ export default function ProductDetailPage() {
                 {product.description && (
                   <div className="mt-6 border-t border-gray-200 pt-6">
                     <h3 className="font-bold text-[16px] mb-2 text-[#0f1111]">About this item</h3>
-                    <ul className="list-disc ml-5 space-y-2 text-[14px] text-[#0f1111] leading-relaxed">
-                      <li className="pl-1">Split AC with inverter compressor: Variable speed compressor which adjusts power depending on heat load. Convertible / adjustable with 4 cooling modes through remote control to operate in different tonnages for different cooling needs</li>
-                      <li className="pl-1">Capacity: 1.5 ton Suitable for medium sized rooms (111 to 150 sq ft); Ambient Temperature: 52°C.</li>
-                      <li className="pl-1">Energy Rating: 3 Star - Best In Class Energy Efficient. Annual Energy Consumption: 938.2 kWh/year; ISEER Value: 3.80Note: The current star rating is based on the 2025 BEE guidelines.</li>
-                      <li className="pl-1">Manufacturer Warranty: 1 Year Comprehensive Warranty on the Product, 10 Years Warranty on Inverter Compressor, 5 Year Warranty on PCB</li>
-                      <li className="pl-1">Copper Condenser : The copper condenser ensures superior heat transfer while minimizing maintenance needs. Its rust- and corrosion-resistant properties enhance durability.</li>
-                      <li className="pl-1">Key Features: 4 Adjustable Cooling Modes, Hidden Display; Wide Operating Range voltage range, LCD Remote, Long Air Throw, 5 speed fan function.</li>
-                      <li className="pl-1">Special Features: Anti Dust Filter, Anti Freeze Thermostat, Hidden Display, Sleep Mode, Super Dry Mode, Gas Leak Detection, Memory Restart, 2 way air swing</li>
-                    </ul>
-                    <div className="mt-4 space-y-2">
-                      <p className="text-[#007185] text-[14px] hover:text-[#c45500] hover:underline cursor-pointer flex items-center gap-1 font-medium">
-                        Show More <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                      </p>
-                      <p className="text-[#007185] text-[14px] hover:text-[#c45500] hover:underline cursor-pointer flex items-center gap-1 font-medium">
-                        <span className="text-[#e47911]">›</span> See more product details
-                      </p>
-                      <p className="text-[#007185] text-[14px] hover:text-[#c45500] hover:underline cursor-pointer flex items-center gap-2 mt-4">
-                        <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" /></svg>
-                        Report an issue with this product
-                      </p>
+                    <div className="text-[14px] text-[#0f1111] leading-relaxed space-y-2">
+                      {product.description.split('\n').map((line, i) => (
+                        <p key={i} className={line.trim().startsWith('•') || line.trim().startsWith('-') ? 'pl-4 relative before:content-["•"] before:absolute before:left-0' : ''}>
+                          {line.trim().replace(/^[•-]\s*/, '')}
+                        </p>
+                      ))}
                     </div>
 
                     {/* Sponsored Card */}
                     <div className="mt-8 border border-gray-200 rounded-xl p-4 bg-white relative flex gap-4 hover:shadow-md transition-shadow cursor-pointer group">
                       <div className="w-32 h-32 flex-shrink-0">
-                        <img src="https://images.unsplash.com/photo-1591123720164-de1348028a82?w=800" alt="Sponsored" className="w-full h-full object-contain" />
+                        <img src="https://images.unsplash.com/photo-1546868831-70c30e015669?w=800" alt="Sponsored" className="w-full h-full object-contain" />
                       </div>
                       <div className="flex-1 space-y-1">
-                        <h4 className="text-[14px] text-[#007185] group-hover:text-[#c45500] group-hover:underline leading-tight">Daikin 1.5 Ton 3 Star, New Star rated, Inverter Split AC (Copper, PM2.5 Filter, MTKL50XV16, White)</h4>
+                        <h4 className="text-[14px] text-[#007185] group-hover:text-[#c45500] group-hover:underline leading-tight">Premium High-Performance {product.brand || 'Electronics'} Device</h4>
                         <div className="flex items-center text-[#e47911] text-[12px]">
-                          {[1, 2, 3, 4].map(s => <span key={s}>★</span>)}
-                          <span className="text-gray-300">★</span>
-                          <span className="ml-1 text-[#007185]">203</span>
+                          {[1, 2, 3, 4, 5].map(s => <span key={s}>★</span>)}
+                          <span className="ml-1 text-[#007185]">1.2k</span>
                         </div>
-                        <div className="text-[17px] font-medium text-[#b12704]">₹37,490.00</div>
+                        <div className="text-[17px] font-medium text-[#b12704]">{fmt(product.selling_price * 1.1)}</div>
                         <img src="https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-logo.png" alt="Prime" className="h-4" />
                       </div>
                       <span className="absolute bottom-2 right-4 text-[10px] text-gray-400">Sponsored ⓘ</span>
@@ -445,12 +433,10 @@ export default function ProductDetailPage() {
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Column 3: Buy Box Sidebar (Sticky) */}
-          <div className="relative">
-            <div className="lg:sticky lg:top-4 border border-[#ddd] rounded-lg p-4 bg-white space-y-4 shadow-sm">
-              <div className="space-y-1">
+            {/* Column 3: Buy Box Sidebar (Sticky) */}
+            <div className="relative">
+              <div className="lg:sticky lg:top-4 border border-[#ddd] rounded-lg p-4 bg-white space-y-4 shadow-sm">
                 <div className="flex items-start">
                   <span className="text-sm mt-1 font-normal mr-0.5">₹</span>
                   <span className="text-2xl font-medium text-[#0f1111]">
@@ -459,7 +445,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div className="text-[13px] text-[#0f1111] mt-3">
-                  <span className="text-[#007185] hover:text-[#c45500] cursor-pointer hover:underline">FREE delivery</span> <span className="font-bold">Wednesday, 13 May</span>.
+                  <span className="text-[#007185] hover:text-[#c45500] cursor-pointer hover:underline">FREE delivery</span> <span className="font-bold">{new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}</span>.
                   <div className="mt-1">Order within <span className="text-[#008a00]">8 hrs 13 mins.</span> <span className="text-[#007185] cursor-pointer hover:underline">Details</span></div>
                 </div>
 
@@ -481,9 +467,9 @@ export default function ProductDetailPage() {
                     <h3 className="text-lg font-medium text-[#008a00]">In stock</h3>
                     <div className="text-[12px] grid grid-cols-[70px_1fr] gap-x-2 gap-y-1 mt-2">
                       <span className="text-gray-500">Ships from</span>
-                      <span className="text-[#0f1111]">Amazon</span>
+                      <span className="text-[#0f1111]">ShopNow</span>
                       <span className="text-gray-500">Sold by</span>
-                      <span className="text-[#007185] hover:text-[#c45500] cursor-pointer hover:underline truncate font-medium">DAWNTECH ELECTRONICS</span>
+                      <span className="text-[#007185] hover:text-[#c45500] cursor-pointer hover:underline truncate font-medium">{product.brand || 'Authorized Seller'}</span>
                     </div>
                   </>
                 )}
@@ -538,27 +524,27 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              <div className="pt-2 text-[12px] space-y-2">
-                <div className="flex items-center gap-2 text-[#007185] cursor-pointer hover:text-[#c45500]">
-                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                  </svg>
-                  <span>Secure transaction</span>
+                <div className="pt-2 text-[12px] space-y-2">
+                  <div className="flex items-center gap-2 text-[#007185] cursor-pointer hover:text-[#c45500]">
+                    <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                    <span>Secure transaction</span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer text-[#0f1111]">
+                    <input type="checkbox" className="rounded border-[#d5d9d9] text-[#e47911] focus:ring-0 w-3.5 h-3.5" />
+                    <span>Add gift options</span>
+                  </label>
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer text-[#0f1111]">
-                  <input type="checkbox" className="rounded border-[#d5d9d9] text-[#e47911] focus:ring-0 w-3.5 h-3.5" />
-                  <span>Add gift options</span>
-                </label>
-              </div>
 
-              <div className="border-t border-gray-200 pt-3">
-                <button className="w-full text-left py-2 px-4 border border-[#d5d9d9] rounded-lg text-[13px] hover:bg-[#f7fafa] transition-colors shadow-sm bg-white font-medium">
-                  Add to Wish List
-                </button>
+                <div className="border-t border-gray-200 pt-3">
+                  <button className="w-full text-left py-2 px-4 border border-[#d5d9d9] rounded-lg text-[13px] hover:bg-[#f7fafa] transition-colors shadow-sm bg-white font-medium">
+                    Add to Wish List
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         {/* Related items bought by customers */}
         <section className="mt-16 border-t border-gray-200 pt-8">
@@ -779,9 +765,9 @@ export default function ProductDetailPage() {
               {[
                 { id: 'details', label: 'Item details', content: (
                    <div className="p-4 bg-gray-50 text-sm space-y-2">
-                      <p><span className="font-bold">Brand:</span> {product.brand || 'Voltas'}</p>
+                      <p><span className="font-bold">Brand:</span> {product.brand || 'Generic'}</p>
                       <p><span className="font-bold">Model Name:</span> {product.sku}</p>
-                      <p><span className="font-bold">Color:</span> White</p>
+                      <p><span className="font-bold">Category:</span> {product.category?.name}</p>
                    </div>
                 )},
                 { id: 'additional', label: 'Additional details', content: (
@@ -946,7 +932,7 @@ export default function ProductDetailPage() {
                     date: 'Reviewed in India on 1 October 2025',
                     style: 'Style Name: Model - 2025',
                     verified: true,
-                    content: 'First of all, I would like to thank God, the seller and the delivery partner for delivering the machine safe and sound to my home. The LG support system contacted me the next day and the LG boys installed the machine within 24 hours. The performance is outstanding, especially the noise levels.'
+                    content: 'The product was delivered safely and on time. Setup was straightforward and the performance is outstanding. Definitely worth the investment.'
                   },
                   {
                     user: 'Priya S.',
@@ -955,7 +941,7 @@ export default function ProductDetailPage() {
                     date: 'Reviewed in India on 15 September 2025',
                     style: 'Style Name: Model - 2024',
                     verified: true,
-                    content: 'Been using it for a week now. The installation was smooth. It cleans clothes very well and the drying function is decent. Only issue is the slight vibration during high speed spin cycles.'
+                    content: 'Been using it for a week now. The setup was smooth. It works perfectly and the features are quite intuitive. Only issue is the slight delay in shipping, but the product itself is great.'
                   }
                 ].map((rev, i) => (
                   <div key={i} className="space-y-2">
