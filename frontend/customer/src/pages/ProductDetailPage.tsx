@@ -283,6 +283,7 @@ export default function ProductDetailPage() {
                   <span className="font-bold">EMI</span> starts at {fmt(Math.round(product.selling_price / 24))}. No Cost EMI available <span className="text-[#007185] cursor-pointer hover:underline text-xs">EMI options </span>
                 </p>
               </div>
+              {/* test */}
 
               {/* Offers Section */}
               <div className="border-t border-b border-gray-200 py-4 space-y-3">
