@@ -41,15 +41,21 @@ async function seed() {
     console.log('Top-level categories:', catMap);
 
     const clothingId = catMap['clothing'];
+    const electronicsId = catMap['electronics'];
+    
+    console.log('Seeding sub-categories...');
     const subCatRes = await client.query(
       `INSERT INTO categories (name, slug, parent_id, is_active)
        VALUES
          ('Men''s Wear', 'mens-wear', $1, true),
          ('Women''s Wear', 'womens-wear', $1, true),
-         ('Kids'' Wear', 'kids-wear', $1, true)
+         ('Kids'' Wear', 'kids-wear', $1, true),
+         ('Fans', 'fans', $2, true),
+         ('Watches', 'watches', $2, true),
+         ('Air Conditioners', 'ac', $2, true)
        ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
        RETURNING id, slug`,
-      [clothingId]
+      [clothingId, electronicsId]
     );
     for (const row of subCatRes.rows) {
       catMap[row.slug] = row.id;
@@ -69,7 +75,6 @@ async function seed() {
     console.log('Spec templates created for Clothing');
 
     console.log('Seeding products...');
-    const electronicsId = catMap['electronics'];
     const footwearId = catMap['footwear'];
     const accessoriesId = catMap['accessories'];
     const homeKitchenId = catMap['home-kitchen'];
@@ -87,7 +92,7 @@ async function seed() {
         mrp: 89999, buying_price: 55000, selling_price: 74999,
         condition: 'new', stock_quantity: 15, minimum_stock_alert: 3,
         is_b2b_available: true, is_b2c_available: true, b2b_price: 70000, b2b_minimum_quantity: 2,
-        images: JSON.stringify(['/uploads/products/samsung-tv.jpg']),
+        images: JSON.stringify(['/uploads/products/spotlight/samsung.png', '/uploads/products/spotlight/tcl.png']),
         specifications: JSON.stringify({ resolution: '4K UHD', size: '65 inch', smart: true }),
         weight_grams: 28000, tags: ['electronics', 'tv', 'samsung', '4k'],
         is_featured: true, created_by: adminId
@@ -118,7 +123,7 @@ async function seed() {
         condition: 'new_with_minor_damage', damage_description: 'Minor scratch on left ear cup',
         stock_quantity: 8, minimum_stock_alert: 3,
         is_b2b_available: true, is_b2c_available: true, b2b_price: 20000, b2b_minimum_quantity: 5,
-        images: JSON.stringify(['/uploads/products/sony-headphones.jpg']),
+        images: JSON.stringify(['/uploads/products/spotlight/sony.png']),
         specifications: JSON.stringify({ type: 'Over-ear', connectivity: 'Bluetooth 5.2', battery: '30 hours' }),
         weight_grams: 250, tags: ['electronics', 'audio', 'headphones', 'sony'],
         is_featured: false, created_by: adminId
@@ -362,7 +367,7 @@ async function seed() {
         mrp: 8490, buying_price: 4000, selling_price: 6499,
         condition: 'new', stock_quantity: 25, minimum_stock_alert: 5,
         is_b2b_available: false, is_b2c_available: true, b2b_price: null, b2b_minimum_quantity: 1,
-        images: JSON.stringify(['/uploads/products/rayban-wayfarer.jpg']),
+        images: JSON.stringify(['/uploads/products/spotlight/rayban.png']),
         specifications: JSON.stringify({ frame: 'Acetate', lens: 'Polarized UV400', style: 'Wayfarer' }),
         weight_grams: 35, tags: ['accessories', 'sunglasses', 'rayban'],
         is_featured: false, created_by: adminId
@@ -381,6 +386,66 @@ async function seed() {
         specifications: JSON.stringify({ dimensions: '77x77cm', material: 'Particleboard', color: 'White' }),
         weight_grams: 22000, tags: ['home', 'furniture', 'storage', 'ikea'],
         is_featured: false, created_by: adminId
+      },
+      {
+        category_id: electronicsId,
+        name: 'TCL 55-inch QLED 4K TV',
+        slug: 'tcl-55-inch-qled-4k-tv',
+        description: 'High performance QLED display with Google TV',
+        sku: 'ELEC-TV-021',
+        brand: 'TCL',
+        mrp: 59999, buying_price: 35000, selling_price: 42999,
+        condition: 'new', stock_quantity: 12, minimum_stock_alert: 3,
+        is_b2b_available: true, is_b2c_available: true, b2b_price: 38000, b2b_minimum_quantity: 3,
+        images: JSON.stringify(['/uploads/products/spotlight/tcl.png']),
+        specifications: JSON.stringify({ resolution: '4K QLED', size: '55 inch', smart: true }),
+        weight_grams: 18000, tags: ['electronics', 'tv', 'tcl', 'qled'],
+        is_featured: true, created_by: adminId
+      },
+      {
+        category_id: electronicsId,
+        name: 'Carrier 1.5 Ton 5 Star Inverter AC',
+        slug: 'carrier-1-5-ton-5-star-inverter-ac',
+        description: 'Energy efficient inverter AC with fast cooling',
+        sku: 'ELEC-AC-022',
+        brand: 'Carrier',
+        mrp: 67990, buying_price: 38000, selling_price: 45999,
+        condition: 'new', stock_quantity: 8, minimum_stock_alert: 2,
+        is_b2b_available: true, is_b2c_available: true, b2b_price: 42000, b2b_minimum_quantity: 2,
+        images: JSON.stringify(['/uploads/products/spotlight/carrier.png']),
+        specifications: JSON.stringify({ capacity: '1.5 Ton', energy_rating: '5 Star', type: 'Inverter' }),
+        weight_grams: 45000, tags: ['electronics', 'ac', 'carrier', 'cooling'],
+        is_featured: true, created_by: adminId
+      },
+      {
+        category_id: catMap['home-kitchen'],
+        name: 'Pampers Premium Care Diapers',
+        slug: 'pampers-premium-care-diapers',
+        description: 'Extra soft diapers for ultimate skin protection',
+        sku: 'HMK-KDS-023',
+        brand: 'Pampers',
+        mrp: 1499, buying_price: 700, selling_price: 1199,
+        condition: 'new', stock_quantity: 100, minimum_stock_alert: 20,
+        is_b2b_available: true, is_b2c_available: true, b2b_price: 900, b2b_minimum_quantity: 10,
+        images: JSON.stringify(['/uploads/products/spotlight/pampers.png']),
+        specifications: JSON.stringify({ size: 'Large', count: '64 units', material: 'Cotton soft' }),
+        weight_grams: 1200, tags: ['home', 'baby', 'pampers', 'diapers'],
+        is_featured: true, created_by: adminId
+      },
+      {
+        category_id: electronicsId,
+        name: 'Voltas 1.4 Ton 3 Star Inverter AC',
+        slug: 'voltas-1-4-ton-3-star-inverter-ac',
+        description: 'Reliable and affordable inverter AC for small rooms',
+        sku: 'ELEC-AC-024',
+        brand: 'Voltas',
+        mrp: 45990, buying_price: 25000, selling_price: 32999,
+        condition: 'new', stock_quantity: 10, minimum_stock_alert: 2,
+        is_b2b_available: true, is_b2c_available: true, b2b_price: 30000, b2b_minimum_quantity: 2,
+        images: JSON.stringify(['/uploads/products/spotlight/voltas.png']),
+        specifications: JSON.stringify({ capacity: '1.4 Ton', energy_rating: '3 Star', type: 'Inverter' }),
+        weight_grams: 40000, tags: ['electronics', 'ac', 'voltas', 'cooling'],
+        is_featured: true, created_by: adminId
       }
     ];
 

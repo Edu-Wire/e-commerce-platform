@@ -32,7 +32,7 @@ export default function ProductDetailPage() {
   const [showFullView, setShowFullView] = useState(false);
   const [showRecMenu, setShowRecMenu] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-  
+
   // Zoom State
   const [zoomState, setZoomState] = useState({ show: false, x: 0, y: 0 });
 
@@ -47,9 +47,10 @@ export default function ProductDetailPage() {
   }
 
   const images = product.images ?? [];
-  const currentImage = typeof images[selectedImageIdx] === 'string'
-    ? images[selectedImageIdx] as unknown as string
-    : (images[selectedImageIdx] as any)?.url ?? null;
+  const primaryImage = images.find((img: any) => typeof img === 'object' && img !== null && img.is_primary)?.url
+    ?? (typeof images[0] === 'string' ? images[0] : (images[0] as any)?.url)
+    ?? null;
+  const currentImage = selectedImageIdx === 0 ? primaryImage : (typeof images[selectedImageIdx] === 'string' ? images[selectedImageIdx] : (images[selectedImageIdx] as any)?.url);
   const isOutOfStock = product.stock_quantity <= 0;
   const isB2B = customer?.customer_type === 'b2b';
   const relatedProducts = relatedData?.data.filter(p => p.id !== product.id).slice(0, 6) ?? [];
@@ -152,9 +153,6 @@ export default function ProductDetailPage() {
                         src={currentImage}
                         alt={product.name}
                         className="max-w-full max-h-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800&q=80';
-                        }}
                       />
 
                       {/* Zoom Lens (Follows mouse) */}
@@ -282,7 +280,7 @@ export default function ProductDetailPage() {
                   <span className="text-sm text-[#0f1111]">Inclusive of all taxes</span>
                 </div>
                 <p className="text-sm mt-2">
-                  <span className="font-bold">EMI</span> starts at {fmt(Math.round(product.selling_price / 24))}. No Cost EMI available <span className="text-[#007185] cursor-pointer hover:underline text-xs">EMI options ⌄</span>
+                  <span className="font-bold">EMI</span> starts at {fmt(Math.round(product.selling_price / 24))}. No Cost EMI available <span className="text-[#007185] cursor-pointer hover:underline text-xs">EMI options </span>
                 </p>
               </div>
 
@@ -524,27 +522,27 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-                <div className="pt-2 text-[12px] space-y-2">
-                  <div className="flex items-center gap-2 text-[#007185] cursor-pointer hover:text-[#c45500]">
-                    <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                    </svg>
-                    <span>Secure transaction</span>
-                  </div>
-                  <label className="flex items-center gap-2 cursor-pointer text-[#0f1111]">
-                    <input type="checkbox" className="rounded border-[#d5d9d9] text-[#e47911] focus:ring-0 w-3.5 h-3.5" />
-                    <span>Add gift options</span>
-                  </label>
+              <div className="pt-2 text-[12px] space-y-2">
+                <div className="flex items-center gap-2 text-[#007185] cursor-pointer hover:text-[#c45500]">
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>Secure transaction</span>
                 </div>
+                <label className="flex items-center gap-2 cursor-pointer text-[#0f1111]">
+                  <input type="checkbox" className="rounded border-[#d5d9d9] text-[#e47911] focus:ring-0 w-3.5 h-3.5" />
+                  <span>Add gift options</span>
+                </label>
+              </div>
 
-                <div className="border-t border-gray-200 pt-3">
-                  <button className="w-full text-left py-2 px-4 border border-[#d5d9d9] rounded-lg text-[13px] hover:bg-[#f7fafa] transition-colors shadow-sm bg-white font-medium">
-                    Add to Wish List
-                  </button>
-                </div>
+              <div className="border-t border-gray-200 pt-3">
+                <button className="w-full text-left py-2 px-4 border border-[#d5d9d9] rounded-lg text-[13px] hover:bg-[#f7fafa] transition-colors shadow-sm bg-white font-medium">
+                  Add to Wish List
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
         {/* Related items bought by customers */}
         <section className="mt-16 border-t border-gray-200 pt-8">
@@ -718,39 +716,45 @@ export default function ProductDetailPage() {
             {/* Left Column */}
             <div className="space-y-1">
               {[
-                { id: 'features', label: 'Features & Specs', content: (
-                  <div className="p-4 bg-gray-50 text-sm space-y-2">
-                    {Object.entries(specs).map(([k, v]) => (
-                      <div key={k} className="flex border-b border-gray-200 pb-2">
-                        <span className="w-32 font-bold capitalize">{k.replace(/_/g, ' ')}:</span>
-                        <span className="flex-1">{v as string}</span>
-                      </div>
-                    ))}
-                  </div>
-                )},
-                { id: 'measurements', label: 'Measurements', content: (
-                  <div className="p-4 bg-gray-50 text-sm space-y-2">
-                    <p><span className="font-bold">Dimensions:</span> 24D x 92.5W x 32H Centimeters</p>
-                    <p><span className="font-bold">Weight:</span> 12.5 Kilograms</p>
-                    <p><span className="font-bold">Installation Space:</span> 150 sq ft recommended</p>
-                  </div>
-                )},
-                { id: 'care', label: 'Materials & Care', content: (
-                  <div className="p-4 bg-gray-50 text-sm space-y-2">
-                    <p><span className="font-bold">Cleaning:</span> Use a soft, damp cloth. Avoid harsh chemicals.</p>
-                    <p><span className="font-bold">Filter Care:</span> Clean the anti-dust filter every 2 weeks.</p>
-                    <p><span className="font-bold">Professional Service:</span> Annual maintenance recommended for peak performance.</p>
-                  </div>
-                )}
+                {
+                  id: 'features', label: 'Features & Specs', content: (
+                    <div className="p-4 bg-gray-50 text-sm space-y-2">
+                      {Object.entries(specs).map(([k, v]) => (
+                        <div key={k} className="flex border-b border-gray-200 pb-2">
+                          <span className="w-32 font-bold capitalize">{k.replace(/_/g, ' ')}:</span>
+                          <span className="flex-1">{v as string}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                },
+                {
+                  id: 'measurements', label: 'Measurements', content: (
+                    <div className="p-4 bg-gray-50 text-sm space-y-2">
+                      <p><span className="font-bold">Dimensions:</span> 24D x 92.5W x 32H Centimeters</p>
+                      <p><span className="font-bold">Weight:</span> 12.5 Kilograms</p>
+                      <p><span className="font-bold">Installation Space:</span> 150 sq ft recommended</p>
+                    </div>
+                  )
+                },
+                {
+                  id: 'care', label: 'Materials & Care', content: (
+                    <div className="p-4 bg-gray-50 text-sm space-y-2">
+                      <p><span className="font-bold">Cleaning:</span> Use a soft, damp cloth. Avoid harsh chemicals.</p>
+                      <p><span className="font-bold">Filter Care:</span> Clean the anti-dust filter every 2 weeks.</p>
+                      <p><span className="font-bold">Professional Service:</span> Annual maintenance recommended for peak performance.</p>
+                    </div>
+                  )
+                }
               ].map((item) => (
                 <div key={item.id} className="border border-gray-300 rounded overflow-hidden">
-                  <div 
+                  <div
                     onClick={() => setOpenAccordion(openAccordion === item.id ? null : item.id)}
                     className="p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50 bg-white"
                   >
                     <span className="text-[14px] font-bold text-[#0f1111]">{item.label}</span>
-                    <svg 
-                      className={`w-4 h-4 text-gray-500 transition-transform ${openAccordion === item.id ? 'rotate-180' : ''}`} 
+                    <svg
+                      className={`w-4 h-4 text-gray-500 transition-transform ${openAccordion === item.id ? 'rotate-180' : ''}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -763,29 +767,33 @@ export default function ProductDetailPage() {
             {/* Right Column */}
             <div className="space-y-1">
               {[
-                { id: 'details', label: 'Item details', content: (
-                   <div className="p-4 bg-gray-50 text-sm space-y-2">
+                {
+                  id: 'details', label: 'Item details', content: (
+                    <div className="p-4 bg-gray-50 text-sm space-y-2">
                       <p><span className="font-bold">Brand:</span> {product.brand || 'Generic'}</p>
                       <p><span className="font-bold">Model Name:</span> {product.sku}</p>
                       <p><span className="font-bold">Category:</span> {product.category?.name}</p>
-                   </div>
-                )},
-                { id: 'additional', label: 'Additional details', content: (
-                   <div className="p-4 bg-gray-50 text-sm space-y-2">
+                    </div>
+                  )
+                },
+                {
+                  id: 'additional', label: 'Additional details', content: (
+                    <div className="p-4 bg-gray-50 text-sm space-y-2">
                       <p><span className="font-bold">Manufacturer:</span> Voltas Limited</p>
                       <p><span className="font-bold">Country of Origin:</span> India</p>
                       <p><span className="font-bold">Included Components:</span> 1 Indoor Unit, 1 Outdoor Unit, Remote Control, User Manual, Warranty Card</p>
-                   </div>
-                )}
+                    </div>
+                  )
+                }
               ].map((item) => (
                 <div key={item.id} className="border border-gray-300 rounded overflow-hidden">
-                  <div 
+                  <div
                     onClick={() => setOpenAccordion(openAccordion === item.id ? null : item.id)}
                     className="p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50 bg-white"
                   >
                     <span className="text-[14px] font-bold text-[#0f1111]">{item.label}</span>
-                    <svg 
-                      className={`w-4 h-4 text-gray-500 transition-transform ${openAccordion === item.id ? 'rotate-180' : ''}`} 
+                    <svg
+                      className={`w-4 h-4 text-gray-500 transition-transform ${openAccordion === item.id ? 'rotate-180' : ''}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -810,7 +818,7 @@ export default function ProductDetailPage() {
         {/* Customer Reviews Section */}
         <section className="mt-16 border-t border-gray-200 pt-12 pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12">
-            
+
             {/* Left Sidebar: Ratings Summary */}
             <div className="space-y-6">
               <div>
@@ -837,8 +845,8 @@ export default function ProductDetailPage() {
                   <div key={item.stars} className="flex items-center gap-4 text-sm group cursor-pointer">
                     <span className="text-[#007185] hover:text-[#c45500] hover:underline min-w-[40px] font-medium">{item.stars} star</span>
                     <div className="flex-1 h-5 bg-gray-100 rounded-sm border border-gray-200 overflow-hidden relative">
-                      <div 
-                        className="absolute top-0 left-0 h-full bg-[#ffa41c] border-r border-[#de8900]" 
+                      <div
+                        className="absolute top-0 left-0 h-full bg-[#ffa41c] border-r border-[#de8900]"
                         style={{ width: `${item.pct}%` }}
                       />
                     </div>
@@ -865,7 +873,7 @@ export default function ProductDetailPage() {
 
             {/* Right Side: AI Summary & List */}
             <div className="space-y-10">
-              
+
               {/* Customers Say (AI Summary) */}
               <div className="space-y-4">
                 <h3 className="text-[18px] font-bold text-[#0f1111]">Customers say</h3>
@@ -910,10 +918,10 @@ export default function ProductDetailPage() {
                 <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
                   {[1, 2, 3, 4, 5, 6].map(i => (
                     <div key={i} className="w-24 h-24 md:w-32 md:h-32 rounded-lg border border-gray-200 flex-shrink-0 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-                      <img 
-                        src={`https://picsum.photos/seed/rev-${i}/300/300`} 
-                        alt="Review image" 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={`https://picsum.photos/seed/rev-${i}/300/300`}
+                        alt="Review image"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   ))}
@@ -923,7 +931,7 @@ export default function ProductDetailPage() {
               {/* Review List */}
               <div className="space-y-8 max-w-[800px]">
                 <h3 className="text-[18px] font-bold text-[#0f1111]">Top reviews from India</h3>
-                
+
                 {[
                   {
                     user: 'Maan',
@@ -972,7 +980,7 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                 ))}
-                
+
                 <button className="text-[#007185] text-sm hover:text-[#c45500] hover:underline font-bold pt-4">See more reviews ›</button>
               </div>
             </div>

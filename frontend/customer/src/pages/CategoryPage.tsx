@@ -79,6 +79,7 @@ export default function CategoryPage() {
   const isDeals = slug === 'deals' || slug === 'todays-deals';
   const isFashion = slug === 'clothing' || slug === 'footwear' || slug?.includes('wear');
   const isHomeKitchen = slug === 'home-kitchen' || slug === 'home' || slug === 'kitchen' || slug?.includes('kitchen') || slug?.includes('home');
+  const isBooks = slug === 'books';
 
   const [filters, setFilters] = useState<ProductFilters>({
     category: (slug !== 'all' && !isDeals) ? slug : undefined,
@@ -497,19 +498,46 @@ export default function CategoryPage() {
             {slug === 'footwear' ? (
               /* Footwear Specific Content */
               <>
-                {/* Men/Women Split Banner */}
-                <div className="flex h-[120px] mb-6 rounded-sm overflow-hidden border border-gray-100 shadow-md">
+                {/* Men/Women Split Banner - Premium Redesign */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[180px] md:h-[220px] mb-8">
+                  {/* Men Section */}
                   <div
                     onClick={() => setActiveGender('men')}
-                    className={`flex-1 flex items-center justify-center cursor-pointer transition-all group ${activeGender === 'men' ? 'bg-[#ff4d00]' : 'bg-white hover:bg-gray-50 border-r border-gray-100'}`}
+                    className="group relative rounded-lg overflow-hidden cursor-pointer shadow-lg transition-all duration-500 hover:shadow-2xl"
                   >
-                    <h2 className={`text-4xl font-black italic tracking-tighter transition-transform group-hover:scale-110 ${activeGender === 'men' ? 'text-white' : 'text-gray-400'}`}>Men</h2>
+                    <img
+                      src="/uploads/men_shoes_bg.png"
+                      alt="Men's Footwear"
+                      className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${activeGender === 'men' ? 'opacity-100' : 'opacity-60 grayscale-[50%]'}`}
+                    />
+                    <div className={`absolute inset-0 transition-colors duration-500 ${activeGender === 'men' ? 'bg-orange-600/40' : 'bg-black/40 group-hover:bg-black/20'}`} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
+                      <h2 className="text-5xl font-black italic tracking-tighter uppercase drop-shadow-lg mb-2">Men</h2>
+                      <div className={`h-1 bg-white transition-all duration-500 ${activeGender === 'men' ? 'w-24 opacity-100' : 'w-0 opacity-0 group-hover:w-16 group-hover:opacity-100'}`} />
+                      {activeGender === 'men' && (
+                        <span className="mt-4 px-6 py-1.5 bg-white text-orange-600 font-black italic text-sm rounded-full shadow-xl animate-bounce">SHOP NOW</span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Women Section */}
                   <div
                     onClick={() => setActiveGender('women')}
-                    className={`flex-1 flex items-center justify-center cursor-pointer transition-all group ${activeGender === 'women' ? 'bg-[#ff4d00]' : 'bg-white hover:bg-gray-50'}`}
+                    className="group relative rounded-lg overflow-hidden cursor-pointer shadow-lg transition-all duration-500 hover:shadow-2xl"
                   >
-                    <h2 className={`text-4xl font-black italic tracking-tighter transition-transform group-hover:scale-110 border-2 px-8 py-1 ${activeGender === 'women' ? 'text-white border-white' : 'text-[#0f1111] border-[#0f1111]'}`}>Women</h2>
+                    <img
+                      src="/uploads/women_shoes_bg.png"
+                      alt="Women's Footwear"
+                      className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${activeGender === 'women' ? 'opacity-100' : 'opacity-60 grayscale-[50%]'}`}
+                    />
+                    <div className={`absolute inset-0 transition-colors duration-500 ${activeGender === 'women' ? 'bg-orange-600/40' : 'bg-black/40 group-hover:bg-black/20'}`} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
+                      <h2 className="text-5xl font-black italic tracking-tighter uppercase drop-shadow-lg mb-2">Women</h2>
+                      <div className={`h-1 bg-white transition-all duration-500 ${activeGender === 'women' ? 'w-24 opacity-100' : 'w-0 opacity-0 group-hover:w-16 group-hover:opacity-100'}`} />
+                      {activeGender === 'women' && (
+                        <span className="mt-4 px-6 py-1.5 bg-white text-orange-600 font-black italic text-sm rounded-full shadow-xl animate-bounce">SHOP NOW</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -754,7 +782,7 @@ export default function CategoryPage() {
                 <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest">Subtotal</p>
                 <p className="text-[18px] font-bold text-[#b12704]">{fmt(cartTotal)}</p>
               </div>
-              <Link to="/cart" className="block w-full py-1.5 bg-white border border-gray-300 rounded-full text-center text-[12px] font-medium hover:bg-gray-50 mb-6">Go to Cart</Link>
+              <Link to="/cart" className="block w-full py-1.5 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-lg text-center text-[12px] font-medium shadow-sm mb-6 transition-colors">Go to Cart</Link>
 
               <div className="space-y-6">
                 {cartItems.slice(0, 2).map(item => (
@@ -782,6 +810,112 @@ export default function CategoryPage() {
               </div>
             </div>
           </aside>
+        </div>
+      </div>
+    );
+  }
+
+  if (isBooks && !searchParams.toString()) {
+    return (
+      <div className="bg-white min-h-screen pb-12 overflow-x-hidden">
+        {/* Books Sub-Header */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="max-w-[1500px] mx-auto px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+              <h1 className="text-[14px] font-bold text-[#0f1111] whitespace-nowrap">ShopNow Books</h1>
+              {['Kindle eBooks', 'Best Sellers', 'New Releases', 'Children\'s Books', 'Textbooks', 'Exams', 'Literature & Fiction'].map(link => (
+                <Link key={link} to="#" className="text-[12px] text-gray-700 hover:text-[#c45500] hover:underline whitespace-nowrap">{link}</Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Massive Selection Section - Replicating Kindle Landing */}
+        <div className="bg-white py-20 overflow-hidden">
+          <div className="max-w-[1500px] mx-auto px-4">
+            <div className="flex flex-col items-center">
+              {/* Curved/Skewed Book Carousel */}
+              <div className="relative w-full max-w-[1200px] h-[300px] md:h-[400px] mb-12 flex items-center justify-center">
+                <div className="flex items-center justify-center gap-2 md:gap-4 perspective-[1000px]">
+                  {[
+                    { img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300', rotate: '-25deg', scale: '0.8', z: '10' },
+                    { img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300', rotate: '-15deg', scale: '0.9', z: '20' },
+                    { img: '/uploads/book_rich_dad.png', rotate: '-5deg', scale: '1', z: '30' },
+                    { img: '/uploads/book_forest.png', rotate: '5deg', scale: '1.1', z: '40', highlight: true },
+                    { img: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=300', rotate: '15deg', scale: '1', z: '30' },
+                    { img: '/uploads/book_sapiens.png', rotate: '25deg', scale: '0.9', z: '20' },
+                    { img: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300', rotate: '35deg', scale: '0.8', z: '10' },
+                  ].map((book, i) => (
+                    <div
+                      key={i}
+                      className={`relative flex-shrink-0 w-[120px] md:w-[180px] aspect-[2/3] bg-white shadow-2xl transition-all duration-500 hover:scale-110 hover:z-50 cursor-pointer ${book.highlight ? 'border-4 border-[#FF9900]' : ''}`}
+                      style={{
+                        transform: `rotateY(${book.rotate}) scale(${book.scale})`,
+                        zIndex: book.z
+                      }}
+                    >
+                      <img src={book.img} alt="Book Cover" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Text Content */}
+              <div className="flex flex-col md:flex-row items-start justify-between gap-12 max-w-[1000px] w-full">
+                <div className="md:w-1/2">
+                  <h2 className="text-5xl md:text-6xl font-black text-gray-900 leading-[0.9] tracking-tighter">
+                    Massive <br /> selection
+                  </h2>
+                </div>
+                <div className="md:w-1/2 space-y-6">
+                  <p className="text-lg text-gray-700 leading-relaxed font-medium">
+                    Discover great reads and Kindle exclusives. Prime members get unlimited access to over a hundreds of books and Kindle Unlimited offers over thousands of titles. With Whispersync, switch from Kindle to the Kindle app without losing your place (requires Wi-Fi).
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div className="max-w-[1500px] mx-auto p-4 flex gap-8 mt-8">
+          {/* Sidebar */}
+          <aside className="w-64 flex-shrink-0 hidden lg:block">
+            <div className="mb-6">
+              <h3 className="text-[14px] font-bold text-[#0f1111] mb-2 uppercase tracking-tighter">Browse by Category</h3>
+              <div className="space-y-1">
+                {['Action & Adventure', 'Biographies & Autobiographies', 'Business & Economics', 'Comics & Mangas', 'Crime, Thriller & Mystery', 'Fiction', 'Health, Family & Personal Development', 'History', 'Religion & Spirituality', 'Romance', 'Sci-Fi & Fantasy'].map(cat => (
+                  <Link key={cat} to="#" className="block text-[13px] text-gray-600 hover:text-[#c45500] hover:underline">{cat}</Link>
+                ))}
+              </div>
+            </div>
+            <FilterSidebar filters={filters} onFilterChange={updateFilters} />
+          </aside>
+
+          {/* Main Product Grid */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+              <h2 className="text-xl font-bold text-gray-900">Recommended Books</h2>
+              <div className="flex items-center gap-3">
+                <label className="text-[12px] text-gray-500 font-medium">Sort by:</label>
+                <select
+                  onChange={e => updateFilters({ sort: e.target.value })}
+                  className="text-[12px] border border-gray-300 rounded px-3 py-1.5 bg-[#f0f2f2] hover:bg-[#e3e6e6] transition-colors cursor-pointer"
+                >
+                  {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
+                {Array.from({ length: 12 }).map((_, i) => <ProductSkeleton key={i} />)}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
+                {data?.data.map(p => <ProductCard key={p.id} product={p} />)}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );

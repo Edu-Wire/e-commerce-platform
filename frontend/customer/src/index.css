@@ -30,13 +30,22 @@
   }
 }
 
-@keyframes slide-in {
+@keyframes slide-from-left {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
 }
 
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out;
+@keyframes slide-from-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-from-left {
+  animation: slide-from-left 0.3s ease-out forwards;
+}
+
+.animate-slide-from-right {
+  animation: slide-from-right 0.3s ease-out forwards;
 }
 
 /* Custom Range Slider Styling (Amazon Style) */

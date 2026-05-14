@@ -24,6 +24,7 @@ export default function Navbar() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCategorySlug, setSelectedCategorySlug] = useState('');
+  const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -536,17 +537,53 @@ export default function Navbar() {
                 <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Shop By Category</h3>
                 <div className="space-y-1">
                   {topLevelCategories.map(cat => (
-                    <Link
-                      key={cat.id}
-                      to={`/category/${cat.slug}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block text-sm text-gray-700 flex justify-between items-center hover:bg-gray-100 -mx-4 px-4 py-3 group"
-                    >
-                      {cat.name}
-                      <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
+                    <div key={cat.id}>
+                      <div
+                        onClick={() => {
+                          if (cat.children && cat.children.length > 0) {
+                            setExpandedCategory(expandedCategory === cat.id ? null : cat.id);
+                          } else {
+                            navigate(`/category/${cat.slug}`);
+                            setMobileMenuOpen(false);
+                          }
+                        }}
+                        className="block text-sm text-gray-700 flex justify-between items-center hover:bg-gray-100 -mx-4 px-4 py-3 group cursor-pointer"
+                      >
+                        {cat.name}
+                        {cat.children && cat.children.length > 0 && (
+                          <svg
+                            className={`w-4 h-4 text-gray-400 group-hover:text-gray-900 transition-transform ${expandedCategory === cat.id ? 'rotate-90' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
+                      </div>
+
+                      {expandedCategory === cat.id && cat.children && cat.children.length > 0 && (
+                        <div className="bg-gray-50 -mx-4 py-1 animate-in slide-in-from-top-2 duration-200">
+                          <Link
+                            to={`/category/${cat.slug}`}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block text-sm text-gray-800 font-bold hover:bg-gray-100 pl-8 pr-4 py-2.5 transition-colors border-b border-gray-100"
+                          >
+                            All {cat.name}
+                          </Link>
+                          {cat.children.map(sub => (
+                            <Link
+                              key={sub.id}
+                              to={`/category/${sub.slug}`}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="block text-sm text-gray-600 hover:bg-gray-100 pl-8 pr-4 py-2.5 transition-colors"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -556,32 +593,6 @@ export default function Navbar() {
                 <div className="space-y-1">
                   <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
 
-                  {/* Mobile Language Selector */}
-                  <div className="py-2">
-                    <p className="text-xs font-bold text-gray-500 mb-2 px-0 uppercase">Language</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { id: 'EN', label: 'English' },
-                        { id: 'HI', label: 'हिन्दी' },
-                        { id: 'TA', label: 'தமிழ்' },
-                        { id: 'TE', label: 'తెలుగు' },
-                      ].map(lang => (
-                        <button
-                          key={lang.id}
-                          onClick={() => {
-                            setLanguage(lang.id as Language);
-                            setMobileMenuOpen(false);
-                          }}
-                          className={`text-left px-3 py-2 text-sm rounded-md border ${language === lang.id
-                              ? 'border-orange-500 bg-orange-50 text-orange-700 font-bold'
-                              : 'border-gray-200 text-gray-600'
-                            }`}
-                        >
-                          {lang.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
                   <Link to="/customer-service" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Customer Service</Link>
                   {customer ? (
