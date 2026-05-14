@@ -40,9 +40,18 @@ function AppInitializer({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <AppInitializer>
+      <ScrollToTop />
       <Routes>
         {/* Full-page auth routes (no Layout) */}
         <Route path="/login" element={<LoginPage />} />

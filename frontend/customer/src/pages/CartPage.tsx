@@ -91,7 +91,7 @@ export default function CartPage() {
           <div className="text-[18px]">
             Subtotal ({items.length} items): <span className="font-bold">{fmt(totalPrice())}</span>
           </div>
-          <button 
+          <button
             onClick={handleCheckout}
             className="w-full py-3 px-4 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-lg text-[15px] font-medium shadow-sm transition-colors"
           >
@@ -100,16 +100,16 @@ export default function CartPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
-          
+
           {/* Main Cart Section */}
           <div className="bg-white p-4 md:p-6 shadow-sm rounded-sm">
             <div className="flex justify-between items-end border-b border-gray-200 pb-2 mb-4">
               <h1 className="text-xl md:text-[28px] font-medium">Shopping Cart</h1>
               <span className="text-[14px] text-gray-500 mb-1 hidden md:block">Price</span>
             </div>
-            
+
             <div className="flex justify-between items-center mb-4">
-              <button 
+              <button
                 onClick={() => selectAll(false)}
                 className="text-[13px] text-[#007185] hover:text-[#c45500] hover:underline"
               >
@@ -125,8 +125,8 @@ export default function CartPage() {
                   <div className="flex gap-4 w-full">
                     {/* Checkbox */}
                     <div className="pt-2 sm:pt-8">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={!!selectedItems[item.product_id]}
                         onChange={() => toggleSelect(item.product_id)}
                         className="w-5 h-5 sm:w-4 sm:h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
@@ -135,9 +135,9 @@ export default function CartPage() {
 
                     {/* Product Image */}
                     <div className="w-24 h-24 sm:w-44 sm:h-44 flex-shrink-0 flex items-center justify-center p-1 sm:p-2 bg-gray-50 rounded">
-                      <img 
-                        src={item.image || 'https://via.placeholder.com/150'} 
-                        alt={item.name} 
+                      <img
+                        src={item.image || 'https://via.placeholder.com/150'}
+                        alt={item.name}
                         className="max-w-full max-h-full object-contain"
                       />
                     </div>
@@ -154,7 +154,7 @@ export default function CartPage() {
                       </div>
 
                       <div className="text-[12px] text-[#007600] font-medium mt-1">In stock</div>
-                      
+
                       <div className="flex items-center gap-2 mt-1">
                         <img src="https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-logo.png" alt="Prime" className="h-3.5 sm:h-4" />
                         <span className="text-[11px] sm:text-[12px] text-gray-600">FREE delivery as soon as <span className="font-bold">Wed, 13 May</span></span>
@@ -163,7 +163,7 @@ export default function CartPage() {
                       {item.mrp > item.price && (
                         <div className="flex flex-wrap items-center gap-2 mt-2">
                           <span className="bg-[#cc0c39] text-white text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded-sm">Great Summer Deal</span>
-                          <span className="text-[#cc0c39] text-[11px] sm:text-[12px] font-bold">-{Math.round((1 - item.price/item.mrp)*100)}% {fmt(item.price)}</span>
+                          <span className="text-[#cc0c39] text-[11px] sm:text-[12px] font-bold">-{Math.round((1 - item.price / item.mrp) * 100)}% {fmt(item.price)}</span>
                         </div>
                       )}
 
@@ -176,13 +176,13 @@ export default function CartPage() {
                         <div className="flex items-center bg-[#F0F2F2] border border-[#D5D9D9] rounded-lg shadow-sm">
                           <span className="px-3 py-1 text-[13px] border-r border-[#D5D9D9]">Qty: {item.quantity}</span>
                           <div className="flex">
-                            <button 
+                            <button
                               onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
                               className="px-2 py-1 hover:bg-[#E3E6E6] transition-colors"
                             >
                               −
                             </button>
-                            <button 
+                            <button
                               onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
                               className="px-2 py-1 hover:bg-[#E3E6E6] transition-colors border-l border-[#D5D9D9]"
                             >
@@ -191,7 +191,7 @@ export default function CartPage() {
                           </div>
                         </div>
                         <span className="text-gray-300">|</span>
-                        <button 
+                        <button
                           onClick={() => removeItem(item.product_id)}
                           className="text-[#007185] hover:text-[#c45500] hover:underline"
                         >
@@ -206,21 +206,21 @@ export default function CartPage() {
                   {/* Mobile Actions Row (Visible only on mobile) */}
                   <div className="sm:hidden flex items-center gap-3 mt-2">
                     <div className="flex items-center bg-[#F0F2F2] border border-[#D5D9D9] rounded-lg shadow-sm h-9">
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
                         className="px-3 h-full hover:bg-[#E3E6E6] transition-colors"
                       >
                         −
                       </button>
                       <span className="px-3 py-1 text-[14px] font-medium border-x border-[#D5D9D9] min-w-[40px] text-center">{item.quantity}</span>
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
                         className="px-3 h-full hover:bg-[#E3E6E6] transition-colors"
                       >
                         +
                       </button>
                     </div>
-                    <button 
+                    <button
                       onClick={() => removeItem(item.product_id)}
                       className="px-4 py-1.5 border border-[#D5D9D9] rounded-lg text-[13px] font-medium bg-white hover:bg-gray-50 shadow-sm"
                     >
@@ -254,7 +254,7 @@ export default function CartPage() {
                 </div>
                 <span className="text-[#008a00]">Your order is eligible for FREE Delivery.</span>
               </div>
-              
+
               <div className="text-[18px]">
                 Subtotal ({items.length} items): <span className="font-bold">{fmt(totalPrice())}</span>
               </div>
@@ -264,7 +264,7 @@ export default function CartPage() {
                 <span>This order contains a gift</span>
               </div>
 
-              <button 
+              <button
                 onClick={handleCheckout}
                 className="w-full py-2 px-4 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-lg text-[13px] font-medium shadow-sm transition-colors"
               >
@@ -287,9 +287,9 @@ export default function CartPage() {
                   {suggestions.slice(0, 6).map((p, idx) => (
                     <div key={p.id} className="flex gap-3 group">
                       <div className="w-20 h-20 flex-shrink-0 bg-gray-50 p-1 flex items-center justify-center">
-                        <img 
-                          src={p.images?.[0]?.url || 'https://via.placeholder.com/100'} 
-                          alt={p.name} 
+                        <img
+                          src={p.images?.[0]?.url || 'https://via.placeholder.com/100'}
+                          alt={p.name}
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>
@@ -300,12 +300,12 @@ export default function CartPage() {
                         <div className="flex text-[#e47911] text-[12px]">
                           {[1, 2, 3, 4].map(s => <span key={s}>★</span>)}
                           <span className="text-gray-300">★</span>
-                          <span className="ml-1 text-[#007185] hover:underline">{Math.floor(Math.random()*1000)}</span>
+                          <span className="ml-1 text-[#007185] hover:underline">{Math.floor(Math.random() * 1000)}</span>
                         </div>
                         <div className="text-[14px] font-medium text-[#b12704]">
                           {fmt(p.selling_price)}
                         </div>
-                        <button 
+                        <button
                           onClick={() => {
                             addItem({
                               product_id: p.id,

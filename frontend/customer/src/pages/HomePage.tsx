@@ -164,15 +164,15 @@ export default function HomePage() {
             {/* Scroll Container */}
             <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth">
               {[
-                { title: 'Samsung TVs | Min. 40% off', img: '/spotlight/samsung.png' },
-                { title: 'Ray-Ban Meta | Flat 25% off', img: '/spotlight/rayban.png' },
-                { title: 'Pampers | Up to 45% Off', img: '/spotlight/pampers.png' },
-                { title: 'TCL TVs | Up to 55% off', img: '/spotlight/tcl.png' },
-                { title: 'Sony Audio | Flat 20% off', img: '/spotlight/sony.png' },
-                { title: 'Carrier | Min. 35% off', img: '/spotlight/carrier.png' },
-                { title: 'Voltas | Min. 30% off', img: '/spotlight/voltas.png' },
+                { title: 'Samsung TVs | Min. 40% off', img: '/uploads/products/spotlight/samsung.png', slug: 'samsung-65-inch-4k-smart-tv' },
+                { title: 'Ray-Ban Meta | Flat 25% off', img: '/uploads/products/spotlight/rayban.png', slug: 'rayban-wayfarer-sunglasses' },
+                { title: 'Pampers | Up to 45% Off', img: '/uploads/products/spotlight/pampers.png', slug: 'pampers-premium-care-diapers' },
+                { title: 'TCL TVs | Up to 55% off', img: '/uploads/products/spotlight/tcl.png', slug: 'tcl-55-inch-qled-4k-tv' },
+                { title: 'Sony Audio | Flat 20% off', img: '/uploads/products/spotlight/sony.png', slug: 'sony-wh-1000xm5-headphones' },
+                { title: 'Carrier | Min. 35% off', img: '/uploads/products/spotlight/carrier.png', slug: 'carrier-1-5-ton-5-star-inverter-ac' },
+                { title: 'Voltas | Min. 30% off', img: '/uploads/products/spotlight/voltas.png', slug: 'voltas-1-4-ton-3-star-inverter-ac' },
               ].map((brand, i) => (
-                <div key={i} className="flex-shrink-0 w-[200px] sm:w-[240px]">
+                <Link key={i} to={`/product/${brand.slug}`} className="flex-shrink-0 w-[200px] sm:w-[240px] group/item">
                   <div
                     className="aspect-square rounded-sm border border-gray-200 overflow-hidden relative mb-2 transition-all hover:shadow-xl cursor-pointer bg-[#F7F7F7] group/card"
                   >
@@ -188,10 +188,10 @@ export default function HomePage() {
                     {/* Subtle bottom shadow for depth */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/[0.02] to-transparent"></div>
                   </div>
-                  <p className="text-xs sm:text-sm font-medium text-gray-800 hover:text-orange-700 cursor-pointer line-clamp-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-800 group-hover/item:text-orange-700 cursor-pointer line-clamp-1">
                     {brand.title}
                   </p>
-                </div>
+                </Link>
               ))}
 
               {/* View All Deals Card */}
