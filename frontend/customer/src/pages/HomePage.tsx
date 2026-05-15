@@ -163,36 +163,40 @@ export default function HomePage() {
           <div className="relative group">
             {/* Scroll Container */}
             <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth">
-              {[
-                { title: 'Samsung TVs | Min. 40% off', img: '/uploads/products/spotlight/samsung.png', slug: 'samsung-65-inch-4k-smart-tv' },
-                { title: 'Ray-Ban Meta | Flat 25% off', img: '/uploads/products/spotlight/rayban.png', slug: 'rayban-wayfarer-sunglasses' },
-                { title: 'Pampers | Up to 45% Off', img: '/uploads/products/spotlight/pampers.png', slug: 'pampers-premium-care-diapers' },
-                { title: 'TCL TVs | Up to 55% off', img: '/uploads/products/spotlight/tcl.png', slug: 'tcl-55-inch-qled-4k-tv' },
-                { title: 'Sony Audio | Flat 20% off', img: '/uploads/products/spotlight/sony.png', slug: 'sony-wh-1000xm5-headphones' },
-                { title: 'Carrier | Min. 35% off', img: '/uploads/products/spotlight/carrier.png', slug: 'carrier-1-5-ton-5-star-inverter-ac' },
-                { title: 'Voltas | Min. 30% off', img: '/uploads/products/spotlight/voltas.png', slug: 'voltas-1-4-ton-3-star-inverter-ac' },
-              ].map((brand, i) => (
-                <Link key={i} to={`/product/${brand.slug}`} className="flex-shrink-0 w-[200px] sm:w-[240px] group/item">
-                  <div
-                    className="aspect-square rounded-sm border border-gray-200 overflow-hidden relative mb-2 transition-all hover:shadow-xl cursor-pointer bg-[#F7F7F7] group/card"
-                  >
-                    {/* Clean Product Image - Natural Colors */}
-                    <div className="absolute inset-0 flex items-center justify-center p-2">
-                      <img
-                        src={brand.img}
-                        alt={brand.title}
-                        className="max-w-full max-h-full object-contain drop-shadow-md group-hover/card:scale-105 transition-transform duration-500"
-                      />
-                    </div>
+              {featuredLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[200px] sm:w-[240px] aspect-square bg-gray-100 animate-pulse rounded-sm" />
+                ))
+              ) : (
+                rawFeaturedData?.data.slice(0, 8).map((product: any) => (
+                  <Link key={product.id} to={`/product/${product.slug}`} className="flex-shrink-0 w-[200px] sm:w-[240px] group/item">
+                    <div
+                      className="aspect-square rounded-sm border border-gray-200 overflow-hidden relative mb-2 transition-all hover:shadow-xl cursor-pointer bg-[#F7F7F7] group/card"
+                    >
+                      {/* Real Product Image from S3 */}
+                      <div className="absolute inset-0 flex items-center justify-center p-2">
+                        <img
+                          src={product.images?.[0]?.url || product.images?.[0] || '/placeholder.png'}
+                          alt={product.name}
+                          className="max-w-full max-h-full object-contain drop-shadow-md group-hover/card:scale-105 transition-transform duration-500"
+                        />
+                      </div>
 
-                    {/* Subtle bottom shadow for depth */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/[0.02] to-transparent"></div>
-                  </div>
-                  <p className="text-xs sm:text-sm font-medium text-gray-800 group-hover/item:text-orange-700 cursor-pointer line-clamp-1">
-                    {brand.title}
-                  </p>
-                </Link>
-              ))}
+                      {/* Discount Badge Overlay (Amazon Style) */}
+                      {product.discount_percentage > 0 && (
+                        <div className="absolute top-2 left-2 bg-[#CC0C39] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">
+                          {Math.round(product.discount_percentage)}% off
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/[0.02] to-transparent"></div>
+                    </div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-800 group-hover/item:text-orange-700 cursor-pointer line-clamp-1">
+                      {product.brand ? `${product.brand} | ` : ''}{product.name}
+                    </p>
+                  </Link>
+                ))
+              )}
 
               {/* View All Deals Card */}
               <div className="flex-shrink-0 w-[120px] sm:w-[150px] flex flex-col items-center justify-center group/all">

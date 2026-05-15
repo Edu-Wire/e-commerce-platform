@@ -5,6 +5,7 @@ import { delCachePattern, delCache } from '../../config/redis';
 import { success, error, slugify } from '../../utils/helpers';
 import { getPaginationParams, getPaginationMeta, getOffset } from '../../utils/pagination';
 import { Product } from '../../types';
+import { uploadToS3 } from '../../utils/s3';
 
 export async function getAll(req: Request, res: Response): Promise<void> {
   try {
@@ -285,20 +286,32 @@ export async function deleteProduct(req: Request, res: Response): Promise<void> 
   }
 }
 
-export async function uploadImages(req: Request, res: Response): Promise<void> {
+export async function uploadImagesS3(req: Request, res: Response): Promise<void> {
   try {
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       res.status(400).json(error('No images uploaded'));
       return;
     }
 
-    const urls = (req.files as Express.Multer.File[]).map((file) => {
-      return `/uploads/products/${path.basename(file.filename)}`;
-    });
+    const uploadPromises = (req.files as Express.Multer.File[]).map((file) => 
+      uploadToS3(file, 'products')
+    );
 
-    res.json(success({ urls }));
+    const urls = await Promise.all(uploadPromises);
+
+    const images = urls.map((url, index) => ({
+      id: `img-${Date.now()}-${index}`,
+      url,
+      is_primary: false,
+      sort_order: index
+    }));
+
+    res.json({
+      success: true,
+      data: images
+    });
   } catch (err) {
     console.error('uploadImages error:', err);
-    res.status(500).json(error('Internal server error'));
+    res.status(500).json(error('Internal server error during S3 upload'));
   }
 }
