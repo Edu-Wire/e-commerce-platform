@@ -10,19 +10,7 @@ function ensureDir(dir: string) {
   }
 }
 
-const imageStorage = multer.diskStorage({
-  destination(_req: Request, _file: Express.Multer.File, cb) {
-    const dir = path.join(env.uploadDir, 'products');
-    ensureDir(dir);
-    cb(null, dir);
-  },
-  filename(_req: Request, file: Express.Multer.File, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const timestamp = Date.now();
-    const randomPart = Math.round(Math.random() * 1e9);
-    cb(null, `${timestamp}-${randomPart}${ext}`);
-  },
-});
+const imageStorage = multer.memoryStorage();
 
 function imageFileFilter(_req: Request, file: Express.Multer.File, cb: FileFilterCallback) {
   const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
