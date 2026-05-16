@@ -31,13 +31,15 @@ interface RawRow {
   b2b_minimum_quantity?: string;
   weight_grams?: string;
   tags?: string;
+  image_urls?: string;
   specifications?: string;
   [key: string]: string | undefined;
 }
 
 interface RowError {
   row: number;
-  error: string;
+  sku: string;
+  message: string;
 }
 
 async function parseCsvFile(filePath: string): Promise<RawRow[]> {
@@ -63,11 +65,11 @@ async function validateAndInsertRow(
   rowNum: number,
   adminId: number | null,
   categoryCache: Map<string, number>
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; sku?: string }> {
   // Check required fields
   for (const field of REQUIRED_FIELDS) {
     if (!row[field] || String(row[field]).trim() === '') {
-      return { success: false, error: `Missing required field: ${field}` };
+      return { success: false, error: `Missing required field: ${field}`, sku: row.sku };
     }
   }
 
@@ -98,7 +100,7 @@ async function validateAndInsertRow(
 
   // Check SKU uniqueness
   const skuExists = await queryOne('SELECT id FROM products WHERE sku = $1', [sku]);
-  if (skuExists) return { success: false, error: `SKU "${sku}" already exists` };
+  if (skuExists) return { success: false, error: `SKU "${sku}" already exists`, sku };
 
   const slug = slugify(name);
   const slugExists = await queryOne('SELECT id FROM products WHERE slug = $1', [slug]);
@@ -111,6 +113,13 @@ async function validateAndInsertRow(
   const b2bMinQty = row.b2b_minimum_quantity ? parseInt(String(row.b2b_minimum_quantity)) : 1;
   const weightGrams = row.weight_grams ? parseInt(String(row.weight_grams)) : null;
   const tagsRaw = row.tags ? String(row.tags).split(';').map((t) => t.trim()).filter(Boolean) : [];
+  
+  const imageUrls = row.image_urls ? String(row.image_urls).split(';').map((url) => url.trim()).filter(Boolean) : [];
+  const productImages = imageUrls.map((url, idx) => ({
+    url,
+    is_primary: idx === 0,
+    sort_order: idx
+  }));
 
   let specifications: Record<string, unknown> = {};
   if (row.specifications) {
@@ -131,7 +140,7 @@ async function validateAndInsertRow(
        images, specifications, weight_grams, tags,
        is_active, created_by
      ) VALUES (
-       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,true,$16,$17,'[]',$18,$19,$20,true,$21
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,true,$16,$17,$18,$19,$20,$21,true,$22
      )`,
     [
       categoryId, name, finalSlug,
@@ -147,6 +156,7 @@ async function validateAndInsertRow(
       isB2b,
       b2bPrice,
       isNaN(b2bMinQty) ? 1 : b2bMinQty,
+      JSON.stringify(productImages),
       JSON.stringify(specifications),
       isNaN(weightGrams as number) ? null : weightGrams,
       tagsRaw,
@@ -205,7 +215,11 @@ export async function uploadFile(req: Request, res: Response): Promise<void> {
       if (result.success) {
         successCount++;
       } else {
-        errors.push({ row: i + 2, error: result.error! });
+        errors.push({ 
+          row: i + 2, 
+          sku: result.sku || 'N/A', 
+          message: result.error! 
+        });
       }
     }
 
