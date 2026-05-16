@@ -157,7 +157,7 @@ async function bootstrap() {
         socket.join(`auction:${auction_id}`);
       });
 
-      socket.on('place_bid', async (data: { auction_id: string; bid_amount: number; token: string }) => {
+      socket.on('place_bid', async (data: { auction_id: string; bid_amount: string | number; token: string }) => {
         const { auction_id, bid_amount, token } = data;
         const jwt = require('jsonwebtoken');
         const { env } = require('./config/env');
@@ -174,7 +174,7 @@ async function bootstrap() {
           await processPlaceBid(
             Number(auction_id),
             customer_id,
-            parseFloat(bid_amount),
+            Number(bid_amount),
             io
           );
 
