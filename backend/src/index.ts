@@ -144,7 +144,7 @@ async function bootstrap() {
       }
     });
 
-    io.on('connection', (socket) => {
+    io.on('connection', (socket: import('socket.io').Socket) => {
       console.log('a user connected:', socket.id);
 
       socket.join('live_auctions');
@@ -153,11 +153,11 @@ async function bootstrap() {
         socket.join('live_auctions');
       });
 
-      socket.on('join_auction', (auction_id) => {
+      socket.on('join_auction', (auction_id: string) => {
         socket.join(`auction:${auction_id}`);
       });
 
-      socket.on('place_bid', async (data) => {
+      socket.on('place_bid', async (data: { auction_id: string; bid_amount: number; token: string }) => {
         const { auction_id, bid_amount, token } = data;
         const jwt = require('jsonwebtoken');
         const { env } = require('./config/env');
