@@ -45,9 +45,9 @@ export default function Settings() {
       });
       if (customer.settings) {
         setSettings({
-          notifications: { ...settings.notifications, ...customer.settings.notifications },
-          security: { ...settings.security, ...customer.settings.security },
-          auction_preferences: { ...settings.auction_preferences, ...customer.settings.auction_preferences },
+          notifications: { ...settings.notifications, ...(customer.settings.notifications || {}) },
+          security: { ...settings.security, ...(customer.settings.security || {}) },
+          auction_preferences: { ...settings.auction_preferences, ...(customer.settings.auction_preferences || {}) },
         });
       }
       setLoading(false);
@@ -67,7 +67,11 @@ export default function Settings() {
         dob: data.dob ? data.dob.split('T')[0] : '',
       });
       if (data.settings) {
-        setSettings(data.settings);
+        setSettings({
+          notifications: { ...settings.notifications, ...(data.settings.notifications || {}) },
+          security: { ...settings.security, ...(data.settings.security || {}) },
+          auction_preferences: { ...settings.auction_preferences, ...(data.settings.auction_preferences || {}) },
+        });
       }
     } catch (err) {
       console.error('Failed to fetch profile:', err);
@@ -129,7 +133,11 @@ export default function Settings() {
         dob: customer.dob ? customer.dob.split('T')[0] : '',
       });
       if (customer.settings) {
-        setSettings(customer.settings);
+        setSettings({
+          notifications: { ...settings.notifications, ...(customer.settings.notifications || {}) },
+          security: { ...settings.security, ...(customer.settings.security || {}) },
+          auction_preferences: { ...settings.auction_preferences, ...(customer.settings.auction_preferences || {}) },
+        });
       }
     }
     toast.success('Changes discarded');
