@@ -60,7 +60,7 @@ export default function OrderDetailPage() {
   }
 
   const totalMrp = order.items.reduce((s, item) => s + item.unit_price * item.quantity, 0);
-  const savings = totalMrp - order.total_amount + order.discount_amount;
+  const savings = totalMrp - (order.total_amount ?? 0) + (order.discount_amount ?? 0);
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
@@ -141,15 +141,15 @@ export default function OrderDetailPage() {
                   <span>-₹{savings.toLocaleString('en-IN')}</span>
                 </div>
               )}
-              {order.discount_amount > 0 && (
+              {(order.discount_amount ?? 0) > 0 && (
                 <div className="flex justify-between text-orange-600">
                   <span>Additional Discount</span>
-                  <span>-₹{order.discount_amount.toLocaleString('en-IN')}</span>
+                  <span>-₹{(order.discount_amount ?? 0).toLocaleString('en-IN')}</span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-100">
                 <span>Total Amount</span>
-                <span>₹{order.total_amount.toLocaleString('en-IN')}</span>
+                <span>₹{(order.total_amount ?? 0).toLocaleString('en-IN')}</span>
               </div>
             </div>
           </div>

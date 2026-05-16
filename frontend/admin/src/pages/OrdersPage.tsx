@@ -27,7 +27,7 @@ const STATUS_OPTIONS: { value: OrderStatus | ''; label: string }[] = [
 
 export default function OrdersPage() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<OrderFilters>({ page: 1, limit: 20 });
+  const [filters, setFilters] = useState<OrderFilters>({ page: 1, limit: 10 });
   const { data, isLoading } = useAdminOrders(filters);
 
   const orders = data?.data?.orders ?? [];
@@ -87,21 +87,21 @@ export default function OrdersPage() {
             <tbody className="divide-y divide-gray-100">
               {isLoading
                 ? Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={i}>
-                      {Array.from({ length: 7 }).map((__, j) => (
-                        <td key={j} className="px-4 py-3">
-                          <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                : orders.length === 0
-                ? (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-gray-400">No orders found.</td>
+                  <tr key={i}>
+                    {Array.from({ length: 7 }).map((__, j) => (
+                      <td key={j} className="px-4 py-3">
+                        <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                      </td>
+                    ))}
                   </tr>
-                )
-                : orders.map((order, i) => (
+                ))
+                : orders.length === 0
+                  ? (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-12 text-center text-gray-400">No orders found.</td>
+                    </tr>
+                  )
+                  : orders.map((order, i) => (
                     <tr
                       key={order.id}
                       onClick={() => navigate(`/orders/${order.id}`)}
@@ -113,9 +113,8 @@ export default function OrdersPage() {
                         <div className="text-xs text-gray-400">{order.customer_email}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          order.order_type === 'b2b' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${order.order_type === 'b2b' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
                           {order.order_type.toUpperCase()}
                         </span>
                       </td>
@@ -143,8 +142,6 @@ export default function OrdersPage() {
               page={filters.page ?? 1}
               totalPages={meta.total_pages}
               onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))}
-              total={meta.total}
-              limit={filters.limit}
             />
           </div>
         )}
