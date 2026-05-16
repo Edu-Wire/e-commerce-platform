@@ -39,6 +39,7 @@ export async function getInventory(req: Request, res: Response): Promise<void> {
       id: number;
       name: string;
       sku: string;
+      images: any;
       category_name: string;
       category_slug: string;
       stock_quantity: number;
@@ -49,9 +50,11 @@ export async function getInventory(req: Request, res: Response): Promise<void> {
       condition: string;
       is_active: boolean;
       is_low_stock: boolean;
+      is_auction_ready: boolean;
+      auction_priority: number;
     }>(
       `SELECT
-         p.id, p.name, p.sku,
+         p.id, p.name, p.sku, p.images,
          c.name as category_name,
          c.slug as category_slug,
          p.stock_quantity,
@@ -61,6 +64,8 @@ export async function getInventory(req: Request, res: Response): Promise<void> {
          p.mrp,
          p.condition,
          p.is_active,
+         p.is_auction_ready,
+         p.auction_priority,
          (p.stock_quantity <= p.minimum_stock_alert) as is_low_stock
        FROM products p
        JOIN categories c ON c.id = p.category_id
@@ -173,6 +178,85 @@ export async function exportCSV(req: Request, res: Response): Promise<void> {
     res.send(csvContent);
   } catch (err) {
     console.error('exportCSV error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function updateAuctionStatus(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const { is_auction_ready, auction_priority, reserve_price } = req.body;
+
+    const existing = await queryOne('SELECT id FROM products WHERE id = $1', [id]);
+    if (!existing) {
+      res.status(404).json(error('Product not found'));
+      return;
+    }
+
+    await query(
+      `UPDATE products SET 
+         is_auction_ready = $1, 
+         auction_priority = $2 
+       WHERE id = $3`,
+      [
+        is_auction_ready !== undefined ? is_auction_ready : false,
+        auction_priority !== undefined ? parseInt(auction_priority, 10) : 0,
+        id
+      ]
+    );
+
+    // Cancel active auctions when the product is removed from auction readiness.
+    const shouldCancelAuctions = req.body.hasOwnProperty('is_auction_ready') && (
+      is_auction_ready === false || is_auction_ready === 'false'
+    );
+    if (shouldCancelAuctions) {
+      await query(
+        `UPDATE auctions
+         SET status = 'cancelled', end_time = NOW()
+         WHERE product_id = $1
+           AND status = 'active'
+           AND end_time > NOW()`,
+        [id]
+      );
+    }
+
+    // If reserve_price is provided, start the auction now!
+    if (reserve_price !== undefined) {
+      const { minimum_spread, quantity, number_of_auctions, start_time, end_time } = req.body;
+
+      if (!end_time) {
+        res.status(400).json(error('End time is required for auction'));
+        return;
+      }
+
+      const numAuctions = parseInt(number_of_auctions, 10) || 1;
+      const unitsPerAuction = parseInt(quantity, 10) || 1;
+      const reservePriceValue = parseFloat(reserve_price);
+      const startingBidValue = parseFloat(req.body.current_highest_bid) || reservePriceValue;
+      const minimumSpreadValue = parseFloat(minimum_spread) || 1.00;
+      const spreadValue = parseFloat(req.body.spread) || 0.00;
+
+      for (let i = 0; i < numAuctions; i += 1) {
+        await query(
+          `INSERT INTO auctions (product_id, start_time, end_time, status, reserve_price, current_highest_bid, minimum_spread, quantity, spread)
+           VALUES ($1, $2, $3, 'active', $4, $5, $6, $7, $8)`,
+          [
+            id,
+            start_time || new Date(),
+            end_time,
+            reservePriceValue,
+            startingBidValue,
+            minimumSpreadValue,
+            unitsPerAuction,
+            spreadValue
+          ]
+        );
+      }
+    }
+
+    res.json(success({ message: 'Product auction status updated successfully' }));
+  } catch (err) {
+    console.error('updateAuctionStatus error:', err);
     res.status(500).json(error('Internal server error'));
   }
 }

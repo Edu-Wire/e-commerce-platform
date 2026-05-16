@@ -9,6 +9,12 @@ import path from 'path';
 import { env } from './config/env';
 import { pool } from './config/database';
 import routes from './routes/index';
+import walletRoutes from './routes/wallet';
+import { checkAndRotateAuctions } from './utils/auctionManager';
+import { updateAuctionStatus } from './controllers/admin/inventoryController';
+import { authenticateAdmin, authenticateCustomer } from './middleware/auth';
+import { requireMinRole } from './middleware/rbac';
+import { getMyBids, getWinningDashboard, getWonAuctions } from './controllers/auctionController';
 
 const app = express();
 
@@ -61,6 +67,17 @@ app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), environment: env.nodeEnv });
 });
 
+// Direct route to avoid 404 issues with nested routers
+app.patch('/api/admin/inventory/auction/:id', authenticateAdmin, requireMinRole('manager'), updateAuctionStatus);
+
+// Wallet (mounted here so routes are always registered after hot-reload)
+app.use('/api/wallet', walletRoutes);
+
+// Auction routes that must not be captured by /api/auctions/:id
+app.get('/api/auctions/my-bids', authenticateCustomer, getMyBids);
+app.get('/api/auctions/winning', authenticateCustomer, getWinningDashboard);
+app.get('/api/auctions/won', authenticateCustomer, getWonAuctions);
+
 // Mount all API routes
 app.use('/', routes);
 
@@ -82,6 +99,11 @@ async function bootstrap() {
     const client = await pool.connect();
     console.log('Database connected successfully');
     client.release();
+
+    // Start Auction Scheduler (Runs every minute)
+    checkAndRotateAuctions();
+    setInterval(checkAndRotateAuctions, 60 * 1000);
+    console.log('Auction scheduler started');
   } catch (err) {
     console.error('Failed to connect to database:', err);
     console.warn('Starting server without confirmed DB connection...');
@@ -112,6 +134,67 @@ async function bootstrap() {
         console.log(`Health check: http://localhost:${env.port}/health`);
       });
     }
+
+    // Attach Socket.io
+    const { Server } = require('socket.io');
+    const io = new Server(server, {
+      cors: {
+        origin: '*',
+        methods: ["GET", "POST"]
+      }
+    });
+
+    io.on('connection', (socket) => {
+      console.log('a user connected:', socket.id);
+
+      socket.join('live_auctions');
+
+      socket.on('join_live_auctions', () => {
+        socket.join('live_auctions');
+      });
+
+      socket.on('join_auction', (auction_id) => {
+        socket.join(`auction:${auction_id}`);
+      });
+
+      socket.on('place_bid', async (data) => {
+        const { auction_id, bid_amount, token } = data;
+        const jwt = require('jsonwebtoken');
+        const { env } = require('./config/env');
+        const { processPlaceBid, BidError } = require('./services/auctionBidService');
+
+        try {
+          if (!token) {
+            socket.emit('bid_error', { error: 'Unauthorized' });
+            return;
+          }
+          const payload = jwt.verify(token, env.jwtSecret);
+          const customer_id = payload.id;
+
+          await processPlaceBid(
+            Number(auction_id),
+            customer_id,
+            parseFloat(bid_amount),
+            io
+          );
+
+          socket.emit('bid_success', { message: 'Bid placed successfully' });
+        } catch (err) {
+          if (err instanceof BidError || (err as { name?: string })?.name === 'BidError') {
+            socket.emit('bid_error', { error: (err as Error).message });
+            return;
+          }
+          console.error('Socket place_bid error:', err);
+          socket.emit('bid_error', { error: 'Failed to place bid' });
+        }
+      });
+      
+      socket.on('disconnect', () => {
+        console.log('user disconnected:', socket.id);
+      });
+    });
+
+    app.set('io', io);
 
     process.on('SIGINT', () => {
       server.close(() => {

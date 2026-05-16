@@ -13,6 +13,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Products', icon: '📦', to: '/products' },
   { label: 'Categories', icon: '🏷️', to: '/categories' },
   { label: 'Inventory', icon: '🏭', to: '/inventory' },
+  { label: 'Auctions', icon: '⏳', to: '/auctions' },
   { label: 'Bulk Upload', icon: '📤', to: '/bulk-upload' },
   { label: 'Orders', icon: '📋', to: '/orders' },
   { label: 'Users', icon: '👥', to: '/users', ownerOnly: true },

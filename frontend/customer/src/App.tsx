@@ -14,8 +14,7 @@ import OrderDetailPage from './pages/OrderDetailPage';
 import B2BDashboardPage from './pages/B2BDashboardPage';
 import AccountPage from './pages/AccountPage';
 import CustomerServicePage from './pages/CServicePage';
-
-
+import LiveAuctionPage from './pages/LiveAuctionPage';
 
 
 
@@ -56,6 +55,15 @@ export default function App() {
         {/* Full-page auth routes (no Layout) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/live-auction" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/my-bids" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/winning" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/payments" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/wallet" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/settings" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/help-support" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/terms-conditions" element={<LiveAuctionPage />} />
+        <Route path="/live-auction/:auctionId" element={<LiveAuctionPage />} />
 
         {/* All other routes wrapped in Layout */}
         <Route
@@ -101,8 +109,6 @@ export default function App() {
                 />
                 <Route path="/customer-service" element={<CustomerServicePage />} />
                 <Route path="/b2b" element={<B2BDashboardPage />} />
-
-
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

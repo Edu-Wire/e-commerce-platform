@@ -6,6 +6,8 @@ import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
 import CategoriesPage from './pages/CategoriesPage';
 import InventoryPage from './pages/InventoryPage';
+import AuctionsPage from './pages/AuctionsPage';
+import RunningAuctionsPage from './pages/RunningAuctionsPage';
 import BulkUploadPage from './pages/BulkUploadPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
@@ -24,6 +26,8 @@ export default function App() {
         <Route path="/products/:id/edit" element={<ProductFormPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
+        <Route path="/auctions" element={<AuctionsPage />} />
+        <Route path="/auctions/running" element={<RunningAuctionsPage />} />
         <Route path="/bulk-upload" element={<BulkUploadPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/:id" element={<OrderDetailPage />} />

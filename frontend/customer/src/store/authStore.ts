@@ -13,7 +13,7 @@ interface AuthActions {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   initialize: () => void;
-  updateProfile: (data: { name?: string; phone?: string; address?: Record<string, unknown> }) => Promise<void>;
+  updateProfile: (data: { name?: string; phone?: string; dob?: string; address?: Record<string, unknown>; settings?: Record<string, any> }) => Promise<void>;
 }
 
 interface RegisterData {
