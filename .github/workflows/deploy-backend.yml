@@ -2,7 +2,7 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [master, main]
+    branches: [main]
     paths:
       - 'backend/**'
       - '.github/workflows/deploy-backend.yml'
@@ -53,7 +53,7 @@ jobs:
 
             echo "==> Pulling latest code"
             cd ~/e-commerce-platform
-            git pull origin master
+            git pull origin main
 
             echo "==> Installing dependencies (dev needed for tsc)"
             cd backend
