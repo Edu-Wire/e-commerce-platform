@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMyOrders } from '../hooks/useOrders';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
@@ -18,7 +19,9 @@ const statusConfig: Record<OrderStatus, { label: string; classes: string }> = {
 };
 
 export default function OrdersPage() {
-  const { data: orders, isLoading, error } = useMyOrders();
+  const navigate = useNavigate();
+  const { data: allOrders, isLoading, error } = useMyOrders();
+  const [activeTab, setActiveTab] = useState('Orders');
 
   if (isLoading) return <LoadingSpinner size="lg" className="py-32" />;
 
@@ -61,10 +64,11 @@ export default function OrdersPage() {
 
         {/* Sub Navigation Tabs */}
         <div className="flex items-center gap-6 border-b border-gray-200 mb-6 overflow-x-auto no-scrollbar">
-          {['Orders', 'Buy Again', 'Not Yet Shipped', 'Cancelled'].map((tab, i) => (
+          {['Orders', 'Auction Wins', 'Buy Again', 'Not Yet Shipped', 'Cancelled'].map((tab) => (
             <button 
               key={tab} 
-              className={`pb-3 text-[14px] font-medium whitespace-nowrap transition-colors relative ${i === 0 ? 'text-[#0f1111] font-bold after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-[#e77600]' : 'text-[#565959] hover:text-[#0f1111]'}`}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3 text-[14px] font-medium whitespace-nowrap transition-colors relative ${tab === activeTab ? 'text-[#0f1111] font-bold after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-[#e77600]' : 'text-[#565959] hover:text-[#0f1111]'}`}
             >
               {tab}
             </button>
@@ -72,7 +76,17 @@ export default function OrdersPage() {
         </div>
 
         {/* Orders List */}
-        {!orders?.length ? (
+        {(() => {
+          const orders = (allOrders || []).filter(order => {
+            const isAuction = (order as any).notes === 'AUCTION_WIN';
+            if (activeTab === 'Orders') return !isAuction;
+            if (activeTab === 'Auction Wins') return isAuction;
+            if (activeTab === 'Cancelled') return order.status === 'cancelled';
+            if (activeTab === 'Not Yet Shipped') return order.status === 'pending' || order.status === 'confirmed' || order.status === 'processing';
+            return true;
+          });
+
+          return !orders.length ? (
           <div className="bg-white p-10 rounded-lg border border-gray-200 text-center shadow-sm">
             <div className="text-5xl mb-4">📦</div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">No orders found</h2>
@@ -160,6 +174,26 @@ export default function OrdersPage() {
 
                     {/* Action Buttons Sidebar (Desktop) / Bottom (Mobile) */}
                     <div className="flex flex-col gap-2">
+                      {order.status === 'pending' && (
+                        <div className="mb-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              (order as { notes?: string }).notes === 'AUCTION_WIN'
+                                ? navigate('/live-auction/payments')
+                                : navigate(`/orders/${order.id}`)
+                            }
+                            className="w-full py-1.5 text-[13px] font-bold bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-lg shadow-sm transition-colors"
+                          >
+                            Pay Now
+                          </button>
+                          {(order as any).notes === 'AUCTION_WIN' && (
+                            <p className="text-[11px] text-red-600 mt-1 font-medium text-center">
+                              * Complete payment within 6 hours to claim your won item.
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <button className="w-full py-1.5 text-[13px] font-medium bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
                         Track package
                       </button>
@@ -186,7 +220,8 @@ export default function OrdersPage() {
               );
             })}
           </div>
-        )}
+        );
+        })()}
       </div>
     </div>
   );

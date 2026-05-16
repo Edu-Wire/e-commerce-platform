@@ -1,0 +1,148 @@
+import { withTransaction } from '../config/database';
+import { PoolClient } from 'pg';
+
+export async function checkAndRotateAuctions() {
+  try {
+    await withTransaction(async (client: PoolClient) => {
+      // 1. Check for active auctions
+      const activeAuctionsRes = await client.query(
+        "SELECT * FROM auctions WHERE status = 'active' FOR UPDATE"
+      );
+      const activeAuctions = activeAuctionsRes.rows;
+
+      const now = new Date();
+
+      for (const activeAuction of activeAuctions) {
+        const endTime = new Date(activeAuction.end_time);
+
+        if (now >= endTime) {
+          console.log(`[Auction] Auction ${activeAuction.id} expired. Processing...`);
+
+          // Update status to completed
+          await client.query(
+            "UPDATE auctions SET status = 'completed' WHERE id = $1",
+            [activeAuction.id]
+          );
+
+          // If there was a winner, reduce stock and create an order
+          if (activeAuction.highest_bidder_id) {
+            await client.query(
+              "UPDATE products SET stock_quantity = stock_quantity - 1 WHERE id = $1",
+              [activeAuction.product_id]
+            );
+            console.log(`[Auction] Product ${activeAuction.product_id} stock reduced by 1.`);
+            
+            // Fetch product and customer details to create the order
+            const productRes = await client.query("SELECT * FROM products WHERE id = $1", [activeAuction.product_id]);
+            const customerRes = await client.query("SELECT * FROM customers WHERE id = $1", [activeAuction.highest_bidder_id]);
+            
+            if (productRes.rows[0] && customerRes.rows[0]) {
+              const product = productRes.rows[0];
+              const customer = customerRes.rows[0];
+              const unitPrice = parseFloat(activeAuction.current_highest_bid);
+              
+              const items = [{
+                product_id: product.id,
+                sku: product.sku,
+                name: product.name,
+                quantity: 1,
+                mrp: product.mrp,
+                selling_price: unitPrice
+              }];
+              
+              await client.query(
+                `INSERT INTO orders (customer_id, order_type, status, total_mrp, total_selling_price, total_savings, items, notes)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                [
+                  customer.id,
+                  customer.customer_type,
+                  'pending',
+                  product.mrp,
+                  unitPrice,
+                  product.mrp - unitPrice,
+                  JSON.stringify(items),
+                  'AUCTION_WIN'
+                ]
+              );
+              console.log(`[Auction] Order created for winner ${customer.id}`);
+            }
+          }
+        }
+      }
+
+      // 2. Cancel unpaid auction orders older than 6 hours
+      const expiredOrdersRes = await client.query(
+        `SELECT id, items FROM orders 
+         WHERE status = 'pending' 
+           AND notes = 'AUCTION_WIN' 
+           AND created_at < NOW() - INTERVAL '6 hours' FOR UPDATE`
+      );
+      
+      for (const order of expiredOrdersRes.rows) {
+        // Cancel the order
+        await client.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [order.id]);
+        
+        // Restore stock
+        const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+        for (const item of items) {
+          if (item.product_id && item.quantity) {
+            await client.query(
+              "UPDATE products SET stock_quantity = stock_quantity + $1 WHERE id = $2",
+              [item.quantity, item.product_id]
+            );
+          }
+        }
+        console.log(`[Auction] Expired unpaid auction order ${order.id} cancelled. Stock restored.`);
+      }
+
+      // Check if we need to start the next auction from queue
+      // Only if no auctions are active now
+      const stillActiveRes = await client.query(
+        "SELECT COUNT(*) FROM auctions WHERE status = 'active'"
+      );
+      const stillActive = parseInt(stillActiveRes.rows[0].count, 10);
+
+      if (stillActive === 0) {
+        await startNextAuction(client);
+      }
+    });
+  } catch (error) {
+    console.error('[Auction Error] Failed to rotate auctions:', error);
+  }
+}
+
+async function startNextAuction(client: PoolClient) {
+  // Read duration setting
+  const settingRes = await client.query(
+    "SELECT value FROM system_settings WHERE key = 'auction_duration_minutes'"
+  );
+  const durationMinutes = parseInt(settingRes.rows[0]?.value || '60', 10);
+
+  // Find the next product marked for auction with stock > 0
+  const nextProductRes = await client.query(
+    `SELECT id FROM products 
+     WHERE is_auction_ready = true AND stock_quantity > 0 
+     ORDER BY auction_priority ASC, id ASC 
+     LIMIT 1 FOR UPDATE`
+  );
+  const nextProduct = nextProductRes.rows[0];
+
+  if (nextProduct) {
+    console.log(`[Auction] Starting new auction for Product ID: ${nextProduct.id} for ${durationMinutes} minutes.`);
+
+    // Create new auction with dynamic duration
+    await client.query(
+      `INSERT INTO auctions (product_id, start_time, end_time, status) 
+       VALUES ($1, NOW(), NOW() + ($2 || ' minutes')::interval, 'active')`,
+      [nextProduct.id, durationMinutes]
+    );
+
+    // Mark the product as no longer ready
+    await client.query(
+      "UPDATE products SET is_auction_ready = false WHERE id = $1",
+      [nextProduct.id]
+    );
+  } else {
+    console.log('[Auction] No products available in queue for auction.');
+  }
+}

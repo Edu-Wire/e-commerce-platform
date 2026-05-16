@@ -48,6 +48,7 @@ export interface Customer {
   name: string;
   email: string;
   phone?: string;
+  dob?: string;
   customer_type: 'b2c' | 'b2b';
   company_name?: string;
   gst_number?: string;
@@ -56,6 +57,20 @@ export interface Customer {
     city?: string;
     state?: string;
     pincode?: string;
+  };
+  settings?: {
+    notifications?: {
+      email: boolean;
+      push: boolean;
+      sms: boolean;
+    };
+    security?: {
+      two_factor: boolean;
+    };
+    auction_preferences?: {
+      auto_bid: boolean;
+      max_bid_alerts: boolean;
+    };
   };
   is_active: boolean;
   created_at: string;

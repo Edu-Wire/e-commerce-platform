@@ -4,6 +4,9 @@ import { PoolClient } from 'pg';
 import { success, error } from '../utils/helpers';
 import { getPaginationParams, getPaginationMeta, getOffset } from '../utils/pagination';
 import { Order, Product } from '../types';
+import { mapOrderForCustomer, parseOrderItems } from '../utils/orderHelpers';
+import { ensureWallet, getHeldAmount, recordTransaction } from '../services/walletService';
+import { syncMissingAuctionWinOrders } from '../services/auctionOrderService';
 
 interface OrderItemInput {
   product_id: number;
@@ -116,6 +119,174 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
   }
 }
 
+function demoGatewayRef(): string {
+  return `DEMO_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
+
+const AUCTION_PAYMENT_WINDOW_MS = 6 * 60 * 60 * 1000;
+
+export async function payAuctionOrder(req: Request, res: Response): Promise<void> {
+  try {
+    const customer = req.customer!;
+    const orderId = parseInt(String(req.params.id), 10);
+    const { source = 'wallet', payment_method_id } = req.body as {
+      source?: 'wallet' | 'demo';
+      payment_method_id?: number;
+    };
+
+    if (!orderId || Number.isNaN(orderId)) {
+      res.status(400).json(error('Invalid order id'));
+      return;
+    }
+
+    await syncMissingAuctionWinOrders(customer.id);
+
+    const result = await withTransaction(async (client: PoolClient) => {
+      const orderRes = await client.query<Order>(
+        `SELECT * FROM orders WHERE id = $1 AND customer_id = $2 FOR UPDATE`,
+        [orderId, customer.id]
+      );
+      const order = orderRes.rows[0];
+
+      if (!order) {
+        throw new Error('ORDER_NOT_FOUND');
+      }
+      if (order.notes !== 'AUCTION_WIN') {
+        throw new Error('NOT_AUCTION_ORDER');
+      }
+      if (order.status !== 'pending') {
+        throw new Error('ALREADY_PAID');
+      }
+
+      const auctionRes = await client.query<{ end_time: string }>(
+        `SELECT a.end_time
+         FROM auctions a
+         JOIN LATERAL (
+           SELECT (elem->>'product_id')::int AS pid
+           FROM jsonb_array_elements($2::jsonb) AS elem
+           LIMIT 1
+         ) item ON a.product_id = item.pid
+         WHERE a.status = 'completed' AND a.highest_bidder_id = $1
+         ORDER BY a.end_time DESC
+         LIMIT 1`,
+        [customer.id, JSON.stringify(parseOrderItems(order.items))]
+      );
+      const windowStart = auctionRes.rows[0]?.end_time
+        ? new Date(auctionRes.rows[0].end_time).getTime()
+        : new Date(order.created_at).getTime();
+      if (Date.now() - windowStart > AUCTION_PAYMENT_WINDOW_MS) {
+        throw new Error('PAYMENT_EXPIRED');
+      }
+
+      const amount = parseFloat(String(order.total_selling_price));
+      if (!amount || amount <= 0) {
+        throw new Error('INVALID_AMOUNT');
+      }
+
+      const items = parseOrderItems(order.items);
+      const productName = items[0]?.name || 'Auction Item';
+      let gatewayRef = demoGatewayRef();
+      let methodLabel = 'Wallet';
+
+      if (source === 'wallet') {
+        await ensureWallet(customer.id, client);
+        const walletRes = await client.query<{ balance: string }>(
+          'SELECT balance FROM customer_wallets WHERE customer_id = $1 FOR UPDATE',
+          [customer.id]
+        );
+        const balance = parseFloat(walletRes.rows[0]?.balance || '0');
+        const held = await getHeldAmount(customer.id);
+        const available = Math.round((balance - held) * 100) / 100;
+
+        if (amount > available) {
+          throw new Error('INSUFFICIENT_WALLET');
+        }
+
+        if (payment_method_id) {
+          const pmRes = await client.query<{ label: string; last_four: string | null }>(
+            'SELECT label, last_four FROM wallet_payment_methods WHERE id = $1 AND customer_id = $2',
+            [payment_method_id, customer.id]
+          );
+          const pm = pmRes.rows[0];
+          if (!pm) throw new Error('PAYMENT_METHOD_NOT_FOUND');
+          methodLabel = pm.last_four ? `${pm.label} **** ${pm.last_four}` : pm.label;
+        }
+
+        await recordTransaction(
+          customer.id,
+          {
+            type: 'payment',
+            amount: -amount,
+            title: 'Auction Payment',
+            description: `Order #${orderId} · ${productName} via ${methodLabel}`,
+            status: 'completed',
+            payment_method_id: payment_method_id || undefined,
+            reference_id: `ORDER_${orderId}`,
+          },
+          client
+        );
+      } else {
+        if (payment_method_id) {
+          const pmRes = await client.query<{ label: string; last_four: string | null }>(
+            'SELECT label, last_four FROM wallet_payment_methods WHERE id = $1 AND customer_id = $2',
+            [payment_method_id, customer.id]
+          );
+          const pm = pmRes.rows[0];
+          if (!pm) throw new Error('PAYMENT_METHOD_NOT_FOUND');
+          methodLabel = pm.last_four ? `${pm.label} **** ${pm.last_four}` : pm.label;
+        } else {
+          methodLabel = 'Demo Payment Gateway';
+        }
+        await new Promise((r) => setTimeout(r, 600));
+      }
+
+      await client.query(
+        `UPDATE orders SET status = 'confirmed', updated_at = NOW() WHERE id = $1`,
+        [orderId]
+      );
+
+      const updated = await client.query<Order>('SELECT * FROM orders WHERE id = $1', [orderId]);
+
+      return {
+        order: mapOrderForCustomer(updated.rows[0] as unknown as Record<string, unknown>),
+        gateway_ref: gatewayRef,
+        paid_via: source,
+        amount,
+      };
+    });
+
+    res.json(success(result));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : '';
+    if (msg === 'ORDER_NOT_FOUND') {
+      res.status(404).json(error('Order not found'));
+      return;
+    }
+    if (msg === 'NOT_AUCTION_ORDER') {
+      res.status(400).json(error('This order is not an auction win'));
+      return;
+    }
+    if (msg === 'ALREADY_PAID') {
+      res.status(400).json(error('This order has already been paid'));
+      return;
+    }
+    if (msg === 'PAYMENT_EXPIRED') {
+      res.status(400).json(error('Payment window expired (6 hours)'));
+      return;
+    }
+    if (msg === 'INSUFFICIENT_WALLET') {
+      res.status(400).json(error('Insufficient wallet balance. Add funds or pay with card.'));
+      return;
+    }
+    if (msg === 'PAYMENT_METHOD_NOT_FOUND') {
+      res.status(400).json(error('Payment method not found'));
+      return;
+    }
+    console.error('payAuctionOrder error:', err);
+    res.status(500).json(error('Payment failed. Please try again.'));
+  }
+}
+
 export async function getOrder(req: Request, res: Response): Promise<void> {
   try {
     const customer = req.customer!;
@@ -131,7 +302,7 @@ export async function getOrder(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    res.json(success(order));
+    res.json(success(mapOrderForCustomer(order as unknown as Record<string, unknown>)));
   } catch (err) {
     console.error('getOrder error:', err);
     res.status(500).json(error('Internal server error'));
@@ -155,8 +326,12 @@ export async function getMyOrders(req: Request, res: Response): Promise<void> {
       [customer.id, limit, offset]
     );
 
+    const mapped = orders.map((o) =>
+      mapOrderForCustomer(o as unknown as Record<string, unknown>)
+    );
+
     const meta = getPaginationMeta(total, page, limit);
-    res.json(success(orders, meta as unknown as Record<string, unknown>));
+    res.json(success(mapped, meta as unknown as Record<string, unknown>));
   } catch (err) {
     console.error('getMyOrders error:', err);
     res.status(500).json(error('Internal server error'));

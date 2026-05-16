@@ -714,8 +714,7 @@ export default function Navbar() {
                               address: {
                                 ...customer?.address,
                                 city: city,
-                                pincode: pincode,
-                                addresses: updatedAddresses
+                                pincode: pincode,                    addresses: updatedAddresses
                               }
                             });
                           }

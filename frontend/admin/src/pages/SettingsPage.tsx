@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,6 +27,36 @@ const INPUT_ERR_CLS = 'w-full px-3 py-2 border border-red-400 bg-red-50 rounded-
 export default function SettingsPage() {
   const { admin } = useAdminAuthStore();
   const [changingPassword, setChangingPassword] = useState(false);
+  const [auctionDuration, setAuctionDuration] = useState(60);
+  const [updatingDuration, setUpdatingDuration] = useState(false);
+
+  useEffect(() => {
+    const fetchDuration = async () => {
+      try {
+        const res = await api.get('/admin/settings/auction-duration');
+        setAuctionDuration(res.data.data.duration);
+      } catch (err) {
+        console.error('Failed to fetch duration:', err);
+      }
+    };
+    fetchDuration();
+  }, []);
+
+  const onUpdateDuration = async () => {
+    if (!auctionDuration || auctionDuration <= 0) {
+      toast.error('Duration must be a positive number');
+      return;
+    }
+    setUpdatingDuration(true);
+    try {
+      await api.put('/admin/settings/auction-duration', { duration: auctionDuration });
+      toast.success('Auction duration updated successfully');
+    } catch {
+      toast.error('Failed to update duration');
+    } finally {
+      setUpdatingDuration(false);
+    }
+  };
 
   const {
     register,
@@ -174,6 +204,38 @@ export default function SettingsPage() {
           </p>
         )}
       </div>
+      {/* Auction Settings */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Auction Settings</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Auction Duration (Minutes)
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                value={auctionDuration}
+                onChange={(e) => setAuctionDuration(parseInt(e.target.value, 10))}
+                className={INPUT_CLS}
+                placeholder="Enter duration in minutes"
+              />
+              <button
+                onClick={onUpdateDuration}
+                disabled={updatingDuration}
+                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
+              >
+                {updatingDuration && <LoadingSpinner size="sm" />}
+                Save
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              This setting controls how long each bidding slot lasts before moving to the next item.
+            </p>
+          </div>
+        </div>
+      </div>
+
 
       {/* Info Card */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">

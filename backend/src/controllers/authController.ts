@@ -156,7 +156,7 @@ export async function getProfile(req: Request, res: Response): Promise<void> {
   try {
     const customerId = req.customer!.id;
     const customer = await queryOne<Customer>(
-      'SELECT id, name, email, phone, customer_type, company_name, gst_number, address, is_active, created_at FROM customers WHERE id = $1',
+      'SELECT id, name, email, phone, dob, customer_type, company_name, gst_number, address, settings, is_active, created_at FROM customers WHERE id = $1',
       [customerId]
     );
     if (!customer) {
@@ -213,7 +213,7 @@ function lookupPincode(pincode: string): Promise<string | null> {
 export async function updateProfile(req: Request, res: Response): Promise<void> {
   try {
     const customerId = req.customer!.id;
-    const { name, phone, address } = req.body;
+    const { name, phone, dob, address, settings } = req.body;
 
     const updates: string[] = [];
     const values: unknown[] = [];
@@ -226,6 +226,14 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
     if (phone !== undefined) {
       updates.push(`phone = $${paramIndex++}`);
       values.push(phone);
+    }
+    if (dob !== undefined) {
+      updates.push(`dob = $${paramIndex++}`);
+      values.push(dob);
+    }
+    if (settings !== undefined) {
+      updates.push(`settings = $${paramIndex++}`);
+      values.push(JSON.stringify(settings));
     }
     if (address !== undefined) {
       console.log('Address received:', address);
@@ -261,7 +269,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
     }
 
     values.push(customerId);
-    const queryText = `UPDATE customers SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING id, name, email, phone, customer_type, company_name, gst_number, address, created_at`;
+    const queryText = `UPDATE customers SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING id, name, email, phone, dob, customer_type, company_name, gst_number, address, settings, created_at`;
 
     const rows = await query<Customer>(queryText, values);
     const customer = rows[0];
