@@ -171,9 +171,29 @@ export default function BulkUploadPage() {
               <tbody className="divide-y divide-gray-100">
                 {preview.rows.map((row, i) => (
                   <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : ''}>
-                    {row.map((cell, j) => (
-                      <td key={j} className="px-3 py-1.5 text-gray-700 whitespace-nowrap">{cell}</td>
-                    ))}
+                    {row.map((cell, j) => {
+                      const header = preview.headers[j] || '';
+                      const isImage = header.toLowerCase().includes('image') && cell?.startsWith('http');
+                      return (
+                        <td key={j} className="px-3 py-1.5 text-gray-700 whitespace-nowrap">
+                          {isImage ? (
+                            <div className="flex gap-1 overflow-x-auto max-w-[200px] scrollbar-hide">
+                              {cell.split(';').map((url, idx) => (
+                                <img 
+                                  key={idx} 
+                                  src={url.trim()} 
+                                  alt="Preview" 
+                                  className="w-8 h-8 object-cover rounded border border-gray-200"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/32?text=?'; }}
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            cell
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   useAdminProducts,
@@ -19,7 +19,19 @@ function fmt(n: number) {
 
 export default function ProductsPage() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<ProductFilters>({ page: 1, limit: 10 });
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<ProductFilters>(() => {
+    const search = searchParams.get('search') || undefined;
+    return { page: 1, limit: 10, search };
+  });
+
+  // Sync with URL search param
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search !== null) {
+      setFilters(f => ({ ...f, search, page: 1 }));
+    }
+  }, [searchParams]);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
   const { data, isLoading } = useAdminProducts(filters);
@@ -71,11 +83,18 @@ export default function ProductsPage() {
             { label: 'All Inventory', count: meta?.total ?? 0, value: undefined },
             { label: 'Active', count: products.filter(p => p.is_active).length, value: 'active' },
             { label: 'Inactive', count: products.filter(p => !p.is_active).length, value: 'inactive' },
-            { label: 'Incomplete', count: 0, value: 'incomplete' },
           ].map((tab) => (
             <button
               key={tab.label}
-              className={`pb-3 text-xs font-bold transition-all border-b-2 px-1 ${tab.label === 'All Inventory'
+              onClick={() => {
+                if (tab.value === 'active') setFilters(f => ({ ...f, is_active: 'true', page: 1 }));
+                else if (tab.value === 'inactive') setFilters(f => ({ ...f, is_active: 'false', page: 1 }));
+                else setFilters(f => ({ ...f, is_active: undefined, page: 1 }));
+              }}
+              className={`pb-3 text-xs font-bold transition-all border-b-2 px-1 ${
+                (tab.value === undefined && filters.is_active === undefined) ||
+                (tab.value === 'active' && filters.is_active === 'true') ||
+                (tab.value === 'inactive' && filters.is_active === 'false')
                   ? 'border-amazon-orange text-amazon-navy'
                   : 'border-transparent text-gray-500 hover:text-amazon-blue'
                 }`}

@@ -10,6 +10,7 @@ export interface ProductFilters {
   condition?: string;
   stock_status?: string;
   availability?: string;
+  is_active?: string;
 }
 
 interface ProductListResponse {

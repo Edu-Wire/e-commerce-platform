@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAdminAuthStore from '../../store/adminAuthStore';
 
@@ -11,8 +12,16 @@ interface TopBarProps {
 export default function TopBar({ onMenuToggle }: TopBarProps) {
   const { admin, logout } = useAdminAuthStore();
 
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm('');
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -36,7 +45,7 @@ export default function TopBar({ onMenuToggle }: TopBarProps) {
       </div>
 
       {/* Center: Search Bar (Amazon Style) */}
-      <div className="hidden md:flex flex-1 max-w-2xl ml-2 mr-auto">
+      <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl ml-2 mr-auto">
         <div className="relative w-full flex group">
           <div className="flex items-center bg-gray-100 px-3 rounded-l-md border-r border-gray-300 text-xs font-medium text-gray-600 hover:bg-gray-200 cursor-pointer transition-colors">
             All
@@ -47,15 +56,17 @@ export default function TopBar({ onMenuToggle }: TopBarProps) {
           <input
             type="text"
             placeholder="Search products, orders, or customers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 bg-white text-sm focus:outline-none"
           />
-          <button className="bg-amazon-orange hover:bg-amazon-orangeLight px-5 rounded-r-md flex items-center justify-center transition-colors">
+          <button type="submit" className="bg-amazon-orange hover:bg-amazon-orangeLight px-5 rounded-r-md flex items-center justify-center transition-colors">
             <svg className="w-5 h-5 text-amazon-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
         </div>
-      </div>
+      </form>
 
       {/* Right side: Actions */}
       <div className="flex items-center gap-2 lg:gap-5">
