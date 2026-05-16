@@ -20,6 +20,14 @@ router.get('/bulk-upload/history', requireMinRole('inventory_staff'), bulkCtrl.g
 
 // Product CRUD
 router.get('/', requireMinRole('inventory_staff'), ctrl.getAll);
+
+router.post(
+  '/upload-images',
+  requireMinRole('manager'),
+  uploadImages.array('images', 10),
+  ctrl.uploadImagesS3
+);
+
 router.get('/:id', requireMinRole('inventory_staff'), ctrl.getById);
 router.post('/', requireMinRole('manager'), ctrl.create);
 router.put('/:id', requireMinRole('manager'), ctrl.update);
@@ -28,7 +36,7 @@ router.post(
   '/:id/images',
   requireMinRole('manager'),
   uploadImages.array('images', 10),
-  ctrl.uploadImages
+  ctrl.uploadImagesS3
 );
 
 export default router;

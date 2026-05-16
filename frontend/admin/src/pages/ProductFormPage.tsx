@@ -140,9 +140,14 @@ export default function ProductFormPage() {
   useEffect(() => {
     if (existingProduct && isEdit) {
       const specMap: Record<string, string> = {};
-      existingProduct.specs.forEach((s) => {
-        specMap[s.spec_key] = s.spec_value;
-      });
+      
+      // Safety check for specs array
+      if (existingProduct.specs && Array.isArray(existingProduct.specs)) {
+        existingProduct.specs.forEach((s) => {
+          specMap[s.spec_key] = s.spec_value;
+        });
+      }
+
       reset({
         name: existingProduct.name,
         sku: existingProduct.sku,
@@ -165,12 +170,12 @@ export default function ProductFormPage() {
         length_cm: existingProduct.length_cm ?? undefined,
         width_cm: existingProduct.width_cm ?? undefined,
         height_cm: existingProduct.height_cm ?? undefined,
-        tags: existingProduct.tags.join(', '),
+        tags: Array.isArray(existingProduct.tags) ? existingProduct.tags.join(', ') : '',
         is_featured: existingProduct.is_featured,
         is_active: existingProduct.is_active,
         specs: specMap,
       });
-      setImages(existingProduct.images);
+      setImages(existingProduct.images || []);
     }
   }, [existingProduct, isEdit, reset]);
 
@@ -183,8 +188,16 @@ export default function ProductFormPage() {
       const res = await api.post<ApiResponse<ProductImage[]>>('/admin/products/upload-images', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setImages((prev) => [...prev, ...res.data.data]);
-      toast.success('Images uploaded');
+      
+      // Robust check for the data format
+      const newImages = res.data.data;
+      if (newImages && Array.isArray(newImages)) {
+        setImages((prev) => [...prev, ...newImages]);
+        toast.success('Images uploaded');
+      } else {
+        console.error('Unexpected response format:', res.data);
+        toast.error('Invalid response format from server');
+      }
     } catch {
       toast.error('Image upload failed');
     } finally {
