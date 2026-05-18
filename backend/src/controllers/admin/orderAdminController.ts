@@ -36,8 +36,9 @@ export async function getAll(req: Request, res: Response): Promise<void> {
     );
     const total = parseInt(countResult[0].count);
 
-    const orders = await query<Order & { customer_name: string; customer_email: string }>(
-      `SELECT o.*, c.name as customer_name, c.email as customer_email
+    const orders = await query<Order & { customer_name: string; customer_email: string; item_count: number }>(
+      `SELECT o.*, c.name as customer_name, c.email as customer_email,
+        (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) as item_count
        FROM orders o
        LEFT JOIN customers c ON c.id = o.customer_id
        ${whereClause}
@@ -57,7 +58,7 @@ export async function getAll(req: Request, res: Response): Promise<void> {
 export async function getById(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
-    const order = await queryOne<Order & { customer_name: string; customer_email: string }>(
+    const order = await queryOne<Order & { customer_name: string; customer_email: string; items?: any[] }>(
       `SELECT o.*, c.name as customer_name, c.email as customer_email
        FROM orders o
        LEFT JOIN customers c ON c.id = o.customer_id
@@ -68,6 +69,17 @@ export async function getById(req: Request, res: Response): Promise<void> {
       res.status(404).json(error('Order not found'));
       return;
     }
+    
+    // Fetch items
+    const items = await query<any>(
+      `SELECT oi.*, p.name as product_name, p.sku as product_sku
+       FROM order_items oi
+       JOIN products p ON p.id = oi.product_id
+       WHERE oi.order_id = $1`,
+      [id]
+    );
+    
+    order.items = items;
     res.json(success(order));
   } catch (err) {
     console.error('admin getById order error:', err);

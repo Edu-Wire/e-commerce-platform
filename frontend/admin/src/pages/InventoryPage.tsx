@@ -129,7 +129,7 @@ export default function InventoryPage() {
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Inventory</h1>
             <p className="text-sm text-gray-500 mt-0.5">Manage your products stock levels and pricing.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => void handleExport()}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
@@ -160,7 +160,7 @@ export default function InventoryPage() {
             />
           </div>
           
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
             <select
               value={filters.category_id ?? ''}
               onChange={(e) => setFilters((f) => ({ ...f, category_id: e.target.value, page: 1 }))}
@@ -289,7 +289,7 @@ export default function InventoryPage() {
           </div>
 
           {meta && meta.total_pages > 1 && (
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/30 flex items-center justify-between">
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
               <p className="text-xs text-gray-500">
                 Showing <span className="font-medium text-gray-900">
                   {((filters.page ?? 1) - 1) * (filters.limit ?? 12) + 1}–{Math.min((filters.page ?? 1) * (filters.limit ?? 12), meta.total)}

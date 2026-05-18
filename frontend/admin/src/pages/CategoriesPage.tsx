@@ -299,9 +299,9 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden p-6 gap-6 bg-amazon-gray">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden p-4 md:p-6 gap-4 md:gap-6 bg-amazon-gray">
         {/* Left Column: Category Browser */}
-        <div className="w-80 bg-white rounded-lg border border-gray-200 flex flex-col shadow-sm">
+        <div className="w-full lg:w-80 h-[40vh] lg:h-auto bg-white rounded-lg border border-gray-200 flex flex-col shadow-sm flex-shrink-0">
           <div className="p-4 border-b border-gray-100 bg-gray-50/50 rounded-t-lg">
             <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
               <Folder size={18} className="text-amazon-blue" />
@@ -349,7 +349,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* Right Column: Editor / Detail */}
-        <div className="flex-1 bg-white rounded-lg border border-gray-200 flex flex-col shadow-sm overflow-hidden">
+        <div className="flex-1 min-h-[50vh] bg-white rounded-lg border border-gray-200 flex flex-col shadow-sm overflow-hidden">
           {editMode ? (
             <div className="p-8 max-w-2xl mx-auto w-full">
               <div className="flex items-center justify-between mb-8">
@@ -433,7 +433,7 @@ export default function CategoriesPage() {
             <div className="flex flex-col h-full">
               {/* Category Overview Header */}
               <div className="p-6 border-b border-gray-100">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="text-2xl font-bold text-gray-900">{selectedCategory.name}</h3>
@@ -470,7 +470,7 @@ export default function CategoriesPage() {
                 </div>
 
                 <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="p-6 pb-2 flex items-center justify-between">
+                  <div className="p-6 pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <h4 className="text-lg font-bold text-gray-900">Attribute Definitions</h4>
                       <p className="text-xs text-gray-500">Define specifications required for products in this category</p>
@@ -507,88 +507,90 @@ export default function CategoriesPage() {
                       </div>
                     ) : (
                       <div className="border border-gray-200 rounded-lg overflow-hidden">
-                        <table className="w-full text-left border-collapse text-xs">
-                          <thead>
-                            <tr className="bg-gray-50 border-b border-gray-200 uppercase text-gray-500 font-bold">
-                              <th className="px-4 py-3">Attribute Name / Key</th>
-                              <th className="px-4 py-3">Data Type</th>
-                              <th className="px-4 py-3">Mandatory</th>
-                              <th className="px-4 py-3">Value Options</th>
-                              <th className="px-4 py-3 text-center">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {specRows.map((row, idx) => (
-                              <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                                <td className="px-4 py-3">
-                                  <div className="space-y-1.5">
-                                    <input
-                                      value={row.spec_label}
-                                      onChange={(e) => updateSpecRow(idx, 'spec_label', e.target.value)}
-                                      className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none font-bold"
-                                      placeholder="e.g. RAM Size"
-                                    />
-                                    <input
-                                      value={row.spec_key}
-                                      onChange={(e) => updateSpecRow(idx, 'spec_key', e.target.value)}
-                                      className="w-full px-2 py-1 border border-gray-200 rounded focus:border-amazon-blue outline-none text-[10px] font-mono text-gray-400"
-                                      placeholder="ram_size"
-                                    />
-                                  </div>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <select
-                                    value={row.spec_type}
-                                    onChange={(e) => updateSpecRow(idx, 'spec_type', e.target.value)}
-                                    className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none bg-white"
-                                  >
-                                    <option value="text">Text Field</option>
-                                    <option value="number">Numeric</option>
-                                    <option value="select">Dropdown</option>
-                                    <option value="boolean">Checkbox</option>
-                                  </select>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <label className="flex items-center gap-2 cursor-pointer group">
-                                    <div className={`w-8 h-4 rounded-full relative transition-colors ${row.is_required ? 'bg-amazon-blue' : 'bg-gray-200'}`}>
-                                      <input
-                                        type="checkbox"
-                                        className="sr-only"
-                                        checked={row.is_required}
-                                        onChange={(e) => updateSpecRow(idx, 'is_required', e.target.checked)}
-                                      />
-                                      <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${row.is_required ? 'translate-x-4' : ''}`} />
-                                    </div>
-                                    <span className={row.is_required ? 'text-amazon-blue font-bold' : 'text-gray-400'}>
-                                      {row.is_required ? 'Required' : 'Optional'}
-                                    </span>
-                                  </label>
-                                </td>
-                                <td className="px-4 py-3">
-                                  {row.spec_type === 'select' ? (
-                                    <textarea
-                                      value={row.spec_options}
-                                      onChange={(e) => updateSpecRow(idx, 'spec_options', e.target.value)}
-                                      className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none resize-none text-[10px]"
-                                      rows={2}
-                                      placeholder="Enter options separated by commas (e.g. 8GB, 16GB)"
-                                    />
-                                  ) : (
-                                    <span className="text-gray-300 italic">N/A for {row.spec_type}</span>
-                                  )}
-                                </td>
-                                <td className="px-4 py-3 text-center">
-                                  <button
-                                    onClick={() => removeSpecRow(idx)}
-                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </td>
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-[600px] text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="bg-gray-50 border-b border-gray-200 uppercase text-gray-500 font-bold">
+                                <th className="px-4 py-3">Attribute Name / Key</th>
+                                <th className="px-4 py-3">Data Type</th>
+                                <th className="px-4 py-3">Mandatory</th>
+                                <th className="px-4 py-3">Value Options</th>
+                                <th className="px-4 py-3 text-center">Actions</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {specRows.map((row, idx) => (
+                                <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                                  <td className="px-4 py-3">
+                                    <div className="space-y-1.5">
+                                      <input
+                                        value={row.spec_label}
+                                        onChange={(e) => updateSpecRow(idx, 'spec_label', e.target.value)}
+                                        className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none font-bold"
+                                        placeholder="e.g. RAM Size"
+                                      />
+                                      <input
+                                        value={row.spec_key}
+                                        onChange={(e) => updateSpecRow(idx, 'spec_key', e.target.value)}
+                                        className="w-full px-2 py-1 border border-gray-200 rounded focus:border-amazon-blue outline-none text-[10px] font-mono text-gray-400"
+                                        placeholder="ram_size"
+                                      />
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <select
+                                      value={row.spec_type}
+                                      onChange={(e) => updateSpecRow(idx, 'spec_type', e.target.value)}
+                                      className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none bg-white"
+                                    >
+                                      <option value="text">Text Field</option>
+                                      <option value="number">Numeric</option>
+                                      <option value="select">Dropdown</option>
+                                      <option value="boolean">Checkbox</option>
+                                    </select>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                      <div className={`w-8 h-4 rounded-full relative transition-colors ${row.is_required ? 'bg-amazon-blue' : 'bg-gray-200'}`}>
+                                        <input
+                                          type="checkbox"
+                                          className="sr-only"
+                                          checked={row.is_required}
+                                          onChange={(e) => updateSpecRow(idx, 'is_required', e.target.checked)}
+                                        />
+                                        <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${row.is_required ? 'translate-x-4' : ''}`} />
+                                      </div>
+                                      <span className={row.is_required ? 'text-amazon-blue font-bold' : 'text-gray-400'}>
+                                        {row.is_required ? 'Required' : 'Optional'}
+                                      </span>
+                                    </label>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    {row.spec_type === 'select' ? (
+                                      <textarea
+                                        value={row.spec_options}
+                                        onChange={(e) => updateSpecRow(idx, 'spec_options', e.target.value)}
+                                        className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none resize-none text-[10px]"
+                                        rows={2}
+                                        placeholder="Enter options separated by commas (e.g. 8GB, 16GB)"
+                                      />
+                                    ) : (
+                                      <span className="text-gray-300 italic">N/A for {row.spec_type}</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    <button
+                                      onClick={() => removeSpecRow(idx)}
+                                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
                   </div>

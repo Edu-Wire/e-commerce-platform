@@ -13,12 +13,19 @@ export default function TopBar({ onMenuToggle }: TopBarProps) {
   const { admin, logout } = useAdminAuthStore();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchCategory, setSearchCategory] = useState('All');
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+      // In a real app, we would pass the category to the backend or use it for routing.
+      // For now, we'll append it to the search query string for the products page.
+      const query = new URLSearchParams({ search: searchTerm.trim() });
+      if (searchCategory !== 'All') {
+        query.append('category', searchCategory.toLowerCase());
+      }
+      navigate(`/products?${query.toString()}`);
       setSearchTerm('');
     }
   };
@@ -40,25 +47,38 @@ export default function TopBar({ onMenuToggle }: TopBarProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-
-        {/* Title removed as per user request */}
       </div>
 
       {/* Center: Search Bar (Amazon Style) */}
       <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl ml-2 mr-auto">
         <div className="relative w-full flex group">
-          <div className="flex items-center bg-gray-100 px-3 rounded-l-md border-r border-gray-300 text-xs font-medium text-gray-600 hover:bg-gray-200 cursor-pointer transition-colors">
-            All
-            <svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
+          <div className="relative flex items-center bg-gray-100 hover:bg-gray-200 border-r border-gray-300 rounded-l-md transition-colors focus-within:ring-2 focus-within:ring-amazon-orange focus-within:z-10">
+            <select
+              value={searchCategory}
+              onChange={(e) => setSearchCategory(e.target.value)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              title="Search in"
+            >
+              <option value="All">All</option>
+              <option value="Products">Products</option>
+              <option value="Orders">Orders</option>
+              <option value="Customers">Customers</option>
+              <option value="Categories">Categories</option>
+              <option value="Uploads">Uploads</option>
+            </select>
+            <div className="px-3 py-2 flex items-center gap-1 text-xs font-medium text-gray-600 pointer-events-none whitespace-nowrap min-w-[50px] justify-between">
+              {searchCategory}
+              <svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
           </div>
           <input
             type="text"
             placeholder="Search products, orders, or customers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 bg-white text-sm focus:outline-none"
+            className="w-full px-4 py-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amazon-orange focus:z-10"
           />
           <button type="submit" className="bg-amazon-orange hover:bg-amazon-orangeLight px-5 rounded-r-md flex items-center justify-center transition-colors">
             <svg className="w-5 h-5 text-amazon-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">

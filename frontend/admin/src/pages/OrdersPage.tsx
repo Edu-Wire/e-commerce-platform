@@ -126,7 +126,9 @@ export default function OrdersPage() {
                       <td className="px-4 py-3 font-semibold text-gray-900">
                         ₹{parseFloat(String(order.total_selling_price ?? order.total_amount ?? 0)).toLocaleString('en-IN')}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{Array.isArray(order.items) ? order.items.length : 0} item{(Array.isArray(order.items) ? order.items.length : 0) !== 1 ? 's' : ''}</td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {(order as any).item_count || 0} item{((order as any).item_count || 0) !== 1 ? 's' : ''}
+                      </td>
                       <td className="px-4 py-3 text-xs text-gray-400">
                         {new Date(order.created_at).toLocaleDateString('en-IN')}
                       </td>

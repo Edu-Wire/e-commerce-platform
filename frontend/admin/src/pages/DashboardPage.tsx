@@ -61,13 +61,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-xl font-black text-gray-900 tracking-tight capitalize">Dashboard</h1>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 bg-amazon-orange hover:bg-amazon-orangeLight text-amazon-navy text-xs font-bold rounded transition-colors shadow-sm">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <button className="flex-1 sm:flex-none px-4 py-2 bg-amazon-orange hover:bg-amazon-orangeLight text-amazon-navy text-xs font-bold rounded transition-colors shadow-sm">
             Seller Performance
           </button>
-          <button className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold rounded transition-colors shadow-sm">
+          <button className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-bold rounded transition-colors shadow-sm">
             Inventory Planning
           </button>
         </div>
@@ -138,16 +138,16 @@ export default function DashboardPage() {
           </div>
 
           {/* Footer Metrics */}
-          <div className="px-8 py-6 border-t border-gray-100 grid grid-cols-3 gap-4">
-            <div className="flex flex-col border-r border-gray-100">
+          <div className="px-6 py-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex flex-col border-b sm:border-b-0 sm:border-r border-gray-100 pb-4 sm:pb-0">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-tight">Total Sales</span>
               <span className="text-xl font-black text-gray-900 mt-1">{fmt(stats?.total_revenue ?? 0)}</span>
             </div>
-            <div className="flex flex-col border-r border-gray-100 pl-4">
+            <div className="flex flex-col border-b sm:border-b-0 sm:border-r border-gray-100 pb-4 sm:pb-0 sm:pl-4">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-tight">Units Sold</span>
               <span className="text-xl font-black text-gray-900 mt-1">{stats?.total_products ?? 0}</span>
             </div>
-            <div className="flex flex-col pl-4">
+            <div className="flex flex-col sm:pl-4">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-tight">Avg. Order Value</span>
               <span className="text-xl font-black text-gray-900 mt-1">{fmt((stats?.total_revenue ?? 0) / (stats?.total_products || 1))}</span>
             </div>
