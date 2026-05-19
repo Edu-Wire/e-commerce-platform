@@ -36,8 +36,9 @@ export async function getAll(req: Request, res: Response): Promise<void> {
     );
     const total = parseInt(countResult[0].count);
 
-    const orders = await query<Order & { customer_name: string; customer_email: string }>(
-      `SELECT o.*, c.name as customer_name, c.email as customer_email
+    const orders = await query<Order & { customer_name: string; customer_email: string; item_count: number }>(
+      `SELECT o.*, c.name as customer_name, c.email as customer_email,
+        jsonb_array_length(o.items) as item_count
        FROM orders o
        LEFT JOIN customers c ON c.id = o.customer_id
        ${whereClause}
@@ -57,7 +58,7 @@ export async function getAll(req: Request, res: Response): Promise<void> {
 export async function getById(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
-    const order = await queryOne<Order & { customer_name: string; customer_email: string }>(
+    const order = await queryOne<Order & { customer_name: string; customer_email: string; items?: any[] }>(
       `SELECT o.*, c.name as customer_name, c.email as customer_email
        FROM orders o
        LEFT JOIN customers c ON c.id = o.customer_id
@@ -68,6 +69,26 @@ export async function getById(req: Request, res: Response): Promise<void> {
       res.status(404).json(error('Order not found'));
       return;
     }
+    
+    // Enrich items inside JSONB array with real product names & conditions from products table
+    const itemsList = order.items || [];
+    const enrichedItems = [];
+    for (const item of itemsList) {
+      const product = await queryOne<{ name: string; condition: string }>(
+        'SELECT name, condition FROM products WHERE id = $1',
+        [item.product_id]
+      );
+      enrichedItems.push({
+        ...item,
+        product_name: product?.name || 'Unknown Product',
+        product_sku: item.sku,
+        condition: product?.condition || 'new',
+        unit_price: parseFloat(String(item.selling_price || 0)),
+        total_price: parseFloat(String(item.selling_price || 0)) * (item.quantity || 0)
+      });
+    }
+    
+    order.items = enrichedItems;
     res.json(success(order));
   } catch (err) {
     console.error('admin getById order error:', err);

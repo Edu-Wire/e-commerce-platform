@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -29,8 +30,8 @@ export default function Modal({ title, children, isOpen, onClose, size = 'md' }:
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div
         className={`relative bg-white rounded-xl shadow-xl w-full ${SIZE_CLASSES[size]} max-h-[90vh] flex flex-col`}
@@ -48,6 +49,7 @@ export default function Modal({ title, children, isOpen, onClose, size = 'md' }:
         </div>
         <div className="overflow-y-auto flex-1 px-6 py-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

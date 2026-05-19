@@ -21,8 +21,8 @@ const passwordSchema = z
 
 type PasswordForm = z.infer<typeof passwordSchema>;
 
-const INPUT_CLS = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
-const INPUT_ERR_CLS = 'w-full px-3 py-2 border border-red-400 bg-red-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400';
+const INPUT_CLS = 'w-full px-3 py-1.5 border border-[#888c8c] rounded-[3px] text-sm focus:outline-none focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)] bg-white text-[#0f1111] transition-shadow';
+const INPUT_ERR_CLS = 'w-full px-3 py-1.5 border border-[#c40000] rounded-[3px] text-sm focus:outline-none focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)] bg-[#fff7f7] text-[#0f1111] transition-shadow';
 
 export default function SettingsPage() {
   const { admin } = useAdminAuthStore();
@@ -82,170 +82,179 @@ export default function SettingsPage() {
   if (!admin) return null;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
-      <h2 className="text-xl font-bold text-gray-900">Settings</h2>
+    <div className="w-full pb-12 px-2 sm:px-0 space-y-6">
+      {/* Header */}
+      <div className="bg-white border border-gray-300 p-4 rounded shadow-sm">
+        <h1 className="text-xl sm:text-2xl font-bold text-[#0f1111]">Account Settings</h1>
+        <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Manage your profile, security, and global platform preferences.</p>
+      </div>
+
+      {/* Info Card */}
+      <div className="bg-[#f7fafa] border border-[#d5d9d9] rounded p-4 flex items-start gap-3">
+        <span className="text-xl">ℹ️</span>
+        <div>
+          <p className="text-sm font-bold text-[#0f1111]">Security Notice</p>
+          <p className="text-xs text-gray-700 mt-0.5">
+            Admin accounts have access to sensitive business data. Use a strong, unique password and never share your credentials.
+          </p>
+        </div>
+      </div>
 
       {/* Profile Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Admin Profile</h3>
-        <div className="flex items-start gap-4">
-          <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-xl font-bold text-blue-700 uppercase">
-            {admin.name.charAt(0)}
+      <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
+        <div className="bg-[#f0f2f2] px-4 py-3 border-b border-gray-300">
+          <h3 className="text-sm font-bold text-[#0f1111]">Admin Profile</h3>
+        </div>
+        <div className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 bg-amazon-orange/10 border border-amazon-orange rounded-full flex items-center justify-center text-xl font-bold text-amazon-orange uppercase">
+              {admin.name.charAt(0)}
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <h4 className="text-lg font-bold text-[#0f1111]">{admin.name}</h4>
+                <RoleBadge role={admin.role} />
+              </div>
+              <p className="text-sm text-[#0f1111]">{admin.email}</p>
+              <p className="text-xs text-gray-500">
+                Member since {new Date(admin.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' })}
+              </p>
+            </div>
           </div>
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <h4 className="text-lg font-semibold text-gray-900">{admin.name}</h4>
+
+          <div className="mt-5 pt-5 border-t border-gray-200 grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-1">Role</p>
               <RoleBadge role={admin.role} />
             </div>
-            <p className="text-sm text-gray-500">{admin.email}</p>
-            <p className="text-xs text-gray-400">
-              Member since {new Date(admin.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' })}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 pt-5 border-t border-gray-100 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-xs text-gray-500 mb-0.5">Role</p>
-            <RoleBadge role={admin.role} />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-0.5">Account Status</p>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Active
-            </span>
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-1">Account Status</p>
+              <span className="inline-flex items-center px-2 py-1 rounded-[3px] text-xs font-bold bg-green-50 text-green-800 border border-green-300">
+                Active
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Change Password */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Change Password</h3>
+      <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
+        <div className="bg-[#f0f2f2] px-4 py-3 border-b border-gray-300 flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#0f1111]">Login Settings</h3>
           {!changingPassword && (
             <button
               onClick={() => setChangingPassword(true)}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              className="text-sm text-[#007185] hover:text-[#c40000] hover:underline font-medium"
             >
-              Change
+              Edit Password
             </button>
           )}
         </div>
+        <div className="p-5">
+          {changingPassword ? (
+            <form onSubmit={handleSubmit(onChangePassword)} className="space-y-4 max-w-md">
+              <div>
+                <label className="block text-sm font-bold text-[#0f1111] mb-1">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  {...register('current_password')}
+                  className={errors.current_password ? INPUT_ERR_CLS : INPUT_CLS}
+                />
+                {errors.current_password && (
+                  <p className="text-[#c40000] text-xs mt-1 font-medium">{errors.current_password.message}</p>
+                )}
+              </div>
 
-        {changingPassword ? (
-          <form onSubmit={handleSubmit(onChangePassword)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Current Password
-              </label>
-              <input
-                type="password"
-                {...register('current_password')}
-                className={errors.current_password ? INPUT_ERR_CLS : INPUT_CLS}
-                placeholder="Enter current password"
-              />
-              {errors.current_password && (
-                <p className="text-red-500 text-xs mt-1">{errors.current_password.message}</p>
-              )}
-            </div>
+              <div>
+                <label className="block text-sm font-bold text-[#0f1111] mb-1">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  {...register('new_password')}
+                  className={errors.new_password ? INPUT_ERR_CLS : INPUT_CLS}
+                  placeholder="At least 8 characters"
+                />
+                {errors.new_password && (
+                  <p className="text-[#c40000] text-xs mt-1 font-medium">{errors.new_password.message}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                New Password
-              </label>
-              <input
-                type="password"
-                {...register('new_password')}
-                className={errors.new_password ? INPUT_ERR_CLS : INPUT_CLS}
-                placeholder="Minimum 8 characters"
-              />
-              {errors.new_password && (
-                <p className="text-red-500 text-xs mt-1">{errors.new_password.message}</p>
-              )}
-            </div>
+              <div>
+                <label className="block text-sm font-bold text-[#0f1111] mb-1">
+                  Re-enter New Password
+                </label>
+                <input
+                  type="password"
+                  {...register('confirm_password')}
+                  className={errors.confirm_password ? INPUT_ERR_CLS : INPUT_CLS}
+                />
+                {errors.confirm_password && (
+                  <p className="text-[#c40000] text-xs mt-1 font-medium">{errors.confirm_password.message}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                {...register('confirm_password')}
-                className={errors.confirm_password ? INPUT_ERR_CLS : INPUT_CLS}
-                placeholder="Re-enter new password"
-              />
-              {errors.confirm_password && (
-                <p className="text-red-500 text-xs mt-1">{errors.confirm_password.message}</p>
-              )}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 mt-6">
+                <button
+                  type="button"
+                  onClick={() => { reset(); setChangingPassword(false); }}
+                  className="w-full sm:w-auto px-4 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded hover:bg-[#f7fafa] shadow-sm transition-colors text-center order-2 sm:order-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-1.5 text-sm font-bold text-[#0f1111] bg-[#F3A847] hover:bg-[#e39a37] border border-[#a88734] rounded shadow-sm disabled:opacity-60 transition-colors order-1 sm:order-2"
+                >
+                  {isSubmitting && <LoadingSpinner size="sm" />}
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-[#0f1111]">Password:</span>
+              <span className="text-sm text-gray-700">********</span>
+              <span className="text-xs text-gray-500 ml-4">
+                (Last updated: {admin.last_login ? new Date(admin.last_login).toLocaleDateString('en-IN') : 'Unknown'})
+              </span>
             </div>
-
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
-              >
-                {isSubmitting && <LoadingSpinner size="sm" />}
-                Update Password
-              </button>
-              <button
-                type="button"
-                onClick={() => { reset(); setChangingPassword(false); }}
-                className="px-5 py-2.5 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        ) : (
-          <p className="text-sm text-gray-500">
-            Your password was last changed on{' '}
-            {admin.last_login ? new Date(admin.last_login).toLocaleDateString('en-IN') : 'an unknown date'}.
-          </p>
-        )}
+          )}
+        </div>
       </div>
+
       {/* Auction Settings */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Auction Settings</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Auction Duration (Minutes)
+      <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
+        <div className="bg-[#f0f2f2] px-4 py-3 border-b border-gray-300">
+          <h3 className="text-sm font-bold text-[#0f1111]">Global Preferences</h3>
+        </div>
+        <div className="p-5">
+          <div className="max-w-md">
+            <label className="block text-sm font-bold text-[#0f1111] mb-1">
+              Default Auction Duration (Minutes)
             </label>
+            <p className="text-xs text-gray-600 mb-3">
+              This setting controls the default active bidding period for new auction items.
+            </p>
             <div className="flex items-center gap-3">
               <input
                 type="number"
                 value={auctionDuration}
                 onChange={(e) => setAuctionDuration(parseInt(e.target.value, 10))}
                 className={INPUT_CLS}
-                placeholder="Enter duration in minutes"
               />
               <button
                 onClick={onUpdateDuration}
                 disabled={updatingDuration}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
+                className="flex items-center gap-2 px-6 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded hover:bg-[#f7fafa] shadow-sm disabled:opacity-60 transition-colors"
               >
                 {updatingDuration && <LoadingSpinner size="sm" />}
-                Save
+                Update
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
-              This setting controls how long each bidding slot lasts before moving to the next item.
-            </p>
-          </div>
-        </div>
-      </div>
-
-
-      {/* Info Card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <div className="flex items-start gap-3">
-          <span className="text-blue-500 text-lg">ℹ️</span>
-          <div>
-            <p className="text-sm font-medium text-blue-800">Security Notice</p>
-            <p className="text-xs text-blue-600 mt-0.5">
-              Admin accounts have access to sensitive business data. Use a strong, unique password and never share your credentials.
-            </p>
           </div>
         </div>
       </div>

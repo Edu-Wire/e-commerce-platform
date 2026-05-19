@@ -121,6 +121,7 @@ export interface Order {
   total_mrp: number;
   total_selling_price: number;  // actual DB column
   total_savings: number;
+  item_count?: number;          // total count of items in the order
   items: OrderItem[];
   shipping_address: ShippingAddress | null;
   notes: string | null;

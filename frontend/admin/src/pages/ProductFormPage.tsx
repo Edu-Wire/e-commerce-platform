@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -49,34 +50,39 @@ function slugify(str: string) {
 
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{title}</h3>
+    <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden mb-6">
+      <div className="bg-[#f0f2f2] px-5 py-3 border-b border-gray-300">
+        <h3 className="text-base font-bold text-[#0f1111]">{title}</h3>
       </div>
-      <div className="p-5 space-y-4">{children}</div>
+      <div className="p-5 space-y-5">{children}</div>
     </div>
   );
 }
 
 function FieldRow({ children, cols = 2 }: { children: React.ReactNode; cols?: number }) {
   const gridClass = cols === 3 ? 'grid-cols-1 sm:grid-cols-3' : cols === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2';
-  return <div className={`grid ${gridClass} gap-4`}>{children}</div>;
+  return <div className={`grid ${gridClass} gap-6`}>{children}</div>;
 }
 
 function Field({ label, error, required, children }: { label: string; error?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">
-        {label} {required && <span className="text-red-500">*</span>}
+      <label className="block text-sm font-bold text-[#0f1111] mb-1.5">
+        {label} {required && <span className="text-red-600">*</span>}
       </label>
       {children}
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+      {error && (
+        <div className="flex items-center gap-1 mt-1.5">
+          <span className="text-red-600 text-sm font-bold">!</span>
+          <p className="text-red-600 text-xs font-medium">{error}</p>
+        </div>
+      )}
     </div>
   );
 }
 
-const INPUT_CLS = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors';
-const INPUT_ERR_CLS = 'w-full px-3 py-2 border border-red-400 bg-red-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400';
+const INPUT_CLS = 'w-full px-3 py-2 border border-gray-400 rounded-sm text-sm focus:outline-none focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange transition-colors shadow-sm';
+const INPUT_ERR_CLS = 'w-full px-3 py-2 border border-red-600 bg-red-50 rounded-sm text-sm focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 shadow-sm';
 
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -140,7 +146,7 @@ export default function ProductFormPage() {
   useEffect(() => {
     if (existingProduct && isEdit) {
       const specMap: Record<string, string> = {};
-      
+
       // Safety check for specs array
       if (existingProduct.specs && Array.isArray(existingProduct.specs)) {
         existingProduct.specs.forEach((s) => {
@@ -188,7 +194,7 @@ export default function ProductFormPage() {
       const res = await api.post<ApiResponse<ProductImage[]>>('/admin/products/upload-images', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      
+
       // Robust check for the data format
       const newImages = res.data.data;
       if (newImages && Array.isArray(newImages)) {
@@ -213,10 +219,10 @@ export default function ProductFormPage() {
     try {
       const specsArray = specTemplates
         ? specTemplates.map((t: SpecTemplate) => ({
-            spec_key: t.spec_key,
-            spec_label: t.spec_label,
-            spec_value: data.specs?.[t.spec_key] ?? '',
-          }))
+          spec_key: t.spec_key,
+          spec_label: t.spec_label,
+          spec_value: data.specs?.[t.spec_key] ?? '',
+        }))
         : [];
 
       const payload = {
@@ -250,365 +256,385 @@ export default function ProductFormPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Basic Info */}
-        <FormSection title="Basic Information">
-          <FieldRow>
-            <Field label="Product Name" error={errors.name?.message} required>
-              <input {...register('name')} className={errors.name ? INPUT_ERR_CLS : INPUT_CLS} placeholder="e.g. Dell Laptop XPS 15" />
-              {watchedName && (
-                <p className="text-xs text-gray-400 mt-1">Slug: <span className="font-mono">{slugify(watchedName)}</span></p>
-              )}
-            </Field>
-            <Field label="SKU" error={errors.sku?.message} required>
-              <input {...register('sku')} className={errors.sku ? INPUT_ERR_CLS : INPUT_CLS} placeholder="e.g. DELL-XPS15-001" />
-            </Field>
-          </FieldRow>
-          <FieldRow>
-            <Field label="Brand" error={errors.brand?.message}>
-              <input {...register('brand')} className={INPUT_CLS} placeholder="e.g. Dell" />
-            </Field>
-            <Field label="Category" error={errors.category_id?.message} required>
-              <select {...register('category_id')} className={errors.category_id ? INPUT_ERR_CLS : INPUT_CLS}>
-                <option value="">Select category...</option>
-                {(categories ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </Field>
-          </FieldRow>
-          <Field label="Description" error={errors.description?.message}>
-            <textarea
-              {...register('description')}
-              rows={4}
-              className={INPUT_CLS}
-              placeholder="Detailed product description..."
-            />
-          </Field>
-        </FormSection>
-
-        {/* Condition */}
-        <FormSection title="Condition">
+    <div className="w-full pb-12 px-2 sm:px-0">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-gray-300 p-4 rounded shadow-sm mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Condition <span className="text-red-500">*</span></label>
-            <div className="flex flex-wrap gap-3">
-              {(['new', 'new_with_minor_damage', 'new_with_defect'] as const).map((c) => {
-                const labels: Record<string, string> = {
-                  new: '✅ New',
-                  new_with_minor_damage: '⚠️ New with Minor Damage',
-                  new_with_defect: '🔶 New with Defect',
-                };
-                return (
-                  <label key={c} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value={c}
-                      {...register('condition')}
-                      className="accent-blue-600"
-                    />
-                    <span className="text-sm text-gray-700">{labels[c]}</span>
-                  </label>
-                );
-              })}
-            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#0f1111]">
+              {isEdit ? 'Edit Product Details' : 'Add a Product'}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Provide vital info, offers, and images to list your item.</p>
           </div>
+        </div>
 
-          {watchedCondition !== 'new' && (
-            <Field label="Damage Description" error={errors.damage_description?.message}>
-              <textarea {...register('damage_description')} rows={2} className={INPUT_CLS} placeholder="Describe the damage..." />
-            </Field>
-          )}
-          {watchedCondition === 'new_with_defect' && (
-            <Field label="Defect Description" error={errors.defect_description?.message}>
-              <textarea {...register('defect_description')} rows={2} className={INPUT_CLS} placeholder="Describe the defect..." />
-            </Field>
-          )}
-        </FormSection>
-
-        {/* Pricing */}
-        <FormSection title="Pricing">
-          <FieldRow cols={3}>
-            <Field label="MRP (₹)" error={errors.mrp?.message} required>
-              <input
-                type="number"
-                step="0.01"
-                {...register('mrp')}
-                className={errors.mrp ? INPUT_ERR_CLS : INPUT_CLS}
-                placeholder="0.00"
-              />
-            </Field>
-            <Field label="Buying Price (₹)" error={errors.buying_price?.message} required>
-              <input
-                type="number"
-                step="0.01"
-                {...register('buying_price')}
-                className={errors.buying_price ? INPUT_ERR_CLS : INPUT_CLS}
-                placeholder="0.00"
-              />
-            </Field>
-            <Field label="Selling Price (₹)" error={errors.selling_price?.message} required>
-              <input
-                type="number"
-                step="0.01"
-                {...register('selling_price')}
-                className={errors.selling_price ? INPUT_ERR_CLS : INPUT_CLS}
-                placeholder="0.00"
-              />
-            </Field>
-          </FieldRow>
-
-          {/* Live calculations */}
-          <div className="flex flex-wrap gap-4">
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${discountPercent > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-              <span>Discount:</span>
-              <span className="font-bold">{discountPercent.toFixed(0)}% OFF</span>
-            </div>
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${profitPerUnit >= 0 ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-600'}`}>
-              <span>Profit per unit:</span>
-              <span className="font-bold">₹{profitPerUnit.toFixed(2)}</span>
-            </div>
-          </div>
-        </FormSection>
-
-        {/* Availability */}
-        <FormSection title="Availability">
-          <div className="flex flex-wrap gap-6">
-            <Controller
-              name="is_b2c_available"
-              control={control}
-              render={({ field }) => (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => field.onChange(!field.value)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${field.value ? 'bg-blue-600' : 'bg-gray-300'}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
-                  <span className="text-sm font-medium text-gray-700">B2C Available</span>
-                </label>
-              )}
-            />
-            <Controller
-              name="is_b2b_available"
-              control={control}
-              render={({ field }) => (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => field.onChange(!field.value)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${field.value ? 'bg-purple-600' : 'bg-gray-300'}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
-                  <span className="text-sm font-medium text-gray-700">B2B Available</span>
-                </label>
-              )}
-            />
-          </div>
-
-          {watchedB2b && (
+        <div className="w-full space-y-6">
+          {/* Vital Info */}
+          <FormSection title="Vital Info">
             <FieldRow>
-              <Field label="B2B Price (₹)" error={errors.b2b_price?.message}>
-                <input type="number" step="0.01" {...register('b2b_price')} className={INPUT_CLS} placeholder="0.00" />
+              <Field label="Item Name (Title)" error={errors.name?.message} required>
+                <input {...register('name')} className={errors.name ? INPUT_ERR_CLS : INPUT_CLS} placeholder="e.g. Dell Laptop XPS 15" />
+                {watchedName && (
+                  <p className="text-xs text-gray-500 mt-1">Slug: <span className="font-mono">{slugify(watchedName)}</span></p>
+                )}
               </Field>
-              <Field label="B2B Min Quantity" error={errors.b2b_min_quantity?.message}>
-                <input type="number" {...register('b2b_min_quantity')} className={INPUT_CLS} placeholder="e.g. 10" />
+              <Field label="Seller SKU" error={errors.sku?.message} required>
+                <input {...register('sku')} className={errors.sku ? INPUT_ERR_CLS : INPUT_CLS} placeholder="e.g. DELL-XPS15-001" />
               </Field>
             </FieldRow>
-          )}
-        </FormSection>
-
-        {/* Inventory */}
-        <FormSection title="Inventory">
-          <FieldRow>
-            <Field label="Stock Quantity" error={errors.stock_quantity?.message} required>
-              <input type="number" {...register('stock_quantity')} className={errors.stock_quantity ? INPUT_ERR_CLS : INPUT_CLS} />
+            <FieldRow>
+              <Field label="Brand Name" error={errors.brand?.message}>
+                <input {...register('brand')} className={INPUT_CLS} placeholder="e.g. Dell" />
+              </Field>
+              <Field label="Product Category" error={errors.category_id?.message} required>
+                <select {...register('category_id')} className={errors.category_id ? INPUT_ERR_CLS : INPUT_CLS}>
+                  <option value="">Select category...</option>
+                  {(categories ?? []).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </Field>
+            </FieldRow>
+            <Field label="Product Description" error={errors.description?.message}>
+              <textarea
+                {...register('description')}
+                rows={4}
+                className={INPUT_CLS}
+                placeholder="Detailed product description..."
+              />
             </Field>
-            <Field label="Low Stock Alert (min)" error={errors.minimum_stock_alert?.message}>
-              <input type="number" {...register('minimum_stock_alert')} className={INPUT_CLS} />
-            </Field>
-          </FieldRow>
-        </FormSection>
+          </FormSection>
 
-        {/* Dynamic Specifications */}
-        {specTemplates && specTemplates.length > 0 && (
-          <FormSection title="Specifications">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[...specTemplates]
-                .sort((a: SpecTemplate, b: SpecTemplate) => a.sort_order - b.sort_order)
-                .map((t: SpecTemplate) => (
-                  <Field
-                    key={t.spec_key}
-                    label={t.spec_label}
-                    required={t.is_required}
-                  >
-                    {t.spec_type === 'boolean' ? (
-                      <select {...register(`specs.${t.spec_key}`)} className={INPUT_CLS}>
-                        <option value="">Select...</option>
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
-                      </select>
-                    ) : t.spec_type === 'select' && t.spec_options ? (
-                      <select {...register(`specs.${t.spec_key}`)} className={INPUT_CLS}>
-                        <option value="">Select...</option>
-                        {t.spec_options.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    ) : t.spec_type === 'number' ? (
-                      <input type="number" {...register(`specs.${t.spec_key}`)} className={INPUT_CLS} />
-                    ) : (
-                      <input type="text" {...register(`specs.${t.spec_key}`)} className={INPUT_CLS} />
+          {/* Images */}
+          <FormSection title="Images">
+            <div className="mb-4">
+              <p className="text-sm text-[#0f1111] font-medium">To ensure high-quality listings, images must meet Amazon-style standards. Pure white backgrounds are recommended.</p>
+            </div>
+            <div
+              className={`border-2 border-dashed rounded-md p-10 text-center transition-colors cursor-pointer ${isDragging ? 'border-amazon-orange bg-orange-50' : 'border-gray-300 hover:border-amazon-orange hover:bg-gray-50'
+                }`}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                void handleImageUpload(e.dataTransfer.files);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploadingImages ? (
+                <div className="flex flex-col items-center gap-3">
+                  <LoadingSpinner />
+                  <p className="text-sm font-bold text-gray-600">Uploading Images...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="text-4xl mb-3">📸</div>
+                  <p className="text-sm font-bold text-amazon-blue">Drag & drop files here or click to browse</p>
+                  <p className="text-xs text-gray-500 mt-2">Format: JPG, PNG, WEBP (Max 5MB each)</p>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => void handleImageUpload(e.target.files)}
+              />
+            </div>
+
+            {images.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mt-6">
+                {images.map((img, idx) => (
+                  <div key={idx} className="relative group border border-gray-200 rounded-sm p-1 bg-white hover:border-amazon-orange transition-colors">
+                    <img
+                      src={img.url}
+                      alt={`Product image ${idx + 1}`}
+                      className="w-full aspect-square object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-gray-300 text-red-600 rounded-full shadow-md text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                    {idx === 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-amazon-orange text-white text-[10px] font-bold text-center py-0.5">
+                        MAIN IMAGE
+                      </div>
                     )}
-                  </Field>
+                  </div>
                 ))}
+              </div>
+            )}
+          </FormSection>
+
+          {/* Condition */}
+          <FormSection title="Condition & Grading">
+            <div>
+              <label className="block text-sm font-bold text-[#0f1111] mb-2">Item Condition <span className="text-red-600">*</span></label>
+              <div className="flex flex-col gap-2">
+                {(['new', 'new_with_minor_damage', 'new_with_defect'] as const).map((c) => {
+                  const labels: Record<string, string> = {
+                    new: 'New - Item is brand new, unused, unopened',
+                    new_with_minor_damage: 'New with Minor Damage - Box opened or minor cosmetic damage',
+                    new_with_defect: 'New with Defect - Item is new but has functional/manufacturing defect',
+                  };
+                  return (
+                    <label key={c} className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="radio"
+                        value={c}
+                        {...register('condition')}
+                        className="mt-0.5 accent-amazon-orange w-4 h-4"
+                      />
+                      <span className="text-sm font-medium text-[#0f1111] group-hover:text-amazon-orange transition-colors">{labels[c]}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {watchedCondition !== 'new' && (
+              <Field label="Condition Note (Damage Description)" error={errors.damage_description?.message}>
+                <textarea {...register('damage_description')} rows={2} className={INPUT_CLS} placeholder="Please describe the damage in detail for buyers..." />
+              </Field>
+            )}
+            {watchedCondition === 'new_with_defect' && (
+              <Field label="Defect Note" error={errors.defect_description?.message}>
+                <textarea {...register('defect_description')} rows={2} className={INPUT_CLS} placeholder="Please describe the defect in detail..." />
+              </Field>
+            )}
+          </FormSection>
+
+          {/* Offer & Pricing */}
+          <FormSection title="Offer & Pricing">
+            <FieldRow cols={3}>
+              <Field label="Maximum Retail Price (₹)" error={errors.mrp?.message} required>
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register('mrp')}
+                  className={errors.mrp ? INPUT_ERR_CLS : INPUT_CLS}
+                  placeholder="0.00"
+                />
+              </Field>
+              <Field label="Your Buying Price (₹)" error={errors.buying_price?.message} required>
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register('buying_price')}
+                  className={errors.buying_price ? INPUT_ERR_CLS : INPUT_CLS}
+                  placeholder="0.00"
+                />
+              </Field>
+              <Field label="Your Selling Price (₹)" error={errors.selling_price?.message} required>
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register('selling_price')}
+                  className={errors.selling_price ? INPUT_ERR_CLS : INPUT_CLS}
+                  placeholder="0.00"
+                />
+              </Field>
+            </FieldRow>
+
+            {/* Live calculations */}
+            <div className="flex flex-wrap gap-4 pt-2 border-t border-gray-100 mt-4">
+              <div className={`flex items-center gap-2 text-sm font-bold ${discountPercent > 0 ? 'text-green-700' : 'text-gray-500'}`}>
+                <span>Calculated Discount:</span>
+                <span>{discountPercent.toFixed(0)}% OFF</span>
+              </div>
+              <div className="w-px h-5 bg-gray-300"></div>
+              <div className={`flex items-center gap-2 text-sm font-bold ${profitPerUnit >= 0 ? 'text-blue-700' : 'text-red-600'}`}>
+                <span>Estimated Margin per unit:</span>
+                <span>₹{profitPerUnit.toFixed(2)}</span>
+              </div>
             </div>
           </FormSection>
-        )}
 
-        {/* Images */}
-        <FormSection title="Images">
-          <div
-            className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
-              isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-            }`}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragging(false);
-              void handleImageUpload(e.dataTransfer.files);
-            }}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploadingImages ? (
-              <div className="flex flex-col items-center gap-2">
-                <LoadingSpinner />
-                <p className="text-sm text-gray-500">Uploading...</p>
-              </div>
-            ) : (
-              <>
-                <div className="text-3xl mb-2">🖼️</div>
-                <p className="text-sm font-medium text-gray-600">Drag & drop images or click to browse</p>
-                <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP — multiple files supported</p>
-              </>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => void handleImageUpload(e.target.files)}
-            />
-          </div>
+          {/* Inventory Setup */}
+          <FormSection title="Inventory Setup">
+            <FieldRow>
+              <Field label="Quantity" error={errors.stock_quantity?.message} required>
+                <input type="number" {...register('stock_quantity')} className={errors.stock_quantity ? INPUT_ERR_CLS : INPUT_CLS} />
+              </Field>
+              <Field label="Minimum Stock Alert" error={errors.minimum_stock_alert?.message}>
+                <input type="number" {...register('minimum_stock_alert')} className={INPUT_CLS} />
+              </Field>
+            </FieldRow>
+          </FormSection>
 
-          {images.length > 0 && (
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-3">
-              {images.map((img, idx) => (
-                <div key={idx} className="relative group">
-                  <img
-                    src={img.url}
-                    alt={`Product image ${idx + 1}`}
-                    className="w-full aspect-square object-cover rounded-lg border border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                  {idx === 0 && (
-                    <span className="absolute bottom-1 left-1 text-xs bg-blue-500 text-white px-1 rounded">Primary</span>
-                  )}
-                </div>
-              ))}
+          {/* B2B & Audience */}
+          <FormSection title="B2B & Audience">
+            <div className="flex flex-col sm:flex-row gap-8 mb-4">
+              <Controller
+                name="is_b2c_available"
+                control={control}
+                render={({ field }) => (
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      className="w-5 h-5 accent-amazon-orange rounded-sm border-gray-400"
+                    />
+                    <span className="text-sm font-bold text-[#0f1111] group-hover:text-amazon-orange">Available for Retail (B2C)</span>
+                  </label>
+                )}
+              />
+              <Controller
+                name="is_b2b_available"
+                control={control}
+                render={({ field }) => (
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      className="w-5 h-5 accent-amazon-orange rounded-sm border-gray-400"
+                    />
+                    <span className="text-sm font-bold text-[#0f1111] group-hover:text-amazon-orange">Available for Business (B2B)</span>
+                  </label>
+                )}
+              />
             </div>
+
+            {watchedB2b && (
+              <div className="p-4 bg-[#f7fafa] border border-gray-200 rounded-sm mt-4">
+                <h4 className="text-sm font-bold text-[#0f1111] mb-4">Business Pricing Rules</h4>
+                <FieldRow>
+                  <Field label="Business Price (₹)" error={errors.b2b_price?.message}>
+                    <input type="number" step="0.01" {...register('b2b_price')} className={INPUT_CLS} placeholder="0.00" />
+                  </Field>
+                  <Field label="Minimum Quantity for B2B" error={errors.b2b_min_quantity?.message}>
+                    <input type="number" {...register('b2b_min_quantity')} className={INPUT_CLS} placeholder="e.g. 10" />
+                  </Field>
+                </FieldRow>
+              </div>
+            )}
+          </FormSection>
+
+          {/* Dynamic Specifications */}
+          {specTemplates && specTemplates.length > 0 && (
+            <FormSection title="More Details (Specifications)">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {[...specTemplates]
+                  .sort((a: SpecTemplate, b: SpecTemplate) => a.sort_order - b.sort_order)
+                  .map((t: SpecTemplate) => (
+                    <Field
+                      key={t.spec_key}
+                      label={t.spec_label}
+                      required={t.is_required}
+                    >
+                      {t.spec_type === 'boolean' ? (
+                        <select {...register(`specs.${t.spec_key}`)} className={INPUT_CLS}>
+                          <option value="">Select...</option>
+                          <option value="true">Yes</option>
+                          <option value="false">No</option>
+                        </select>
+                      ) : t.spec_type === 'select' && t.spec_options ? (
+                        <select {...register(`specs.${t.spec_key}`)} className={INPUT_CLS}>
+                          <option value="">Select...</option>
+                          {t.spec_options.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : t.spec_type === 'number' ? (
+                        <input type="number" {...register(`specs.${t.spec_key}`)} className={INPUT_CLS} />
+                      ) : (
+                        <input type="text" {...register(`specs.${t.spec_key}`)} className={INPUT_CLS} />
+                      )}
+                    </Field>
+                  ))}
+              </div>
+            </FormSection>
           )}
-        </FormSection>
 
-        {/* Physical / Other */}
-        <FormSection title="Physical Details & Other">
-          <FieldRow cols={4}>
-            <Field label="Weight (g)">
-              <input type="number" {...register('weight_grams')} className={INPUT_CLS} placeholder="500" />
-            </Field>
-            <Field label="Length (cm)">
-              <input type="number" step="0.1" {...register('length_cm')} className={INPUT_CLS} placeholder="30" />
-            </Field>
-            <Field label="Width (cm)">
-              <input type="number" step="0.1" {...register('width_cm')} className={INPUT_CLS} placeholder="20" />
-            </Field>
-            <Field label="Height (cm)">
-              <input type="number" step="0.1" {...register('height_cm')} className={INPUT_CLS} placeholder="10" />
-            </Field>
-          </FieldRow>
+          {/* Shipping & Dimensions */}
+          <FormSection title="Shipping & Dimensions">
+            <FieldRow>
+              <Field label="Item Weight (grams)">
+                <input type="number" {...register('weight_grams')} className={INPUT_CLS} placeholder="500" />
+              </Field>
+              <div className="grid grid-cols-3 gap-2">
+                <Field label="L (cm)">
+                  <input type="number" step="0.1" {...register('length_cm')} className={INPUT_CLS} placeholder="30" />
+                </Field>
+                <Field label="W (cm)">
+                  <input type="number" step="0.1" {...register('width_cm')} className={INPUT_CLS} placeholder="20" />
+                </Field>
+                <Field label="H (cm)">
+                  <input type="number" step="0.1" {...register('height_cm')} className={INPUT_CLS} placeholder="10" />
+                </Field>
+              </div>
+            </FieldRow>
+          </FormSection>
 
-          <Field label="Tags (comma-separated)" error={errors.tags?.message}>
-            <input
-              type="text"
-              {...register('tags')}
-              className={INPUT_CLS}
-              placeholder="e.g. laptop, dell, refurbished"
-              onChange={(e) => setValue('tags', e.target.value)}
-            />
-          </Field>
+          {/* Discovery */}
+          <FormSection title="Discovery">
+            <Field label="Search Terms (Tags)" error={errors.tags?.message}>
+              <textarea
+                rows={3}
+                {...register('tags')}
+                className={INPUT_CLS}
+                placeholder="Comma-separated keywords..."
+                onChange={(e) => setValue('tags', e.target.value)}
+              />
+            </Field>
 
-          <div className="flex flex-wrap gap-6">
-            <Controller
-              name="is_featured"
-              control={control}
-              render={({ field }) => (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => field.onChange(!field.value)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${field.value ? 'bg-amber-500' : 'bg-gray-300'}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
-                  <span className="text-sm font-medium text-gray-700">⭐ Featured Product</span>
-                </label>
-              )}
-            />
-            <Controller
-              name="is_active"
-              control={control}
-              render={({ field }) => (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => field.onChange(!field.value)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${field.value ? 'bg-green-600' : 'bg-gray-300'}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${field.value ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
-                  <span className="text-sm font-medium text-gray-700">Active (visible on store)</span>
-                </label>
-              )}
-            />
-          </div>
-        </FormSection>
+            <div className="mt-6 space-y-3 pt-4 border-t border-gray-100">
+              <Controller
+                name="is_featured"
+                control={control}
+                render={({ field }) => (
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      className="w-5 h-5 accent-amazon-orange rounded-sm border-gray-400"
+                    />
+                    <span className="text-sm font-bold text-[#0f1111] group-hover:text-amazon-orange">Feature Product</span>
+                  </label>
+                )}
+              />
+              <Controller
+                name="is_active"
+                control={control}
+                render={({ field }) => (
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      className="w-5 h-5 accent-amazon-orange rounded-sm border-gray-400"
+                    />
+                    <span className="text-sm font-bold text-[#0f1111] group-hover:text-amazon-orange">Active Listing</span>
+                  </label>
+                )}
+              />
+            </div>
+          </FormSection>
+        </div>
 
-        {/* Submit Buttons */}
-        <div className="flex items-center justify-end gap-3 pb-8">
+        {/* Bottom Submit Area */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 p-4 bg-white border border-gray-300 rounded shadow-sm mt-6">
           <button
             type="button"
             onClick={() => navigate('/products')}
-            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded-md hover:bg-[#f7fafa] shadow-sm transition-colors text-center"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 rounded-lg transition-colors"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-1.5 text-sm font-bold text-[#0f1111] bg-[#F3A847] hover:bg-[#e39a37] border border-[#a88734] rounded-md disabled:opacity-60 shadow-sm transition-colors"
           >
             {isSubmitting && <LoadingSpinner size="sm" />}
-            {isEdit ? 'Update Product' : 'Create Product'}
+            {isEdit ? 'Save and finish' : 'Save and finish'}
           </button>
         </div>
       </form>

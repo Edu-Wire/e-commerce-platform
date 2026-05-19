@@ -19,10 +19,10 @@ const getProductImage = (product: Product) => {
   let images: any[] = [];
   try {
     images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
-  } catch (e) {}
+  } catch (e) { }
   const mainImageObj = images?.[0];
   let url = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
-  
+
   if (url.startsWith('/')) {
     url = `http://localhost:4000${url}`;
   }
@@ -33,7 +33,7 @@ export default function AuctionsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -131,16 +131,16 @@ export default function AuctionsPage() {
       toast.error('Please fill in all required fields');
       return;
     }
-    
+
     const totalNeeded = parseInt(quantity, 10) * parseInt(numberOfAuctions, 10);
     if (totalNeeded > selectedProduct.stock_quantity) {
       toast.error(`Total units needed (${totalNeeded}) exceeds available stock (${selectedProduct.stock_quantity})`);
       return;
     }
-    
+
     setUpdating(selectedProduct.id);
     setIsModalOpen(false);
-    
+
     try {
       await api.patch(`/admin/inventory/auction/${selectedProduct.id}`, {
         is_auction_ready: true,
@@ -174,17 +174,17 @@ export default function AuctionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Auction Management</h1>
           <p className="text-sm text-gray-500">Queue products or start auctions immediately.</p>
         </div>
-        <Link to="/auctions/running" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+        <Link to="/auctions/running" className="w-full sm:w-auto text-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
           View Running Auctions
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -206,9 +206,8 @@ export default function AuctionsPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.sku}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock_quantity}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    product.is_auction_ready ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.is_auction_ready ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
                     {product.is_auction_ready ? 'Queued' : 'Not Queued'}
                   </span>
                 </td>
@@ -225,15 +224,14 @@ export default function AuctionsPage() {
                   <button
                     onClick={() => handleToggleAuction(product)}
                     disabled={updating === product.id || (product.stock_quantity <= 0 && !product.is_auction_ready)}
-                    className={`text-sm font-medium ${
-                      product.is_auction_ready 
-                        ? 'text-red-600 hover:text-red-900' 
+                    className={`text-sm font-medium ${product.is_auction_ready
+                        ? 'text-red-600 hover:text-red-900'
                         : 'text-blue-600 hover:text-blue-900'
-                    } disabled:opacity-50`}
+                      } disabled:opacity-50`}
                   >
                     {updating === product.id ? 'Updating...' : product.is_auction_ready ? 'Remove' : 'Queue'}
                   </button>
-                  
+
                   <button
                     onClick={() => handleOpenStartModal(product)}
                     disabled={updating === product.id || product.stock_quantity <= 0}
@@ -259,8 +257,8 @@ export default function AuctionsPage() {
           <p className="text-sm text-gray-600">
             Starting auction for: <span className="font-semibold">{selectedProduct?.name}</span>
           </p>
-          
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Ask Price (Seller Price)
@@ -276,7 +274,7 @@ export default function AuctionsPage() {
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Initial Bid Price (Starting Bid)
@@ -293,8 +291,8 @@ export default function AuctionsPage() {
               </div>
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Bid Increment (Fixed Amount)
@@ -327,8 +325,8 @@ export default function AuctionsPage() {
               </div>
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Units per Auction
@@ -361,7 +359,7 @@ export default function AuctionsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Start Time
@@ -373,7 +371,7 @@ export default function AuctionsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 End Time
@@ -386,7 +384,7 @@ export default function AuctionsPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setIsModalOpen(false)}

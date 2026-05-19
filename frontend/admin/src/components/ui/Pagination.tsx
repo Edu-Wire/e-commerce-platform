@@ -2,11 +2,9 @@ interface PaginationProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  total?: number;
-  limit?: number;
 }
 
-export default function Pagination({ page, totalPages, onPageChange, total, limit }: PaginationProps) {
+export default function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const pages: (number | '...')[] = [];
@@ -22,19 +20,10 @@ export default function Pagination({ page, totalPages, onPageChange, total, limi
     pages.push(totalPages);
   }
 
-  const start = total && limit ? (page - 1) * limit + 1 : null;
-  const end = total && limit ? Math.min(page * limit, total) : null;
 
   return (
     <div className="flex items-center justify-between px-1 py-3">
-      {total !== undefined && start !== null && end !== null ? (
-        <p className="text-sm text-gray-500">
-          Showing <span className="font-medium">{start}</span>–<span className="font-medium">{end}</span> of{' '}
-          <span className="font-medium">{total}</span>
-        </p>
-      ) : (
-        <div />
-      )}
+      <div />
       <div className="flex gap-1">
         <button
           onClick={() => onPageChange(page - 1)}
