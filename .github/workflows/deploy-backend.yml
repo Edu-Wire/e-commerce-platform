@@ -24,12 +24,10 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: backend
         run: npm ci
 
       - name: TypeScript build
-        working-directory: backend
-        run: npm run build
+        run: npm run build --workspace=backend
 
   # ── Job 2: Deploy to EC2 ────────────────────────────────────────────────────
   deploy:
@@ -54,13 +52,13 @@ jobs:
             git pull origin main
 
             echo "==> Installing dependencies (dev needed for tsc)"
-            cd backend
             npm ci
 
             echo "==> Building TypeScript"
-            npm run build
+            npm run build --workspace=backend
 
             echo "==> Restarting PM2"
+            cd backend
             pm2 restart ecosystem.config.js --env production \
               || pm2 start ecosystem.config.js --env production
 

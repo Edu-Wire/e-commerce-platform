@@ -104,7 +104,8 @@ export default function AuctionsPage() {
     setQuantity('1');
     setNumberOfAuctions('1');
     setOutbidPurchaseMarkupPercent('');
-    
+    // test
+
     const formatLocalDatetime = (date: Date) => {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -118,11 +119,11 @@ export default function AuctionsPage() {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
     setStartTime(formatLocalDatetime(start));
-    
+
     // Set default end time to 1 hour after start
     const end = new Date(start.getTime() + 60 * 60 * 1000);
     setEndTime(formatLocalDatetime(end));
-    
+
     setIsModalOpen(true);
   };
 
@@ -225,8 +226,8 @@ export default function AuctionsPage() {
                     onClick={() => handleToggleAuction(product)}
                     disabled={updating === product.id || (product.stock_quantity <= 0 && !product.is_auction_ready)}
                     className={`text-sm font-medium ${product.is_auction_ready
-                        ? 'text-red-600 hover:text-red-900'
-                        : 'text-blue-600 hover:text-blue-900'
+                      ? 'text-red-600 hover:text-red-900'
+                      : 'text-blue-600 hover:text-blue-900'
                       } disabled:opacity-50`}
                   >
                     {updating === product.id ? 'Updating...' : product.is_auction_ready ? 'Remove' : 'Queue'}
