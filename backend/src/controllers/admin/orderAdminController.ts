@@ -38,7 +38,7 @@ export async function getAll(req: Request, res: Response): Promise<void> {
 
     const orders = await query<Order & { customer_name: string; customer_email: string; item_count: number }>(
       `SELECT o.*, c.name as customer_name, c.email as customer_email,
-        (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) as item_count
+        jsonb_array_length(o.items) as item_count
        FROM orders o
        LEFT JOIN customers c ON c.id = o.customer_id
        ${whereClause}
@@ -70,16 +70,25 @@ export async function getById(req: Request, res: Response): Promise<void> {
       return;
     }
     
-    // Fetch items
-    const items = await query<any>(
-      `SELECT oi.*, p.name as product_name, p.sku as product_sku
-       FROM order_items oi
-       JOIN products p ON p.id = oi.product_id
-       WHERE oi.order_id = $1`,
-      [id]
-    );
+    // Enrich items inside JSONB array with real product names & conditions from products table
+    const itemsList = order.items || [];
+    const enrichedItems = [];
+    for (const item of itemsList) {
+      const product = await queryOne<{ name: string; condition: string }>(
+        'SELECT name, condition FROM products WHERE id = $1',
+        [item.product_id]
+      );
+      enrichedItems.push({
+        ...item,
+        product_name: product?.name || 'Unknown Product',
+        product_sku: item.sku,
+        condition: product?.condition || 'new',
+        unit_price: parseFloat(String(item.selling_price || 0)),
+        total_price: parseFloat(String(item.selling_price || 0)) * (item.quantity || 0)
+      });
+    }
     
-    order.items = items;
+    order.items = enrichedItems;
     res.json(success(order));
   } catch (err) {
     console.error('admin getById order error:', err);
