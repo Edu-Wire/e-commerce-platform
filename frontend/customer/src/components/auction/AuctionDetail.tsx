@@ -118,6 +118,11 @@ export default function AuctionDetail({ auctionId }: { auctionId: string }) {
   useEffect(() => {
     if (!auction) return;
 
+    const currentBid = parseFloat(auction?.current_highest_bid || auction?.reserve_price || '0');
+    const minSpread = parseFloat(auction?.minimum_spread || '1');
+    const minNextBid = Math.round((currentBid + minSpread) * 100) / 100;
+    setBidInput(String(minNextBid));
+
     const updateCountdown = () => {
       const now = Date.now();
       const start = new Date(auction.start_time).getTime();
@@ -327,7 +332,6 @@ export default function AuctionDetail({ auctionId }: { auctionId: string }) {
                         type="number"
                         step="0.01"
                         min={minNextBid}
-                        placeholder={`Min ₹${minNextBid.toFixed(2)}`}
                         value={bidInput}
                         onChange={(e) => setBidInput(e.target.value)}
                         disabled={placingBid || isWinning}

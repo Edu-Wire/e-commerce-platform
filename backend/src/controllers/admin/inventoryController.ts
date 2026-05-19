@@ -230,28 +230,58 @@ export async function updateAuctionStatus(req: Request, res: Response): Promise<
       }
 
       const numAuctions = parseInt(number_of_auctions, 10) || 1;
+      if (numAuctions > 1) {
+        res.status(400).json(error('Only one auction can be created per time slot. Multi-auction scheduling is not allowed.'));
+        return;
+      }
+
+      const proposedStart = new Date(start_time || new Date());
+      const proposedEnd = new Date(end_time);
+
+      if (proposedEnd <= proposedStart) {
+        res.status(400).json(error('End time must be after start time'));
+        return;
+      }
+
+      // Check if there is any overlapping non-cancelled auction
+      const overlap = await queryOne<{ id: number }>(
+        `SELECT id FROM auctions 
+         WHERE status != 'cancelled' 
+           AND start_time < $1 
+           AND end_time > $2 
+         LIMIT 1`,
+        [proposedEnd.toISOString(), proposedStart.toISOString()]
+      );
+
+      if (overlap) {
+        res.status(400).json(error('Another auction is already scheduled/active during this time slot. Please choose another time span.'));
+        return;
+      }
+
       const unitsPerAuction = parseInt(quantity, 10) || 1;
       const reservePriceValue = parseFloat(reserve_price);
       const startingBidValue = parseFloat(req.body.current_highest_bid) || reservePriceValue;
       const minimumSpreadValue = parseFloat(minimum_spread) || 1.00;
       const spreadValue = parseFloat(req.body.spread) || 0.00;
+      const markupPercent = req.body.outbid_purchase_markup_percent !== undefined && req.body.outbid_purchase_markup_percent !== null && req.body.outbid_purchase_markup_percent !== ''
+        ? parseFloat(req.body.outbid_purchase_markup_percent)
+        : null;
 
-      for (let i = 0; i < numAuctions; i += 1) {
-        await query(
-          `INSERT INTO auctions (product_id, start_time, end_time, status, reserve_price, current_highest_bid, minimum_spread, quantity, spread)
-           VALUES ($1, $2, $3, 'active', $4, $5, $6, $7, $8)`,
-          [
-            id,
-            start_time || new Date(),
-            end_time,
-            reservePriceValue,
-            startingBidValue,
-            minimumSpreadValue,
-            unitsPerAuction,
-            spreadValue
-          ]
-        );
-      }
+      await query(
+        `INSERT INTO auctions (product_id, start_time, end_time, status, reserve_price, current_highest_bid, minimum_spread, quantity, spread, outbid_purchase_markup_percent)
+         VALUES ($1, $2, $3, 'active', $4, $5, $6, $7, $8, $9)`,
+        [
+          id,
+          proposedStart,
+          proposedEnd,
+          reservePriceValue,
+          startingBidValue,
+          minimumSpreadValue,
+          unitsPerAuction,
+          spreadValue,
+          markupPercent
+        ]
+      );
     }
 
     res.json(success({ message: 'Product auction status updated successfully' }));

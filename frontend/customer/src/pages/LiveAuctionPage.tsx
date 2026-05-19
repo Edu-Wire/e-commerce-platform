@@ -36,6 +36,136 @@ interface Activity {
   timestamp: string;
 }
 
+const formatAuctionDate = (dateStr: string) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  const datePart = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const timePart = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return `${datePart}, ${timePart}`;
+};
+
+function FeaturedLiveCard({ auction, customer, bidAmounts, handleBidChange, handlePlaceBid, navigate }: any) {
+  let images: any[] = [];
+  try {
+    images = typeof auction.product_images === 'string' ? JSON.parse(auction.product_images) : auction.product_images;
+  } catch (e) {}
+  const mainImageObj = images?.[0];
+  let mainImage = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
+  if (mainImage && mainImage.startsWith('/')) mainImage = `http://localhost:4000${mainImage}`;
+
+  const currentBid = parseFloat(auction.current_highest_bid || auction.reserve_price || '0');
+  const startingPrice = parseFloat(auction.reserve_price || auction.product_mrp || '0');
+  const buyNow = auction.buy_now_price || null;
+  const minSpread = parseFloat(auction.minimum_spread || '1.00');
+  const minNextBid = currentBid + minSpread;
+  const isWinning = customer?.id && auction.highest_bidder_id === customer.id;
+  const hasUserBid = auction.user_has_bid;
+  const userBidValue = parseFloat(auction.user_highest_bid || '0');
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start">
+        <div className="flex-1 flex gap-4 items-start min-w-0">
+          <div className="w-24 h-20 sm:w-36 sm:h-28 rounded-lg overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
+            <img src={mainImage} alt={auction.product_name} className="w-full h-full object-cover" onError={(e)=>{(e.target as HTMLImageElement).src='/placeholder.png'}} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900 line-clamp-2">{auction.product_name}</h3>
+            <div className="text-xs text-slate-500 mt-2 flex flex-wrap gap-3 items-center">
+              <span>Electronics</span>
+              <span>•</span>
+              <span>SKU: {auction.product_sku || `AUC-${auction.id}`}</span>
+              {hasUserBid && (
+                <>
+                  <span>•</span>
+                  <div className="flex gap-1.5">
+                    {isWinning ? (
+                      <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">Winning</span>
+                    ) : (
+                      <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">Outbid</span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full sm:w-auto flex-shrink-0">
+          <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 text-center sm:min-w-[180px]">
+            <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Time Remaining</div>
+            <div className="text-xl font-bold text-red-500 mt-1"><Timer endTime={auction.end_time!} startTime={auction.start_time!} /></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-4 border-t border-slate-100 text-sm">
+        <div>
+          <div className={`text-xs font-semibold ${isWinning ? 'text-blue-600' : hasUserBid ? 'text-red-500' : 'text-orange-600'}`}>Current Highest Bid</div>
+          <div className={`font-bold text-base ${isWinning ? 'text-blue-600' : hasUserBid ? 'text-red-500' : 'text-orange-600'}`}>₹{currentBid.toLocaleString('en-IN')}</div>
+        </div>
+        <div>
+          <div className="text-xs text-slate-400 font-medium">Starting Price</div>
+          <div className="font-bold text-slate-900">₹{startingPrice.toLocaleString('en-IN')}</div>
+        </div>
+        <div>
+          <div className="text-xs text-slate-400 font-medium">Reserve Price</div>
+          <div className="font-bold text-slate-900">₹{(auction.reserve_price || 0).toLocaleString('en-IN')}</div>
+        </div>
+        <div>
+          <div className="text-xs text-slate-400 font-medium">Buy Now Price</div>
+          <div className="font-bold text-slate-900">{buyNow ? `₹${parseFloat(buyNow).toLocaleString('en-IN')}` : '—'}</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-100 text-[13px] text-slate-500">
+        <div>
+          <div className="text-xs text-slate-400">Auction ID</div>
+          <div className="font-medium text-slate-800">AUC-{auction.id}</div>
+        </div>
+        <div>
+          <div className="text-xs text-slate-400">Start Time</div>
+          <div className="font-medium text-slate-800">{auction.start_time ? formatAuctionDate(auction.start_time) : '—'}</div>
+        </div>
+        <div>
+          <div className="text-xs text-slate-400">Auction Type</div>
+          <div className="font-medium text-slate-800">Standard Auction</div>
+        </div>
+        <div>
+          <div className="text-xs text-slate-400">Bidders</div>
+          <div className="font-medium text-slate-800">{auction.total_bids || 0}</div>
+        </div>
+      </div>
+
+      {/* Place Bid Section */}
+      <div className="mt-4 bg-white p-4 rounded-lg border border-slate-100">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="text-xs text-slate-400 font-medium">DESCRIPTION</div>
+            <p className="text-sm text-slate-700 mt-1 line-clamp-2">{auction.product_description || 'No description available'}</p>
+          </div>
+
+          <div className="w-full sm:w-72 flex items-center gap-2">
+            <input
+              type="number"
+              placeholder={`Min ₹${minNextBid.toFixed(0)}`}
+              className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 font-medium"
+              value={bidAmounts[auction.id!] !== undefined && bidAmounts[auction.id!] !== '' ? bidAmounts[auction.id!] : minNextBid.toFixed(0)}
+              onChange={(e) => handleBidChange(auction.id!, e.target.value)}
+            />
+            <button
+              onClick={() => handlePlaceBid(auction.id!, auction.current_highest_bid || auction.reserve_price || '0', auction.minimum_spread || '1.00')}
+              className="px-5 py-2 bg-orange-500 text-white rounded-lg text-sm font-bold hover:bg-orange-600 transition-colors whitespace-nowrap"
+            >
+              Place Bid
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Auction {
   product_id: number;
   product_name: string;
@@ -122,6 +252,8 @@ export default function LiveAuctionPage() {
   const [priceFilter, setPriceFilter] = useState('All Prices');
   const [timeFilter, setTimeFilter] = useState('All Times');
   const [sortFilter, setSortFilter] = useState('Recently Updated');
+  const [groupByProduct, setGroupByProduct] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   
    const customer = useAuthStore(state => state.customer);
    const token = useAuthStore(state => state.token);
@@ -215,15 +347,15 @@ export default function LiveAuctionPage() {
       return;
     }
 
-    const amountStr = bidAmounts[auctionId];
-    if (!amountStr) {
-      toast.error('Please enter a bid amount');
-      return;
-    }
-
-    const amount = parseFloat(amountStr);
     const currentBid = parseFloat(currentBidStr);
     const minSpread = parseFloat(minSpreadStr || '1.00');
+    const minNextBid = currentBid + minSpread;
+
+    const amountStr = bidAmounts[auctionId] !== undefined && bidAmounts[auctionId] !== ''
+      ? bidAmounts[auctionId]
+      : minNextBid.toFixed(0);
+
+    const amount = parseFloat(amountStr);
 
     if (amount < currentBid + minSpread) {
       toast.error(`Bid must be at least ₹${(currentBid + minSpread).toFixed(2)}`);
@@ -258,11 +390,11 @@ export default function LiveAuctionPage() {
 
   const activeAuctions = useMemo(() => auctions.filter(a => a.id !== null), [auctions]);
   
-  const productGroups = useMemo(() => {
+  const { filteredAuctions, productGroups } = useMemo(() => {
     const groups: Record<number, ProductGroup> = {};
     const sourceAuctions = activeContentTab === 'Won Bids' ? wonAuctions : auctions;
     
-    let filteredAuctions = sourceAuctions.filter(auction => {
+    let filtered = sourceAuctions.filter(auction => {
       if (!auction.id) return false;
       
       // Tab filter
@@ -297,7 +429,7 @@ export default function LiveAuctionPage() {
       return true;
     });
 
-    filteredAuctions.forEach((auction) => {
+    filtered.forEach((auction) => {
       if (!groups[auction.product_id]) {
         groups[auction.product_id] = {
           product_id: auction.product_id,
@@ -317,16 +449,51 @@ export default function LiveAuctionPage() {
     // Sort groups
     if (sortFilter === 'Price: Low to High') {
       groupsArr.sort((a, b) => Math.max(...a.auctions.map(x => parseFloat(x.current_highest_bid || x.reserve_price || '0'))) - Math.max(...b.auctions.map(x => parseFloat(x.current_highest_bid || x.reserve_price || '0'))));
+      filtered.sort((a, b) => parseFloat(a.current_highest_bid || a.reserve_price || '0') - parseFloat(b.current_highest_bid || b.reserve_price || '0'));
     } else if (sortFilter === 'Price: High to Low') {
       groupsArr.sort((a, b) => Math.max(...b.auctions.map(x => parseFloat(x.current_highest_bid || x.reserve_price || '0'))) - Math.max(...a.auctions.map(x => parseFloat(x.current_highest_bid || x.reserve_price || '0'))));
+      filtered.sort((a, b) => parseFloat(b.current_highest_bid || b.reserve_price || '0') - parseFloat(a.current_highest_bid || a.reserve_price || '0'));
     } else if (sortFilter === 'Ending Soonest') {
       groupsArr.sort((a, b) => Math.min(...a.auctions.map(x => new Date(x.end_time!).getTime())) - Math.min(...b.auctions.map(x => new Date(x.end_time!).getTime())));
+      filtered.sort((a, b) => new Date(a.end_time!).getTime() - new Date(b.end_time!).getTime());
     }
     
-    return groupsArr;
+    return { filteredAuctions: filtered, productGroups: groupsArr };
   }, [auctions, wonAuctions, searchQuery, activeContentTab, priceFilter, timeFilter, sortFilter]);
 
   const activeBidsCount = useMemo(() => activeAuctions.filter(a => new Date(a.start_time!).getTime() <= new Date().getTime()).length, [activeAuctions]);
+  
+  const liveBids = useMemo(() => {
+    return filteredAuctions.filter(a => {
+      const isUpcoming = a.start_time ? new Date(a.start_time).getTime() > new Date().getTime() : false;
+      return !isUpcoming;
+    });
+  }, [filteredAuctions]);
+
+  const upcomingBids = useMemo(() => {
+    const filtered = upcomingAuctions.filter(auction => {
+      if (!auction.id) return false;
+      
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = auction.product_name?.toLowerCase().includes(query);
+        const matchesDesc = auction.product_description?.toLowerCase().includes(query);
+        if (!matchesName && !matchesDesc) return false;
+      }
+      
+      // Price Filter
+      if (priceFilter !== 'All Prices') {
+        const highestBid = parseFloat(auction.current_highest_bid || auction.reserve_price || '0');
+        if (priceFilter === 'Under ₹1,000' && highestBid >= 1000) return false;
+        if (priceFilter === '₹1,000 - ₹5,000' && (highestBid < 1000 || highestBid > 5000)) return false;
+        if (priceFilter === 'Over ₹5,000' && highestBid <= 5000) return false;
+      }
+      
+      return true;
+    });
+
+    return [...filtered].sort((a, b) => new Date(a.start_time!).getTime() - new Date(b.start_time!).getTime());
+  }, [upcomingAuctions, searchQuery, priceFilter]);
   
   const { winningBidsCount, outbidAuctionsCount, totalParticipated } = useMemo(() => {
     if (!customer?.id) return { winningBidsCount: 0, outbidAuctionsCount: 0, totalParticipated: 0 };
@@ -416,7 +583,7 @@ export default function LiveAuctionPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans">
       {/* Sidebar */}
-      <div className="w-64 bg-[#0F172A] text-white flex flex-col justify-between hidden md:flex">
+      <div className="w-64 bg-[#0F172A] text-white flex flex-col justify-between hidden md:flex h-screen sticky top-0 overflow-y-auto flex-shrink-0">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-8">
             <span className="text-2xl font-bold text-white">Auction<span className="text-orange-500">Pro</span></span>
@@ -451,7 +618,7 @@ export default function LiveAuctionPage() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-6">
+        <header className="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-6 sticky top-0 z-40">
           <div className="flex items-center gap-4 flex-1">
             <div className="relative w-96 hidden sm:block">
               <input 
@@ -596,244 +763,208 @@ export default function LiveAuctionPage() {
               <AuctionDetail auctionId={auctionIdFromPath} />
             ) : activeTab === 'Live Auctions' ? (
               <>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900 mb-4">Bid Overview</h1>
-                  
-                  {/* Stats Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <StatCard title="Active Bids" value={activeBidsCount.toString()} subtitle="+ 0 new today" icon="🔨" iconBg="bg-blue-50" iconColor="text-blue-500" />
+                <h1 className="text-2xl font-bold text-slate-900 mb-4">Bid Overview</h1>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-6">
+                  {/* Left Column: Stats Cards */}
+                  <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <StatCard title="Winning Bids" value={wonAuctions.length.toString()} subtitle={`Total Value ₹${wonAuctionsValue}`} icon="🏆" iconBg="bg-green-50" iconColor="text-green-500" />
-                    <StatCard title="Upcoming Auctions" value={upcomingAuctions.length.toString()} subtitle="Starting soon" icon="📅" iconBg="bg-blue-50" iconColor="text-blue-500" />
-                    <StatCard title="Ending Soon" value={endingSoonCount.toString()} subtitle="Ending within 30m" icon="⏰" iconBg="bg-orange-50" iconColor="text-orange-500" highlight />
                     <StatCard title="Total Amount Bid" value={`₹${totalAmountBid}`} subtitle="+₹0 today" icon="💰" iconBg="bg-purple-50" iconColor="text-purple-500" />
                   </div>
-                </div>
-                
-                {/* Tabs and Filters */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-4">
-                    <div className="flex gap-4 overflow-x-auto pb-2 md:pb-0">
-                      {['All Bids', 'Live Auctions', 'Winning', 'Won Bids'].map(tab => (
-                        <Tab key={tab} label={tab} active={tab === activeContentTab} onClick={() => setActiveContentTab(tab)} />
-                      ))}
+                  
+                  {/* Right Column: Tabs and Filters */}
+                  <div className="lg:col-span-8 bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-3">
+                      <div className="flex gap-4">
+                        {['Live Auctions', 'Won Bids'].map(tab => (
+                          <Tab key={tab} label={tab} active={tab === activeContentTab} onClick={() => setActiveContentTab(tab)} />
+                        ))}
+                      </div>
                     </div>
                     
-                    <div className="flex items-center gap-4 justify-between md:justify-end">
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <span>Group by Product</span>
-                        <div className="w-10 h-5 bg-orange-500 rounded-full p-0.5 cursor-pointer">
-                          <div className="w-4 h-4 bg-white rounded-full ml-auto"></div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5">
-                        <button className="p-1 bg-slate-100 rounded">🔲</button>
-                        <button className="p-1">☰</button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0 items-center">
-                    <FilterDropdown 
-                      value={priceFilter} 
-                      options={['All Prices', 'Under ₹1,000', '₹1,000 - ₹5,000', 'Over ₹5,000']} 
-                      onChange={setPriceFilter} 
-                    />
-                    <FilterDropdown 
-                      value={timeFilter} 
-                      options={['All Times', '< 1 Hour', '< 24 Hours', '> 24 Hours']} 
-                      onChange={setTimeFilter} 
-                    />
-                    <FilterDropdown 
-                      value={sortFilter} 
-                      options={['Recently Updated', 'Price: Low to High', 'Price: High to Low', 'Ending Soonest']} 
-                      onChange={setSortFilter} 
-                    />
-                    <button 
-                      onClick={() => { setPriceFilter('All Prices'); setTimeFilter('All Times'); setSortFilter('Recently Updated'); setSearchQuery(''); }}
-                      className="text-sm text-slate-500 hover:text-slate-700 whitespace-nowrap ml-2"
-                    >
-                      Reset Filters
-                    </button>
+                    {/* <div className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
+                      <FilterDropdown 
+                        value={priceFilter} 
+                        options={['All Prices', 'Under ₹1,000', '₹1,000 - ₹5,000', 'Over ₹5,000']} 
+                        onChange={setPriceFilter} 
+                      />
+                      <FilterDropdown 
+                        value={timeFilter} 
+                        options={['All Times', '< 1 Hour', '< 24 Hours', '> 24 Hours']} 
+                        onChange={setTimeFilter} 
+                      />
+                      <FilterDropdown 
+                        value={sortFilter} 
+                        options={['Recently Updated', 'Price: Low to High', 'Price: High to Low', 'Ending Soonest']} 
+                        onChange={setSortFilter} 
+                      />
+                      <button 
+                        onClick={() => { setPriceFilter('All Prices'); setTimeFilter('All Times'); setSortFilter('Recently Updated'); setSearchQuery(''); }}
+                        className="text-xs text-slate-500 hover:text-slate-700 whitespace-nowrap ml-2 font-medium"
+                      >
+                        Reset Filters
+                      </button>
+                    </div> */}
                   </div>
                 </div>
 
-                {/* Bid List */}
-                <div className="space-y-4">
-                  {productGroups.length === 0 ? (
-                    <div className="text-center p-8 bg-white rounded-xl border border-slate-100">
-                      <p className="text-slate-500">No active auctions found.</p>
-                    </div>
-                  ) : (
-                    productGroups.map((group) => {
-                      const isExpanded = expandedCards[group.product_id] || false;
-                      
-                      let images: any[] = [];
-                      try {
-                        images = typeof group.product_images === 'string' ? JSON.parse(group.product_images) : group.product_images;
-                      } catch (e) {
-                        console.error('Failed to parse product images:', e);
-                      }
-                      const mainImageObj = images?.[0];
-                      let mainImage = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
-                      if (mainImage.startsWith('/')) {
-                        mainImage = `http://localhost:4000${mainImage}`;
-                      }
+                {/* Bid List Container / Big Card */}
+                {activeContentTab === 'Won Bids' ? (
+                  <div className="space-y-4">
+                    {filteredAuctions.length === 0 ? (
+                      <div className="text-center p-8 bg-white rounded-xl border border-slate-100">
+                        <p className="text-slate-500">No won auctions found.</p>
+                      </div>
+                    ) : (
+                      filteredAuctions.map((auction) => {
+                        const currentBid = parseFloat(auction.current_highest_bid || auction.reserve_price || '0');
+                        let images: any[] = [];
+                        try {
+                          images = typeof auction.product_images === 'string' ? JSON.parse(auction.product_images) : auction.product_images;
+                        } catch (e) {}
+                        const mainImageObj = images?.[0];
+                        let mainImage = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
+                        if (mainImage.startsWith('/')) {
+                          mainImage = `http://localhost:4000${mainImage}`;
+                        }
 
-                      const highestBid = Math.max(...group.auctions.map(a => parseFloat(a.current_highest_bid || a.reserve_price || '0')));
-                      const yourHighestBidGroup = Math.max(...group.auctions.map(a => parseFloat(a.user_highest_bid || '0')), 0);
-                      const activeGroupCount = group.auctions.filter(a => new Date(a.start_time!).getTime() <= new Date().getTime()).length;
-                      const upcomingGroupCount = group.auctions.length - activeGroupCount;
-
-                      return (
-                        <div key={group.product_id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                          <div className="p-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between cursor-pointer" onClick={() => toggleExpand(group.product_id)}>
-                            <div className="flex items-center gap-4">
-                              <div className="w-20 h-16 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                                <img src={mainImage} alt={group.product_name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} />
+                        return (
+                          <div key={auction.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:shadow-md p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 min-w-0 flex-1">
+                              <div className="w-20 h-16 bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 border border-slate-100">
+                                <img 
+                                  src={mainImage} 
+                                  alt={auction.product_name} 
+                                  className="w-full h-full object-cover" 
+                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} 
+                                />
                               </div>
-                              <div>
-                                <h3 className="font-semibold text-slate-800">{group.product_name}</h3>
-                                <p className="text-xs text-slate-500">{group.product_description || 'No description'}</p>
-                                <div className="flex gap-3 mt-1">
-                                  {activeGroupCount > 0 && (
-                                    <span className="text-xs text-green-500 font-semibold flex items-center gap-1">
-                                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> {activeGroupCount} Active Auction{activeGroupCount > 1 ? 's' : ''}
-                                    </span>
-                                  )}
-                                  {upcomingGroupCount > 0 && (
-                                    <span className="text-xs text-orange-500 font-semibold flex items-center gap-1">
-                                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span> {upcomingGroupCount} Upcoming Auction{upcomingGroupCount > 1 ? 's' : ''}
-                                    </span>
-                                  )}
+                              <div className="min-w-0 flex-1">
+                                <h3 className="font-semibold text-slate-800 truncate text-sm md:text-base">{auction.product_name}</h3>
+                                <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{auction.product_description || 'No description'}</p>
+                                <div className="flex flex-wrap gap-2.5 mt-1.5 items-center">
+                                  <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Auction #{auction.id}</span>
+                                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Won</span>
                                 </div>
                               </div>
                             </div>
-                            
-                            <div className="flex flex-wrap gap-4 md:gap-8 items-center justify-between lg:justify-end">
-                              <div className="text-center min-w-[70px]">
-                                <p className="text-xs text-slate-400">Highest Bid</p>
-                                <p className="font-bold text-slate-800">₹{highestBid.toLocaleString('en-IN')}</p>
+
+                            <div className="flex items-center gap-6 justify-end flex-shrink-0">
+                              <div className="text-right">
+                                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Winning Bid</p>
+                                <p className="font-bold text-slate-800 text-sm md:text-base">₹{currentBid.toLocaleString('en-IN')}</p>
                               </div>
-                              <div className="text-center min-w-[70px]">
-                                <p className="text-xs text-slate-400">Your Highest Bid</p>
-                                <p className={`font-bold ${yourHighestBidGroup > 0 ? 'text-green-500' : 'text-slate-400'}`}>₹{yourHighestBidGroup.toLocaleString('en-IN')}</p>
-                              </div>
-                              <div className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-semibold text-center min-w-[90px]">
-                                Grouped
-                                <p className="text-[10px] text-green-500 font-normal">By Product</p>
-                              </div>
-                              <div className="text-center min-w-[50px]">
-                                <p className="font-bold text-slate-800">{group.auctions.length}</p>
-                                <p className="text-[10px] text-slate-400">Auctions</p>
-                              </div>
-                              <span className="text-slate-400 hidden lg:block">{isExpanded ? '▲' : '▼'}</span>
+                              <a
+                                href="/orders"
+                                className="bg-green-500 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-green-600 transition-colors whitespace-nowrap"
+                              >
+                                Pay Now
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/live-auction/${auction.id}`)}
+                                className="text-xs text-blue-500 font-semibold hover:underline px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all"
+                              >
+                                Details
+                              </button>
                             </div>
                           </div>
-                          
-                          {isExpanded && (
-                            <div className="border-t border-slate-100 p-4 bg-slate-50 space-y-3 overflow-x-auto">
-                              {group.auctions.map((auction) => {
-                                const currentBid = parseFloat(auction.current_highest_bid || auction.reserve_price || '0');
-                                const minSpread = parseFloat(auction.minimum_spread || '1.00');
-                                const minNextBid = currentBid + minSpread;
-                                const isUpcoming = new Date(auction.start_time!).getTime() > new Date().getTime();
+                        );
+                      })
+                    )}
+                  </div>
+                ) : (
+                  /* Big Card Container for Live & Upcoming Bids */
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden grid grid-cols-1 lg:grid-cols-10 min-h-[550px]">
+                    {/* Left Pane: Live Bids (70%) */}
+                    <div className="lg:col-span-7 p-6 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-100">
+                      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                        <h2 className="font-bold text-slate-900 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+                          Live Bids
+                        </h2>
+                        <span className="text-xs bg-green-50 text-green-600 px-2.5 py-0.5 rounded-full font-semibold">
+                          {liveBids.length} Active
+                        </span>
+                      </div>
 
-                                return (
-                                  <div key={auction.id} className="flex flex-col sm:flex-row sm:items-center justify-between text-xs py-3 border-b border-slate-100 last:border-0 gap-2 min-w-[700px]">
-                                    <div className="flex items-center gap-3">
-                                      <span className="font-medium text-slate-600">Auction #{auction.id}</span>
-                                      <span className="text-slate-400"><Timer endTime={auction.end_time!} startTime={auction.start_time!} /></span>
-                                      {activeContentTab === 'Won Bids' ? (
-                                        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Won</span>
-                                      ) : isUpcoming ? (
-                                        <span className="bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full text-[10px] font-semibold">Upcoming</span>
-                                      ) : (
-                                        <div className="flex gap-2">
-                                          <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-full text-[10px] font-semibold">Live</span>
-                                          {auction.highest_bidder_id === customer?.id ? (
-                                            <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">Winning</span>
-                                          ) : auction.user_has_bid ? (
-                                            <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">Outbid</span>
-                                          ) : null}
-                                        </div>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-4 ml-auto">
-                                      <div className="min-w-[60px]">
-                                        <p className="text-slate-400 text-[10px]">Current Bid</p>
-                                        <p className="font-semibold text-slate-800">₹{currentBid.toLocaleString('en-IN')}</p>
-                                      </div>
-                                      <div className="min-w-[50px]">
-                                        <p className="text-slate-400 text-[10px]">Bids</p>
-                                        <p className="font-semibold text-slate-800">{auction.total_bids || 0}</p>
-                                      </div>
-                                      
-                                      {/* Bid Input and Button / Pay Now Button */}
-                                      {activeContentTab === 'Won Bids' ? (
-                                        <div className="flex items-center gap-2">
-                                          <a
-                                            href="/orders"
-                                            className="bg-green-500 text-white px-4 py-1.5 rounded text-[11px] font-semibold hover:bg-green-600 transition-colors whitespace-nowrap"
-                                          >
-                                            Pay Now
-                                          </a>
-                                        </div>
-                                      ) : (
-                                          <div className="flex flex-col items-end gap-1">
-                                            <div className="flex items-center gap-2">
-                                              <input
-                                                type="number"
-                                                placeholder={`Min ₹${minNextBid.toFixed(2)}`}
-                                                className="w-28 px-2 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:opacity-50 disabled:bg-slate-50"
-                                                value={bidAmounts[auction.id!] || ''}
-                                                onChange={(e) => handleBidChange(auction.id!, e.target.value)}
-                                                disabled={isUpcoming}
-                                              />
-                                              <button
-                                                onClick={() => handlePlaceBid(auction.id!, auction.current_highest_bid || auction.reserve_price || '0', auction.minimum_spread || '1.00')}
-                                                className="bg-orange-500 text-white px-3 py-1 rounded text-[10px] font-semibold hover:bg-orange-600 transition-colors whitespace-nowrap disabled:opacity-50 disabled:hover:bg-orange-500"
-                                                disabled={isUpcoming}
-                                              >
-                                                Place Bid
-                                              </button>
-                                            </div>
-                                            <p className="text-[9px] text-slate-400">10% wallet balance required</p>
-                                          </div>
-                                      )}
-                                      
-                                      <button
-                                        type="button"
-                                        onClick={() => navigate(`/live-auction/${auction.id}`)}
-                                        className="text-xs text-blue-500 hover:underline whitespace-nowrap"
-                                      >
-                                        Details
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                      <div className="flex-1 flex flex-col gap-4">
+                        {liveBids.length === 0 ? (
+                          <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                            <span className="text-4xl mb-2">🔨</span>
+                            <p className="text-slate-500 font-medium">No live bids</p>
+                            <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">There are no active live auctions matching your filters right now.</p>
+                          </div>
+                        ) : (
+                          <>
+                            <FeaturedLiveCard
+                              auction={liveBids[0]}
+                              customer={customer}
+                              bidAmounts={bidAmounts}
+                              handleBidChange={handleBidChange}
+                              handlePlaceBid={handlePlaceBid}
+                              navigate={navigate}
+                            />
+
+                            <div className="overflow-y-auto space-y-4 pr-1">
+                              {liveBids.slice(1).map((auction) => (
+                                <AuctionCard 
+                                  key={auction.id} 
+                                  auction={auction} 
+                                  isUpcoming={false} 
+                                  customer={customer} 
+                                  bidAmounts={bidAmounts} 
+                                  handleBidChange={handleBidChange} 
+                                  handlePlaceBid={handlePlaceBid} 
+                                  navigate={navigate} 
+                                />
+                              ))}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
 
-                {/* Bottom Bar (Ending Soon Carousel) */}
-                <div className="bg-slate-900 text-white p-4 rounded-xl flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-orange-500 text-xl">⏰</span>
-                    <div>
-                      <p className="font-semibold">{endingSoonCount} Auctions ending soon</p>
-                      <p className="text-xs text-slate-400">Don't miss your chance!</p>
+                    {/* Right Pane: Upcoming Bids (30%) */}
+                    <div className="lg:col-span-3 p-6 flex flex-col bg-slate-50/20 border-l border-slate-100">
+                      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                        <h2 className="font-bold text-slate-900 flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 bg-orange-500 rounded-full"></span>
+                          Upcoming Bids
+                        </h2>
+                        <span className="text-xs bg-orange-50 text-orange-600 px-2.5 py-0.5 rounded-full font-semibold">
+                          {upcomingBids.length} Scheduled
+                        </span>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto space-y-4">
+                        {upcomingBids.length === 0 ? (
+                          <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                            <span className="text-3xl mb-2">⏰</span>
+                            <p className="text-slate-500 font-medium text-sm">No upcoming bids</p>
+                            <p className="text-xs text-slate-400 mt-1">Check back later for new scheduled auctions.</p>
+                          </div>
+                        ) : (
+                          upcomingBids.map((auction) => (
+                            <AuctionCard 
+                              key={auction.id} 
+                              auction={auction} 
+                              isUpcoming={true} 
+                              customer={customer} 
+                              bidAmounts={bidAmounts} 
+                              handleBidChange={handleBidChange} 
+                              handlePlaceBid={handlePlaceBid} 
+                              navigate={navigate} 
+                              isMini={true}
+                            />
+                          ))
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  <button className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors whitespace-nowrap">View All Ending Soon</button>
-                </div>
+                )}
+
+
               </>
             ) : activeTab === 'My Bids' ? (
               <MyBids />
@@ -854,7 +985,7 @@ export default function LiveAuctionPage() {
 
           {/* Right Sidebar */}
           {activeTab === 'Live Auctions' && (
-          <aside className="w-80 border-l border-slate-100 bg-white p-6 space-y-6 overflow-auto hidden xl:block">
+          <aside className="w-80 border-l border-slate-100 bg-white p-6 space-y-6 overflow-y-auto hidden xl:block h-[calc(100vh-64px)] sticky top-16">
             {/* Live Activity */}
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -1096,11 +1227,173 @@ function FilterDropdown({ value, options, onChange }: { value: string, options: 
       <select 
         value={value} 
         onChange={e => onChange(e.target.value)}
-        className="appearance-none px-3 py-1.5 pr-8 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-orange-500 cursor-pointer whitespace-nowrap"
+        className="appearance-none pl-2.5 pr-7 py-1 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-orange-500 cursor-pointer whitespace-nowrap"
       >
         {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
-      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none">▼</span>
+      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 pointer-events-none">▼</span>
+    </div>
+  );
+}
+
+// Helper Component for Auction Card row/mini version
+function AuctionCard({ 
+  auction, 
+  isUpcoming, 
+  customer, 
+  bidAmounts, 
+  handleBidChange, 
+  handlePlaceBid, 
+  navigate,
+  isMini = false 
+}: { 
+  auction: any; 
+  isUpcoming: boolean; 
+  customer: any; 
+  bidAmounts: Record<number, string>; 
+  handleBidChange: (id: number, val: string) => void; 
+  handlePlaceBid: (id: number, current: string, spread: string) => void; 
+  navigate: any;
+  isMini?: boolean;
+}) {
+  const currentBid = parseFloat(auction.current_highest_bid || auction.reserve_price || '0');
+  const minSpread = parseFloat(auction.minimum_spread || '1.00');
+  const minNextBid = currentBid + minSpread;
+  
+  let images: any[] = [];
+  try {
+    images = typeof auction.product_images === 'string' ? JSON.parse(auction.product_images) : auction.product_images;
+  } catch (e) {}
+  const mainImageObj = images?.[0];
+  let mainImage = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
+  if (mainImage.startsWith('/')) {
+    mainImage = `http://localhost:4000${mainImage}`;
+  }
+
+  const isWinning = auction.highest_bidder_id === customer?.id;
+  const hasUserBid = auction.user_has_bid;
+  const userBidValue = parseFloat(auction.user_highest_bid || '0');
+
+  if (isMini) {
+    // Styling for the 30% column (Upcoming)
+    return (
+      <div className="bg-white rounded-xl border border-slate-100 hover:border-orange-200 p-4 transition-all hover:shadow-sm flex flex-col gap-3">
+        <div className="flex gap-3">
+          <div className="w-16 h-16 bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 border border-slate-100">
+            <img 
+              src={mainImage} 
+              alt={auction.product_name} 
+              className="w-full h-full object-cover" 
+              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} 
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h4 className="font-semibold text-slate-800 text-sm truncate">{auction.product_name}</h4>
+            <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">{auction.product_description || 'No description'}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 items-center text-[10px]">
+          <span className="font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">#{auction.id}</span>
+          <span className="bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Upcoming</span>
+        </div>
+
+        <div className="bg-slate-50 rounded-lg p-2.5 flex items-center justify-between text-xs gap-2">
+          <div className="min-w-0 flex-1">
+            <span className="text-[9px] text-slate-400 block uppercase font-bold tracking-wider truncate">Starting Price</span>
+            <span className="font-bold text-slate-700">₹{currentBid.toLocaleString('en-IN')}</span>
+          </div>
+          <div className="text-right min-w-0 flex-1">
+            <span className="text-[9px] text-slate-400 block uppercase font-bold tracking-wider truncate">Starts In</span>
+            <span className="font-semibold text-orange-600 text-[11px] block truncate"><Timer endTime={auction.end_time!} startTime={auction.start_time!} /></span>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mt-1">
+          <button
+            type="button"
+            onClick={() => navigate(`/live-auction/${auction.id}`)}
+            className="flex-1 text-center text-xs text-blue-500 font-semibold py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+          >
+            Details
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Styling for the 70% column (Live)
+  return (
+    <div className="bg-white rounded-xl border border-slate-100 hover:border-slate-200 p-4 transition-all hover:shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Left Side: Product Info */}
+      <div className="flex items-center gap-4 min-w-0 flex-1">
+        <div className="w-20 h-16 bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 border border-slate-100">
+          <img 
+            src={mainImage} 
+            alt={auction.product_name} 
+            className="w-full h-full object-cover" 
+            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} 
+          />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold text-slate-800 truncate text-sm md:text-base">{auction.product_name}</h3>
+          <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{auction.product_description || 'No description'}</p>
+          <div className="flex flex-wrap gap-2 mt-1.5 items-center">
+            <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Auction #{auction.id}</span>
+            <span className="text-slate-400 text-xs flex items-center gap-1">
+              <span className="text-[10px]">⏰</span>
+              <Timer endTime={auction.end_time!} startTime={auction.start_time!} />
+            </span>
+            <div className="flex gap-1.5">
+              <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Live</span>
+              {isWinning ? (
+                <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">Winning</span>
+              ) : hasUserBid ? (
+                <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">Outbid</span>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Right Side: Bid Details & Placing Bid */}
+      <div className="flex flex-wrap md:flex-nowrap gap-4 md:gap-6 items-center justify-between md:justify-end flex-shrink-0 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0">
+        <div className="text-left md:text-center min-w-[75px]">
+          <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Highest</p>
+          <p className="font-bold text-slate-800 text-sm md:text-base">₹{currentBid.toLocaleString('en-IN')}</p>
+        </div>
+        
+        <div className="text-left md:text-center min-w-[75px]">
+          <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Your Bid</p>
+          <p className={`font-bold text-sm md:text-base ${userBidValue > 0 ? 'text-green-500' : 'text-slate-400'}`}>
+            ₹{userBidValue.toLocaleString('en-IN')}
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder={`Min ₹${minNextBid.toFixed(0)}`}
+            className="w-24 px-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 font-medium"
+            value={bidAmounts[auction.id!] !== undefined && bidAmounts[auction.id!] !== '' ? bidAmounts[auction.id!] : minNextBid.toFixed(0)}
+            onChange={(e) => handleBidChange(auction.id!, e.target.value)}
+          />
+          <button
+            onClick={() => handlePlaceBid(auction.id!, auction.current_highest_bid || auction.reserve_price || '0', auction.minimum_spread || '1.00')}
+            className="bg-orange-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold hover:bg-orange-600 transition-colors whitespace-nowrap"
+          >
+            Bid
+          </button>
+        </div>
+        
+        <button
+          type="button"
+          onClick={() => navigate(`/live-auction/${auction.id}`)}
+          className="text-xs text-blue-500 font-semibold hover:underline px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all"
+        >
+          Details
+        </button>
+      </div>
     </div>
   );
 }

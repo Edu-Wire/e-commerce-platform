@@ -118,6 +118,31 @@ async function startNextAuction(client: PoolClient) {
   );
   const durationMinutes = parseInt(settingRes.rows[0]?.value || '60', 10);
 
+  // Check if there is any scheduled/upcoming non-cancelled auction in the future
+  const nextScheduledRes = await client.query(
+    `SELECT start_time FROM auctions 
+     WHERE status != 'cancelled' AND start_time > NOW() 
+     ORDER BY start_time ASC LIMIT 1`
+  );
+  const nextScheduled = nextScheduledRes.rows[0];
+
+  let calculatedDurationMinutes = durationMinutes;
+  if (nextScheduled) {
+    const nextStart = new Date(nextScheduled.start_time);
+    const now = new Date();
+    const diffMs = nextStart.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+
+    if (diffMinutes <= 1) {
+      console.log('[Auction] Next scheduled auction starts too soon. Skipping queue start.');
+      return;
+    }
+    if (diffMinutes < calculatedDurationMinutes) {
+      calculatedDurationMinutes = diffMinutes;
+      console.log(`[Auction] Capped rotated auction duration to ${calculatedDurationMinutes} minutes to avoid overlap with scheduled auction at ${nextStart.toISOString()}.`);
+    }
+  }
+
   // Find the next product marked for auction with stock > 0
   const nextProductRes = await client.query(
     `SELECT id FROM products 
@@ -128,13 +153,13 @@ async function startNextAuction(client: PoolClient) {
   const nextProduct = nextProductRes.rows[0];
 
   if (nextProduct) {
-    console.log(`[Auction] Starting new auction for Product ID: ${nextProduct.id} for ${durationMinutes} minutes.`);
+    console.log(`[Auction] Starting new auction for Product ID: ${nextProduct.id} for ${calculatedDurationMinutes} minutes.`);
 
     // Create new auction with dynamic duration
     await client.query(
       `INSERT INTO auctions (product_id, start_time, end_time, status) 
        VALUES ($1, NOW(), NOW() + ($2 || ' minutes')::interval, 'active')`,
-      [nextProduct.id, durationMinutes]
+      [nextProduct.id, calculatedDurationMinutes]
     );
 
     // Mark the product as no longer ready

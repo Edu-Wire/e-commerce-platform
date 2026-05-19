@@ -45,6 +45,7 @@ export default function AuctionsPage() {
   const [numberOfAuctions, setNumberOfAuctions] = useState('1');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [outbidPurchaseMarkupPercent, setOutbidPurchaseMarkupPercent] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -102,16 +103,25 @@ export default function AuctionsPage() {
     setSpread('0.00'); // Reset spread
     setQuantity('1');
     setNumberOfAuctions('1');
+    setOutbidPurchaseMarkupPercent('');
     
-    // Set default start time to now
+    const formatLocalDatetime = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // Set default start time to the next full hour
     const now = new Date();
-    const nowStr = now.toISOString().slice(0, 16); // format: YYYY-MM-DDThh:mm
-    setStartTime(nowStr);
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0, 0);
+    setStartTime(formatLocalDatetime(start));
     
-    // Set default end time to 12 hours from now
-    const later = new Date(now.getTime() + 12 * 60 * 60 * 1000);
-    const laterStr = later.toISOString().slice(0, 16);
-    setEndTime(laterStr);
+    // Set default end time to 1 hour after start
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    setEndTime(formatLocalDatetime(end));
     
     setIsModalOpen(true);
   };
@@ -142,7 +152,8 @@ export default function AuctionsPage() {
         quantity: quantity,
         number_of_auctions: numberOfAuctions,
         start_time: new Date(startTime).toISOString(),
-        end_time: new Date(endTime).toISOString()
+        end_time: new Date(endTime).toISOString(),
+        outbid_purchase_markup_percent: outbidPurchaseMarkupPercent || null
       });
       toast.success('Auction started successfully!');
       fetchProducts();
@@ -320,24 +331,6 @@ export default function AuctionsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Number of Auctions
-              </label>
-              <input
-                type="number"
-                value={numberOfAuctions}
-                onChange={(e) => setNumberOfAuctions(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="1"
-                min="1"
-                max={Math.floor((selectedProduct?.stock_quantity || 0) / (parseInt(quantity, 10) || 1))}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Max: {Math.floor((selectedProduct?.stock_quantity || 0) / (parseInt(quantity, 10) || 1))}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Units per Auction
               </label>
               <input
@@ -347,9 +340,24 @@ export default function AuctionsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="1"
                 min="1"
-                max={Math.floor((selectedProduct?.stock_quantity || 0) / (parseInt(numberOfAuctions, 10) || 1))}
+                max={selectedProduct?.stock_quantity || 0}
               />
               <p className="text-xs text-gray-500 mt-1">Available: {selectedProduct?.stock_quantity}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Outbid Offer Price Markup %
+              </label>
+              <input
+                type="number"
+                value={outbidPurchaseMarkupPercent}
+                onChange={(e) => setOutbidPurchaseMarkupPercent(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g. 50"
+                min="0"
+              />
+              <p className="text-xs text-gray-500 mt-1">Leave empty to disable outbid purchase offers.</p>
             </div>
           </div>
 
