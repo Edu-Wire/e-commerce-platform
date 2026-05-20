@@ -193,14 +193,19 @@ export async function updateAuctionStatus(req: Request, res: Response): Promise<
       return;
     }
 
+    const isAuctionReadyFlag = is_auction_ready !== undefined
+      ? (is_auction_ready === true || is_auction_ready === 'true' || is_auction_ready === 1 || is_auction_ready === '1')
+      : false;
+    const auctionPriorityValue = auction_priority !== undefined ? parseInt(auction_priority, 10) || 0 : 0;
+
     await query(
       `UPDATE products SET 
          is_auction_ready = $1, 
          auction_priority = $2 
        WHERE id = $3`,
       [
-        is_auction_ready !== undefined ? is_auction_ready : false,
-        auction_priority !== undefined ? parseInt(auction_priority, 10) : 0,
+        isAuctionReadyFlag,
+        auctionPriorityValue,
         id
       ]
     );
@@ -224,21 +229,31 @@ export async function updateAuctionStatus(req: Request, res: Response): Promise<
     if (reserve_price !== undefined) {
       const { minimum_spread, quantity, number_of_auctions, start_time, end_time } = req.body;
 
-      if (!end_time) {
-        res.status(400).json(error('End time is required for auction'));
-        return;
-      }
-
       const numAuctions = parseInt(number_of_auctions, 10) || 1;
       if (numAuctions > 1) {
         res.status(400).json(error('Only one auction can be created per time slot. Multi-auction scheduling is not allowed.'));
         return;
       }
 
-      const proposedStart = new Date(start_time || new Date());
+      if (end_time === undefined || end_time === null || String(end_time).trim() === '') {
+        res.status(400).json(error('End time is required for auction'));
+        return;
+      }
+
+      const startInput = start_time || new Date().toISOString();
+      const proposedStart = new Date(startInput);
       const proposedEnd = new Date(end_time);
 
-      if (proposedEnd <= proposedStart) {
+      if (isNaN(proposedStart.getTime())) {
+        res.status(400).json(error('Invalid start_time provided'));
+        return;
+      }
+      if (isNaN(proposedEnd.getTime())) {
+        res.status(400).json(error('Invalid end_time provided'));
+        return;
+      }
+
+      if (proposedEnd.getTime() <= proposedStart.getTime()) {
         res.status(400).json(error('End time must be after start time'));
         return;
       }
@@ -259,12 +274,12 @@ export async function updateAuctionStatus(req: Request, res: Response): Promise<
       }
 
       const unitsPerAuction = parseInt(quantity, 10) || 1;
-      const reservePriceValue = parseFloat(reserve_price);
-      const startingBidValue = parseFloat(req.body.current_highest_bid) || reservePriceValue;
-      const minimumSpreadValue = parseFloat(minimum_spread) || 1.00;
-      const spreadValue = parseFloat(req.body.spread) || 0.00;
+      const reservePriceValue = parseFloat(String(reserve_price));
+      const startingBidValue = parseFloat(String(req.body.current_highest_bid)) || reservePriceValue;
+      const minimumSpreadValue = parseFloat(String(minimum_spread)) || 1.0;
+      const spreadValue = parseFloat(String(req.body.spread)) || 0.0;
       const markupPercent = req.body.outbid_purchase_markup_percent !== undefined && req.body.outbid_purchase_markup_percent !== null && req.body.outbid_purchase_markup_percent !== ''
-        ? parseFloat(req.body.outbid_purchase_markup_percent)
+        ? parseFloat(String(req.body.outbid_purchase_markup_percent))
         : null;
 
       await query(
@@ -272,8 +287,8 @@ export async function updateAuctionStatus(req: Request, res: Response): Promise<
          VALUES ($1, $2, $3, 'active', $4, $5, $6, $7, $8, $9)`,
         [
           id,
-          proposedStart,
-          proposedEnd,
+          proposedStart.toISOString(),
+          proposedEnd.toISOString(),
           reservePriceValue,
           startingBidValue,
           minimumSpreadValue,

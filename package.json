@@ -2,7 +2,11 @@
   "name": "retail-platform",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["backend", "frontend/customer", "frontend/admin"],
+  "workspaces": [
+    "backend",
+    "frontend/customer",
+    "frontend/admin"
+  ],
   "scripts": {
     "dev:backend": "npm run dev --workspace=backend",
     "dev:customer": "npm run dev --workspace=frontend/customer",
@@ -12,6 +16,7 @@
     "migrate": "npm run migrate --workspace=backend"
   },
   "devDependencies": {
+    "@types/nodemailer": "^8.0.0",
     "concurrently": "^8.2.2"
   }
 }

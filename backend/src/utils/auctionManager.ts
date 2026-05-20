@@ -1,6 +1,6 @@
 import { withTransaction } from '../config/database';
 import { PoolClient } from 'pg';
-import { sendOutbidPurchaseOffer } from '../services/emailService';
+import { sendOutbidPurchaseOffer, sendAuctionWinnerNotification } from '../services/emailService';
 import { env } from '../config/env';
 
 export async function checkAndRotateAuctions() {
@@ -68,12 +68,29 @@ export async function checkAndRotateAuctions() {
               );
               console.log(`[Auction] Order created for winner ${customer.id}`);
 
+              const auctionUrl = `${env.frontendCustomerUrl.replace(/\/$/, '')}/live-auction/${activeAuction.id}`;
+
+              // Send email to the winner
+              if (customer.email) {
+                try {
+                  await sendAuctionWinnerNotification(
+                    customer.email,
+                    customer.name || 'Customer',
+                    product.name,
+                    unitPrice,
+                    auctionUrl
+                  );
+                  console.log(`[Auction] Sent winner notification to customer ${customer.id} for auction ${activeAuction.id}`);
+                } catch (sendErr) {
+                  console.error(`[Auction] Failed to send winner notification to customer ${customer.id}:`, sendErr);
+                }
+              }
+
               const quantityLimit = parseInt(activeAuction.quantity ?? '1', 10) || 1;
               const markupPercent = activeAuction.outbid_purchase_markup_percent !== null && activeAuction.outbid_purchase_markup_percent !== undefined
                 ? parseFloat(activeAuction.outbid_purchase_markup_percent)
                 : 50;
               const offerPrice = Math.round(unitPrice * (1 + markupPercent / 100));
-              const auctionUrl = `${env.frontendCustomerUrl.replace(/\/$/, '')}/live-auction/${activeAuction.id}`;
 
               const losingBiddersRes = await client.query(
                 `SELECT b.customer_id,
