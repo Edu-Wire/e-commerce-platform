@@ -59,18 +59,6 @@ export async function processPlaceBid(
     throw new BidError(`Bid must be at least ₹${(currentBid + minSpread).toFixed(2)}`);
   }
 
-  // Wallet Balance Check: User must have at least 10% of the bid amount in their wallet
-  const wallet = await queryOne<{ balance: string }>(
-    'SELECT balance FROM customer_wallets WHERE customer_id = $1',
-    [customerId]
-  );
-  const balance = parseFloat(wallet?.balance || '0');
-  const requiredBalance = newBid * 0.10;
-
-  if (balance < requiredBalance) {
-    throw new BidError(`Insufficient wallet balance. You need at least ₹${requiredBalance.toFixed(2)} (10% of bid amount) in your wallet to place this bid. Your current balance is ₹${balance.toFixed(2)}.`);
-  }
-
   await query(
     `UPDATE auctions SET current_highest_bid = $1, highest_bidder_id = $2 WHERE id = $3`,
     [newBid, customerId, auctionId]

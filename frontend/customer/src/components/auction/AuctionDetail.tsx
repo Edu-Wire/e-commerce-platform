@@ -15,7 +15,6 @@ import {
   type BidUpdatePayload,
 } from '../../lib/auctionSocket';
 import { applyBidToAuctionDetail } from '../../lib/applyBidUpdate';
-import { useWalletSummary } from '../../hooks/useWallet';
 
 const API_BASE = (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || '';
 
@@ -67,7 +66,6 @@ export default function AuctionDetail({ auctionId }: { auctionId: string }) {
   const [auctionState, setAuctionState] = useState<'upcoming' | 'active' | 'ended'>('active');
   const [bidInput, setBidInput] = useState('');
   const [placingBid, setPlacingBid] = useState(false);
-  const { data: walletSummary } = useWalletSummary(!!customer);
 
   const loadAuction = useCallback(async () => {
     try {
@@ -184,13 +182,6 @@ export default function AuctionDetail({ auctionId }: { auctionId: string }) {
     const validationError = validateBid(amount);
     if (validationError) {
       toast.error(validationError);
-      return;
-    }
-
-    const balance = walletSummary?.balance || 0;
-    const required = amount * 0.10;
-    if (balance < required) {
-      toast.error(`Insufficient wallet balance. You need at least ₹${required.toFixed(2)} (10% of bid) in your wallet. Current balance: ₹${balance.toFixed(2)}.`);
       return;
     }
 
@@ -340,9 +331,6 @@ export default function AuctionDetail({ auctionId }: { auctionId: string }) {
                       <p className="text-[10px] text-slate-500 mt-1">
                         Minimum bid: ₹{minNextBid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}{' '}
                         (current ₹{currentBid.toFixed(2)} + ₹{minSpread} increment)
-                      </p>
-                      <p className="text-[10px] text-orange-600 font-semibold mt-0.5">
-                        10% wallet balance required (₹{(parseFloat(bidInput || '0') * 0.1).toFixed(2)})
                       </p>
                     </div>
 

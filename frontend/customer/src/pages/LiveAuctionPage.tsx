@@ -12,7 +12,6 @@ import Settings from '../components/auction/Settings';
 import HelpSupport from '../components/auction/HelpSupport';
 import TermsConditions from '../components/auction/TermsConditions';
 import AuctionDetail from '../components/auction/AuctionDetail';
-import { useWalletSummary } from '../hooks/useWallet';
 import {
   retainAuctionSocket,
   releaseAuctionSocket,
@@ -258,7 +257,6 @@ export default function LiveAuctionPage() {
    const customer = useAuthStore(state => state.customer);
    const token = useAuthStore(state => state.token);
    const logout = useAuthStore(state => state.logout);
-  const { data: walletSummary } = useWalletSummary(!!token);
   useEffect(() => {
     retainAuctionSocket();
 
@@ -359,13 +357,6 @@ export default function LiveAuctionPage() {
 
     if (amount < currentBid + minSpread) {
       toast.error(`Bid must be at least ₹${(currentBid + minSpread).toFixed(2)}`);
-      return;
-    }
-
-    const balance = walletSummary?.balance || 0;
-    const required = amount * 0.10;
-    if (balance < required) {
-      toast.error(`Insufficient wallet balance. You need at least ₹${required.toFixed(2)} (10% of bid) in your wallet. Current balance: ₹${balance.toFixed(2)}.`);
       return;
     }
 
@@ -714,13 +705,7 @@ export default function LiveAuctionPage() {
               <span className="text-lg">💼</span>
               <div className="text-sm hidden sm:block">
                 <span className="text-slate-500 text-xs">Wallet</span>
-                <p className="font-semibold text-slate-800">
-                  {walletSummary
-                    ? `₹${walletSummary.balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-                    : customer
-                      ? '—'
-                      : 'Sign in'}
-                </p>
+                <p className="font-semibold text-slate-800">{customer ? 'Manage' : 'Sign in'}</p>
               </div>
               <span className="text-xs text-slate-400">▼</span>
             </div>
