@@ -1,49 +1,81 @@
-deploy:
-  name: Deploy to EC2
-  runs-on: ubuntu-latest
-  needs: build
+name: Backend CI/CD
 
-  steps:
-    - name: Debug secrets
-      run: |
-        echo "HOST=${{ secrets.EC2_HOST }}"
-        echo "USER=${{ secrets.EC2_USER }}"
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
 
-    - name: Test TCP connection
-      run: |
-        timeout 10 bash -c "</dev/tcp/${{ secrets.EC2_HOST }}/22" \
-          && echo "Port 22 reachable" \
-          || echo "Port 22 unreachable"
+  workflow_dispatch:
 
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v1.2.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_KEY }}
-        port: 22
-        timeout: 60s
-        command_timeout: 20m
-        debug: true
-        script: |
-          set -e
+jobs:
+  build:
+    name: Build & Type-check
+    runs-on: ubuntu-latest
 
-          echo "==> Pulling latest code"
-          cd ~/e-commerce-platform
-          git pull origin main
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-          echo "==> Installing dependencies"
-          npm ci
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-          echo "==> Building TypeScript"
-          npm run build --workspace=backend
+      - name: Install dependencies
+        run: npm ci
 
-          echo "==> Restarting PM2"
-          cd backend
+      - name: TypeScript build
+        run: npm run build --workspace=backend
 
-          pm2 restart ecosystem.config.js --env production \
-            || pm2 start ecosystem.config.js --env production
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build
 
-          pm2 save
+    steps:
+      - name: Debug secrets
+        run: |
+          echo "HOST=${{ secrets.EC2_HOST }}"
+          echo "USER=${{ secrets.EC2_USER }}"
 
-          echo "==> Deploy complete"  
+      - name: Test TCP connection
+        run: |
+          timeout 10 bash -c "</dev/tcp/${{ secrets.EC2_HOST }}/22" \
+            && echo "Port 22 reachable" \
+            || echo "Port 22 unreachable"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 20m
+          debug: true
+
+          script: |
+            set -e
+
+            echo "==> Pulling latest code"
+            cd ~/e-commerce-platform
+            git pull origin main
+
+            echo "==> Installing dependencies"
+            npm ci
+
+            echo "==> Building TypeScript"
+            npm run build --workspace=backend
+
+            echo "==> Restarting PM2"
+            cd backend
+
+            pm2 restart ecosystem.config.js --env production \
+              || pm2 start ecosystem.config.js --env production
+
+            pm2 save
+
+            echo "==> Deploy complete"
