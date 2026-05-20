@@ -69,9 +69,17 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
 
     const products = await query<Product & { category_name: string; category_slug: string }>(
       `SELECT p.*,
+              a.id AS active_auction_id,
+              a.end_time AS auction_end_time,
+              a.reserve_price AS auction_reserve_price,
+              a.current_highest_bid AS auction_current_highest_bid,
+              a.minimum_spread AS auction_minimum_spread,
+              a.quantity AS auction_quantity,
+              a.outbid_purchase_markup_percent AS auction_outbid_purchase_markup_percent,
               c.name as category_name,
               c.slug as category_slug
        FROM products p
+       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.end_time > NOW()
        JOIN categories c ON c.id = p.category_id
        ${whereClause}
        ORDER BY p.is_featured DESC, p.created_at DESC
@@ -120,10 +128,18 @@ export async function getProductBySlug(req: Request, res: Response): Promise<voi
 
     const product = await queryOne<Product & { category_name: string; category_slug: string; category_parent_id: number | null }>(
       `SELECT p.*,
+              a.id AS active_auction_id,
+              a.end_time AS auction_end_time,
+              a.reserve_price AS auction_reserve_price,
+              a.current_highest_bid AS auction_current_highest_bid,
+              a.minimum_spread AS auction_minimum_spread,
+              a.quantity AS auction_quantity,
+              a.outbid_purchase_markup_percent AS auction_outbid_purchase_markup_percent,
               c.name as category_name,
               c.slug as category_slug,
               c.parent_id as category_parent_id
        FROM products p
+       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.end_time > NOW()
        JOIN categories c ON c.id = p.category_id
        WHERE p.slug = $1 AND p.is_active = true`,
       [slug]

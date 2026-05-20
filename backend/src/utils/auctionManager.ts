@@ -1,5 +1,7 @@
 import { withTransaction } from '../config/database';
 import { PoolClient } from 'pg';
+import { sendOutbidPurchaseOffer } from '../services/emailService';
+import { env } from '../config/env';
 
 export async function checkAndRotateAuctions() {
   try {
@@ -65,6 +67,44 @@ export async function checkAndRotateAuctions() {
                 ]
               );
               console.log(`[Auction] Order created for winner ${customer.id}`);
+
+              const quantityLimit = parseInt(activeAuction.quantity ?? '1', 10) || 1;
+              const markupPercent = activeAuction.outbid_purchase_markup_percent !== null && activeAuction.outbid_purchase_markup_percent !== undefined
+                ? parseFloat(activeAuction.outbid_purchase_markup_percent)
+                : 50;
+              const offerPrice = Math.round(unitPrice * (1 + markupPercent / 100));
+              const auctionUrl = `${env.frontendCustomerUrl.replace(/\/$/, '')}/live-auction/${activeAuction.id}`;
+
+              const losingBiddersRes = await client.query(
+                `SELECT b.customer_id,
+                        MAX(b.bid_amount)::numeric AS max_bid,
+                        c.email,
+                        c.name
+                 FROM auction_bids b
+                 JOIN customers c ON c.id = b.customer_id
+                 WHERE b.auction_id = $1
+                   AND b.customer_id != $2
+                 GROUP BY b.customer_id, c.email, c.name
+                 ORDER BY MAX(b.bid_amount) DESC
+                 LIMIT $3`,
+                [activeAuction.id, activeAuction.highest_bidder_id, quantityLimit]
+              );
+
+              for (const loser of losingBiddersRes.rows) {
+                if (!loser.email) continue;
+                try {
+                  await sendOutbidPurchaseOffer(
+                    loser.email,
+                    loser.name || 'Customer',
+                    product.name,
+                    offerPrice,
+                    auctionUrl
+                  );
+                  console.log(`[Auction] Sent second-chance offer to customer ${loser.customer_id} for auction ${activeAuction.id}`);
+                } catch (sendErr) {
+                  console.error(`[Auction] Failed to send second-chance offer to customer ${loser.customer_id}:`, sendErr);
+                }
+              }
             }
           }
         }

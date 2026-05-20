@@ -83,6 +83,14 @@ export interface Product {
   tags: string[];
   is_active: boolean;
   is_featured: boolean;
+  is_auction_ready?: boolean;
+  active_auction_id?: number | null;
+  auction_end_time?: string | null;
+  auction_reserve_price?: number | null;
+  auction_current_highest_bid?: number | null;
+  auction_minimum_spread?: number | null;
+  auction_quantity?: number | null;
+  auction_outbid_purchase_markup_percent?: number | null;
   average_rating: number;
   review_count: number;
   view_count: number;

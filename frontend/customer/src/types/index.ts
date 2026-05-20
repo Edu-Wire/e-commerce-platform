@@ -35,6 +35,14 @@ export interface Product {
   stock_quantity: number;
   is_featured: boolean;
   is_active: boolean;
+  is_auction_ready?: boolean;
+  active_auction_id?: number | null;
+  auction_end_time?: string | null;
+  auction_reserve_price?: number | null;
+  auction_current_highest_bid?: number | null;
+  auction_minimum_spread?: number | null;
+  auction_quantity?: number | null;
+  auction_outbid_purchase_markup_percent?: number | null;
   category_id: number;
   category?: Category;
   images: ProductImage[];

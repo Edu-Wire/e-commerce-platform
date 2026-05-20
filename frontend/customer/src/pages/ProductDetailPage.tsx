@@ -491,6 +491,14 @@ export default function ProductDetailPage() {
                   </div>
 
                   <div className="space-y-3">
+                    {product.active_auction_id && (
+                      <button
+                        onClick={() => navigate(`/live-auction/${product.active_auction_id}`)}
+                        className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 border border-red-700 rounded-full text-[13px] font-medium shadow-sm transition-colors text-white animate-pulse"
+                      >
+                        Join Live Auction
+                      </button>
+                    )}
                     <button
                       onClick={handleAddToCart}
                       className="w-full py-2 px-4 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-full text-[13px] font-medium shadow-sm transition-colors"
