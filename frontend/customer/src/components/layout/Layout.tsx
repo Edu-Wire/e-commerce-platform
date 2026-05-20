@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import CartDrawer from './CartDrawer';
+import StickyAuctionWidget from '../auction/StickyAuctionWidget';
 
 interface LayoutProps {
   children: ReactNode;
@@ -16,6 +17,7 @@ export default function Layout({ children }: LayoutProps) {
       </main>
       <Footer />
       <CartDrawer />
+      <StickyAuctionWidget />
     </div>
   );
 }

@@ -103,7 +103,7 @@ export default function HomePage() {
           </div>
 
           {/* Right Content / Brand Partners */}
-          <div className="flex flex-col items-center md:items-end gap-6 z-10">
+          <div className="flex flex-col items-center md:items-end gap-4 z-10 md:-translate-y-8">
             <div className="flex items-center gap-8 text-white/90">
               <div className="text-center">
                 <p className="text-[10px] uppercase font-bold mb-1 opacity-80">Powered by</p>
