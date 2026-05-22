@@ -6,10 +6,12 @@ let redis: Redis | null = null;
 if (env.redisUrl) {
   try {
     redis = new Redis(env.redisUrl, {
+      
       maxRetriesPerRequest: 3,
       lazyConnect: true,
       retryStrategy(times: number) {
         return Math.min(times * 50, 2000);
+        console.log("");
       },
     });
     redis.on('error', (err: Error) => console.warn('Redis error (caching disabled):', err.message));
