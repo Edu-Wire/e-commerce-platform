@@ -3,15 +3,17 @@ frontend:
   phases:
     preBuild:
       commands:
+        # Remove stale node_modules (may contain Windows binaries from cache)
+        - rm -rf node_modules
+        # Fresh install with optional deps (gets Linux-specific rollup/esbuild binaries)
         - npm install --include=optional
+        # Explicitly install the Linux rollup native binary
+        - npm install @rollup/rollup-linux-x64-gnu --no-save 2>/dev/null || true
     build:
       commands:
-        # Set environment variables for frontend build
         - export VITE_API_URL=${VITE_API_URL:-https://your-api-domain.com}
         - export VITE_APP_NAME=${VITE_APP_NAME:-"E-commerce Platform"}
-        # Build the workspace specified by the environment variable (defaults to customer)
         - npm run build --workspace=${FRONTEND_WORKSPACE:-frontend/customer}
-        # Move the build output to a fixed folder because Amplify doesn't support variables in artifacts
         - mkdir -p build_output
         - cp -r ${FRONTEND_WORKSPACE:-frontend/customer}/dist/. build_output/
   artifacts:
@@ -19,5 +21,4 @@ frontend:
     files:
       - '**/*'
   cache:
-    paths:
-      - node_modules/**/*
+    paths: []
