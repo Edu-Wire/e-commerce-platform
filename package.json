@@ -18,5 +18,11 @@
   "devDependencies": {
     "@types/nodemailer": "^8.0.0",
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.7"
+  },
+  "optionalDependencies": {
+    "@esbuild/win32-x64": "^0.28.0"
   }
 }
