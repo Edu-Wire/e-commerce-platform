@@ -3,7 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm install
+        - npm install --include=optional
     build:
       commands:
         # Set environment variables for frontend build
