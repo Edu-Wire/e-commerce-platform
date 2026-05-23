@@ -89,6 +89,11 @@ export default function CategoryPage() {
     min_price: searchParams.get('min_price') ? Number(searchParams.get('min_price')) : undefined,
     max_price: searchParams.get('max_price') ? Number(searchParams.get('max_price')) : undefined,
     sort: isDeals ? 'discount_desc' : (searchParams.get('sort') ?? undefined),
+    sort_by: searchParams.get('sort_by') ?? undefined,
+    rating: searchParams.get('rating') ?? undefined,
+    discount: searchParams.get('discount') ?? undefined,
+    in_stock_only: searchParams.get('in_stock_only') === 'true' ? true : undefined,
+    b2b_only: searchParams.get('b2b_only') === 'true' ? true : undefined,
     page: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
     limit: 16
   });
@@ -118,6 +123,11 @@ export default function CategoryPage() {
     if (updated.min_price) params.min_price = String(updated.min_price);
     if (updated.max_price) params.max_price = String(updated.max_price);
     if (updated.sort) params.sort = updated.sort;
+    if (updated.sort_by) params.sort_by = updated.sort_by;
+    if (updated.rating) params.rating = updated.rating;
+    if (updated.discount) params.discount = updated.discount;
+    if (updated.in_stock_only) params.in_stock_only = 'true';
+    if (updated.b2b_only) params.b2b_only = 'true';
     setSearchParams(params);
   };
 
@@ -756,7 +766,8 @@ export default function CategoryPage() {
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-gray-500">Sort by:</label>
                   <select
-                    onChange={e => updateFilters({ sort: e.target.value })}
+                    onChange={e => updateFilters({ sort_by: e.target.value })}
+                    value={filters.sort_by ?? ''}
                     className="text-xs border border-gray-300 rounded px-2 py-1 bg-gray-50"
                   >
                     {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}

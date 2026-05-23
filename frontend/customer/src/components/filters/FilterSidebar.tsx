@@ -82,7 +82,11 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
       ram: undefined,
       storage: undefined,
       size: undefined,
-      color: undefined
+      color: undefined,
+      rating: undefined,
+      discount: undefined,
+      in_stock_only: undefined,
+      b2b_only: undefined
     });
   };
 
@@ -104,8 +108,8 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
         <select
-          value={filters.sort ?? ''}
-          onChange={e => onFilterChange({ sort: e.target.value || undefined })}
+          value={filters.sort_by ?? ''}
+          onChange={e => onFilterChange({ sort_by: e.target.value || undefined })}
           className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {sortOptions.map(opt => (
@@ -299,28 +303,68 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
         </div>
       )}
 
-      {/* Shared Filters (Reviews, Availability) */}
+      {/* Shared Filters (Reviews, Availability, Discount) */}
       <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Customer Reviews</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Customer Ratings</label>
         <div className="space-y-1">
           {[4, 3, 2, 1].map(stars => (
-            <button key={stars} className="flex items-center gap-2 group w-full text-left">
+            <button 
+              key={stars} 
+              onClick={() => onFilterChange({ rating: filters.rating === String(stars) ? undefined : String(stars) })}
+              className={`flex items-center gap-2 group w-full text-left p-1 rounded transition-colors ${filters.rating === String(stars) ? 'bg-[#fff9f2] border border-[#e77600]' : 'border border-transparent'}`}
+            >
               <div className="flex text-[#febd69]">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <span key={i} className={i < stars ? 'fill-current' : 'text-gray-200'}>★</span>
                 ))}
               </div>
-              <span className="text-xs text-gray-600 group-hover:text-[#c45500] transition-colors">& Up</span>
+              <span className={`text-xs ${filters.rating === String(stars) ? 'text-[#e77600] font-bold' : 'text-gray-600 group-hover:text-[#c45500]'}`}>& Up</span>
             </button>
           ))}
         </div>
       </div>
 
       <div className="pt-4 border-t border-gray-100">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Availability</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Discount</label>
+        <div className="space-y-1">
+          {[10, 25, 50, 70].map(pct => (
+            <label key={pct} className="flex items-center gap-2 cursor-pointer group">
+              <input 
+                type="radio" 
+                name="discount"
+                checked={filters.discount === String(pct)}
+                onChange={() => onFilterChange({ discount: String(pct) })}
+                onClick={(e) => { if (filters.discount === String(pct)) { e.preventDefault(); onFilterChange({ discount: undefined }); } }}
+                className="w-4 h-4 rounded-full border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer"
+              />
+              <span className={`text-sm transition-colors ${filters.discount === String(pct) ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'}`}>
+                {pct}% Off or more
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-gray-100 space-y-3">
+        <label className="block text-sm font-semibold text-gray-700">Availability</label>
         <label className="flex items-center gap-2 cursor-pointer group">
-          <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-          <span className="text-sm text-gray-700 group-hover:text-[#c45500] transition-colors">Include Out of Stock</span>
+          <input 
+            type="checkbox" 
+            checked={filters.in_stock_only === true}
+            onChange={(e) => onFilterChange({ in_stock_only: e.target.checked ? true : undefined })}
+            className="w-4 h-4 rounded border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer" 
+          />
+          <span className={`text-sm transition-colors ${filters.in_stock_only ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'}`}>In Stock Only</span>
+        </label>
+        
+        <label className="flex items-center gap-2 cursor-pointer group">
+          <input 
+            type="checkbox" 
+            checked={filters.b2b_only === true}
+            onChange={(e) => onFilterChange({ b2b_only: e.target.checked ? true : undefined })}
+            className="w-4 h-4 rounded border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer" 
+          />
+          <span className={`text-sm transition-colors ${filters.b2b_only ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'}`}>Available for B2B</span>
         </label>
       </div>
     </aside>

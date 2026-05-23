@@ -185,6 +185,11 @@ export interface ProductFilters {
   min_price?: number;
   max_price?: number;
   sort?: string;
+  sort_by?: string;
+  rating?: string;
+  discount?: string;
+  in_stock_only?: boolean;
+  b2b_only?: boolean;
   page?: number;
   limit?: number;
   is_featured?: boolean;
