@@ -54,6 +54,7 @@ export async function processPlaceBid(
   const currentBid = parseFloat(auction.current_highest_bid || auction.reserve_price);
   const minSpread = parseFloat(auction.minimum_spread || '1');
   const newBid = bidAmount;
+  console.log(newBid, currentBid, minSpread,"TEST");
 
   if (newBid < currentBid + minSpread) {
     throw new BidError(`Bid must be at least ₹${(currentBid + minSpread).toFixed(2)}`);
