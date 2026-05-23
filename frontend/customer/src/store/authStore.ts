@@ -12,7 +12,7 @@ interface AuthActions {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
-  initialize: () => void;
+  initialize: () => Promise<void> | void;
   updateProfile: (data: { name?: string; phone?: string; dob?: string; address?: Record<string, unknown>; settings?: Record<string, any> }) => Promise<void>;
 }
 
@@ -31,13 +31,27 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   token: null,
   isLoading: false,
 
-  initialize: () => {
+  initialize: async () => {
     try {
       const token = localStorage.getItem('auth_token');
       const customerStr = localStorage.getItem('auth_customer');
       if (token && customerStr) {
         const customer = JSON.parse(customerStr) as Customer;
         set({ token, customer });
+
+        // Fetch fresh profile from server in the background to sync changes (e.g. from mobile app)
+        try {
+          const res = await api.get<{ success: boolean; data: Customer }>('/auth/profile');
+          const freshCustomer = res.data.data;
+          localStorage.setItem('auth_customer', JSON.stringify(freshCustomer));
+          set({ customer: freshCustomer });
+        } catch (err: any) {
+          if (err.response?.status === 401) {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_customer');
+            set({ token: null, customer: null });
+          }
+        }
       }
     } catch {
       localStorage.removeItem('auth_token');
