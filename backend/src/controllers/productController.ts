@@ -7,7 +7,7 @@ import { Product } from '../types';
 
 export async function getProducts(req: Request, res: Response): Promise<void> {
   try {
-    const { category, search, condition, min_price, max_price, customer_type } = req.query;
+    const { category, search, condition, min_price, max_price, customer_type, sort_by, discount, in_stock_only, b2b_only } = req.query;
     const { page, limit } = getPaginationParams(req.query as Record<string, unknown>);
     const offset = getOffset(page, limit);
 
@@ -51,6 +51,17 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
       conditions.push(`p.selling_price <= $${paramIdx++}`);
       params.push(parseFloat(String(max_price)));
     }
+    if (discount && discount !== 'all') {
+      conditions.push(`p.discount_percentage >= $${paramIdx++}`);
+      params.push(parseFloat(String(discount)));
+    }
+    if (in_stock_only === 'true') {
+      conditions.push(`p.stock_quantity > 0`);
+    }
+    if (b2b_only === 'true') {
+      conditions.push(`p.is_b2b_available = true`);
+    }
+
     if (customer_type === 'b2c') {
       conditions.push('p.is_b2c_available = true');
     } else if (customer_type === 'b2b') {
@@ -58,6 +69,12 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    let orderBy = 'p.is_featured DESC, p.created_at DESC';
+    if (sort_by === 'price_asc') orderBy = 'p.selling_price ASC, p.created_at DESC';
+    else if (sort_by === 'price_desc') orderBy = 'p.selling_price DESC, p.created_at DESC';
+    else if (sort_by === 'newest') orderBy = 'p.created_at DESC';
+    else if (sort_by === 'rating') orderBy = 'p.is_featured DESC, p.created_at DESC'; // Fallback until ratings DB table exists
 
     const countResult = await query<{ count: string }>(
       `SELECT COUNT(*) as count FROM products p
@@ -82,7 +99,7 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
        LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.end_time > NOW()
        JOIN categories c ON c.id = p.category_id
        ${whereClause}
-       ORDER BY p.is_featured DESC, p.created_at DESC
+       ORDER BY ${orderBy}
        LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
       [...params, limit, offset]
     );
