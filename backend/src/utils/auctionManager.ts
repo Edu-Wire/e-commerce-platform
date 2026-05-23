@@ -1,11 +1,11 @@
-import { withTransaction } from '../config/database';
+import { withTransaction, withRetry } from '../config/database';
 import { PoolClient } from 'pg';
 import { sendOutbidPurchaseOffer, sendAuctionWinnerNotification } from '../services/emailService';
 import { env } from '../config/env';
 
 export async function checkAndRotateAuctions() {
   try {
-    await withTransaction(async (client: PoolClient) => {
+    await withRetry(() => withTransaction(async (client: PoolClient) => {
       // 1. Check for active auctions
       const activeAuctionsRes = await client.query(
         "SELECT * FROM auctions WHERE status = 'active' FOR UPDATE"
@@ -162,7 +162,7 @@ export async function checkAndRotateAuctions() {
       if (stillActive === 0) {
         await startNextAuction(client);
       }
-    });
+    }));
   } catch (error) {
     console.error('[Auction Error] Failed to rotate auctions:', error);
   }
