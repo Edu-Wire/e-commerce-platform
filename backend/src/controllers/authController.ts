@@ -28,7 +28,7 @@ export async function register(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const existing = await queryOne<Customer>('SELECT id FROM customers WHERE email = $1', [email]);
+    const existing = await queryOne<Customer>('SELECT id FROM customers WHERE LOWER(email) = LOWER($1)', [email]);
     if (existing) {
       res.status(409).json(error('Email already registered'));
       return;
@@ -39,7 +39,7 @@ export async function register(req: Request, res: Response): Promise<void> {
       `INSERT INTO customers (name, email, password_hash, phone, customer_type, company_name, gst_number)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, name, email, phone, customer_type, company_name, gst_number, created_at`,
-      [name, email, passwordHash, phone || null, customer_type, company_name || null, gst_number || null]
+      [name, email.toLowerCase(), passwordHash, phone || null, customer_type, company_name || null, gst_number || null]
     );
     const customer = rows[0];
 
@@ -65,7 +65,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     }
 
     const customer = await queryOne<Customer & { password_hash: string }>(
-      'SELECT * FROM customers WHERE (email = $1 OR phone = $1) AND is_active = true',
+      'SELECT * FROM customers WHERE (LOWER(email) = LOWER($1) OR phone = $1) AND is_active = true',
       [email]
     );
     if (!customer) {
@@ -102,7 +102,7 @@ export async function checkUser(req: Request, res: Response): Promise<void> {
     }
 
     const customer = await queryOne<Customer>(
-      'SELECT id FROM customers WHERE (email = $1 OR phone = $1) AND is_active = true',
+      'SELECT id FROM customers WHERE (LOWER(email) = LOWER($1) OR phone = $1) AND is_active = true',
       [identifier]
     );
 
@@ -122,7 +122,7 @@ export async function adminLogin(req: Request, res: Response): Promise<void> {
     }
 
     const admin = await queryOne<AdminUser & { password_hash: string }>(
-      'SELECT * FROM admin_users WHERE email = $1 AND is_active = true',
+      'SELECT * FROM admin_users WHERE LOWER(email) = LOWER($1) AND is_active = true',
       [email]
     );
     if (!admin) {

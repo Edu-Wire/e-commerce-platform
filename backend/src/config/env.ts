@@ -5,7 +5,7 @@ dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 export const env = {
   port: parseInt(process.env.PORT || '4000'),
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv: (process.env.NODE_ENV || 'development').trim(),
   databaseUrl: process.env.DATABASE_URL || '',
   redisUrl: process.env.REDIS_URL || '',
   jwtSecret: process.env.JWT_SECRET || 'dev-secret',

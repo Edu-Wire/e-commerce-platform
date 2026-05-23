@@ -35,7 +35,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const existing = await queryOne('SELECT id FROM admin_users WHERE email = $1', [email]);
+    const existing = await queryOne('SELECT id FROM admin_users WHERE LOWER(email) = LOWER($1)', [email]);
     if (existing) {
       res.status(409).json(error('Email already registered'));
       return;
@@ -46,7 +46,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       `INSERT INTO admin_users (name, email, password_hash, role)
        VALUES ($1, $2, $3, $4)
        RETURNING id, name, email, role, is_active, last_login, created_at`,
-      [name, email, passwordHash, role]
+      [name, email.toLowerCase(), passwordHash, role]
     );
 
     res.status(201).json(success(rows[0]));

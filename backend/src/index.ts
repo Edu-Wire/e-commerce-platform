@@ -17,11 +17,13 @@ import { requireMinRole } from './middleware/rbac';
 import { getMyBids, getWinningDashboard, getWonAuctions } from './controllers/auctionController';
 
 const app = express();
-
+ 
 // Security & utility middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
 app.use(cors({
-  origin: [env.frontendCustomerUrl, env.frontendAdminUrl],
+  origin: env.nodeEnv === 'development' ? true : [env.frontendCustomerUrl, env.frontendAdminUrl],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
