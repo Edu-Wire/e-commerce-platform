@@ -4,6 +4,7 @@ module.exports = {
       name: 'ecom-backend',
       script: 'dist/index.js',
       cwd: '/home/ubuntu/e-commerce-platform/backend',
+      node_args: '--require dotenv/config',
       instances: 1,
       autorestart: true,
       watch: false,
