@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL =
-  (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || 'http://localhost:4000';
+  (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || '${import.meta.env.VITE_API_URL || "http://localhost:4000"}';
 
 export interface BidUpdatePayload {
   auction_id: number;

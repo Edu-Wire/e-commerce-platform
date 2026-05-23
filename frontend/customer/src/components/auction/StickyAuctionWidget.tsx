@@ -41,7 +41,7 @@ export default function StickyAuctionWidget() {
     if (!item) return '';
     const url = typeof item === 'string' ? item : item.url;
     if (!url) return '';
-    return url.startsWith('/') ? `http://localhost:4000${url}` : url;
+    return url.startsWith('/') ? `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${url}` : url;
   };
 
   useEffect(() => {
@@ -188,7 +188,7 @@ export default function StickyAuctionWidget() {
     : (mainImageObj?.url || '/placeholder.png');
   
   if (mainImage && mainImage.startsWith('/')) {
-    mainImage = `http://localhost:4000${mainImage}`;
+    mainImage = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${mainImage}`;
   }
 
   const leftImages = sideImageUrls.slice(0, 2);

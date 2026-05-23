@@ -18,7 +18,7 @@ function productImageUrl(raw: string | string[] | undefined): string {
   const images = parseImages(raw);
   const first = images[0];
   let url = typeof first === 'string' ? first : (first as { url?: string })?.url || '/placeholder.png';
-  if (url.startsWith('/')) url = `http://localhost:4000${url}`;
+  if (url.startsWith('/')) url = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${url}`;
   return url;
 }
 

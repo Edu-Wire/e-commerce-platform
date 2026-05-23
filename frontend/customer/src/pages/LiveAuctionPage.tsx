@@ -50,7 +50,7 @@ function FeaturedLiveCard({ auction, customer, bidAmounts, handleBidChange, hand
   } catch (e) {}
   const mainImageObj = images?.[0];
   let mainImage = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
-  if (mainImage && mainImage.startsWith('/')) mainImage = `http://localhost:4000${mainImage}`;
+  if (mainImage && mainImage.startsWith('/')) mainImage = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${mainImage}`;
 
   const currentBid = parseFloat(auction.current_highest_bid || auction.reserve_price || '0');
   const startingPrice = parseFloat(auction.reserve_price || auction.product_mrp || '0');
@@ -663,7 +663,7 @@ export default function LiveAuctionPage() {
                         try {
                           const images = typeof group.product_images === 'string' ? JSON.parse(group.product_images) : group.product_images;
                           mainImage = typeof images[0] === 'string' ? images[0] : (images[0]?.url || '/placeholder.png');
-                          if (mainImage.startsWith('/')) mainImage = `http://localhost:4000${mainImage}`;
+                          if (mainImage.startsWith('/')) mainImage = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${mainImage}`;
                         } catch (e) {}
 
                         const startTime = new Date(group.earliest_start);
@@ -810,7 +810,7 @@ export default function LiveAuctionPage() {
                         const mainImageObj = images?.[0];
                         let mainImage = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
                         if (mainImage.startsWith('/')) {
-                          mainImage = `http://localhost:4000${mainImage}`;
+                          mainImage = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${mainImage}`;
                         }
 
                         return (
@@ -1252,7 +1252,7 @@ function AuctionCard({
   const mainImageObj = images?.[0];
   let mainImage = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
   if (mainImage.startsWith('/')) {
-    mainImage = `http://localhost:4000${mainImage}`;
+    mainImage = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${mainImage}`;
   }
 
   const isWinning = auction.highest_bidder_id === customer?.id;

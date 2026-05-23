@@ -54,7 +54,7 @@ function parseImageUrl(raw: string | string[] | undefined): string {
   }
   const first = images[0];
   let url = typeof first === 'string' ? first : (first as { url?: string })?.url || '/placeholder.png';
-  if (url.startsWith('/')) url = `${API_BASE || 'http://localhost:4000'}${url}`;
+  if (url.startsWith('/')) url = `${API_BASE || '${import.meta.env.VITE_API_URL || "http://localhost:4000"}'}${url}`;
   return url;
 }
 

@@ -24,7 +24,7 @@ const getProductImage = (product: Product) => {
   let url = typeof mainImageObj === 'string' ? mainImageObj : (mainImageObj?.url || '/placeholder.png');
 
   if (url.startsWith('/')) {
-    url = `http://localhost:4000${url}`;
+    url = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${url}`;
   }
   return url;
 };
