@@ -58,6 +58,7 @@ jobs:
             echo "==> Installing dependencies"
             cd backend
             npm ci
+            npm install --include=optional sharp
 
             echo "==> Building TypeScript"
             npm run build
