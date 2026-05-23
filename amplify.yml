@@ -11,7 +11,7 @@ frontend:
         - npm install @rollup/rollup-linux-x64-gnu --no-save 2>/dev/null || true
     build:
       commands:
-        - export VITE_API_URL=${VITE_API_URL:-http://43.204.158.70:4000}
+        - export VITE_API_URL=${VITE_API_URL:-/backend}
         - export VITE_APP_NAME=${VITE_APP_NAME:-"E-commerce Platform"}
         - npm run build --workspace=${FRONTEND_WORKSPACE:-frontend/customer}
         - mkdir -p build_output
@@ -22,3 +22,13 @@ frontend:
       - '**/*'
   cache:
     paths: []
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: 'X-Frame-Options'
+          value: SAMEORIGIN
+  # Proxy /backend/* → EC2 backend (avoids Mixed-Content: browser sees HTTPS only)
+  rewrites:
+    - source: /backend/<*>
+      target: http://43.204.158.70:4000/<*>
+      status: '200'
