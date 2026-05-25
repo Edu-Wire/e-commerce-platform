@@ -22,8 +22,21 @@ const app = express();
 app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
+const allowedOrigins = env.nodeEnv === 'development'
+  ? true
+  : [
+      env.frontendCustomerUrl,
+      env.frontendAdminUrl,
+      // EC2 direct IP access
+      'http://43.204.158.70',
+      'http://43.204.158.70:3001',
+      // Production domain
+      'http://shopnow.digi-wire.com',
+      'https://shopnow.digi-wire.com',
+    ].filter(Boolean);
+
 app.use(cors({
-  origin: env.nodeEnv === 'development' ? true : [env.frontendCustomerUrl, env.frontendAdminUrl],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
