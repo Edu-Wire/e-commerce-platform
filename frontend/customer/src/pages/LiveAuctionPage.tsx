@@ -455,10 +455,9 @@ export default function LiveAuctionPage() {
   const activeBidsCount = useMemo(() => activeAuctions.filter(a => new Date(a.start_time!).getTime() <= new Date().getTime()).length, [activeAuctions]);
   
   const liveBids = useMemo(() => {
-    return filteredAuctions.filter(a => {
-      const isUpcoming = a.start_time ? new Date(a.start_time).getTime() > new Date().getTime() : false;
-      return !isUpcoming;
-    });
+    // All items in filteredAuctions already have status='active' — show them all.
+    // Don't exclude by start_time: an admin-started auction should be visible immediately.
+    return filteredAuctions;
   }, [filteredAuctions]);
 
   const upcomingBids = useMemo(() => {
