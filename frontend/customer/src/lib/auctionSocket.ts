@@ -1,7 +1,11 @@
 import { io, Socket } from 'socket.io-client';
 
+// When VITE_API_URL is set (e.g. direct IP), use it.
+// When empty (Docker/Nginx proxy setup), use the current page origin so
+// socket.io goes through the same Nginx reverse proxy as API calls.
 const SOCKET_URL =
-  (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || '${import.meta.env.VITE_API_URL || "http://localhost:4000"}';
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000');
 
 export interface BidUpdatePayload {
   auction_id: number;

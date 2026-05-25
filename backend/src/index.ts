@@ -30,9 +30,11 @@ const allowedOrigins = env.nodeEnv === 'development'
       // EC2 direct IP access
       'http://43.204.158.70',
       'http://43.204.158.70:3001',
-      // Production domain
+      // Production domains
       'http://shopnow.digi-wire.com',
       'https://shopnow.digi-wire.com',
+      'http://admin.shopnow.digi-wire.com',
+      'https://admin.shopnow.digi-wire.com',
     ].filter(Boolean);
 
 app.use(cors({
