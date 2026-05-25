@@ -66,7 +66,7 @@ function FeaturedLiveCard({ auction, customer, bidAmounts, handleBidChange, hand
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start">
         <div className="flex-1 flex gap-4 items-start min-w-0">
           <div className="w-24 h-20 sm:w-36 sm:h-28 rounded-lg overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
-            <img src={mainImage} alt={auction.product_name} className="w-full h-full object-cover" onError={(e)=>{(e.target as HTMLImageElement).src='/placeholder.png'}} />
+            <img src={mainImage} alt={auction.product_name} className="w-full h-full object-cover" onError={(e)=>{(e.target as HTMLImageElement).onerror=null;(e.target as HTMLImageElement).src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>'}} />
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-base sm:text-lg font-semibold text-slate-900 line-clamp-2">{auction.product_name}</h3>
@@ -672,7 +672,7 @@ export default function LiveAuctionPage() {
                         return (
                           <div key={group.product_id} className="flex gap-3 p-3 border-b border-slate-50 hover:bg-slate-50 transition-colors">
                             <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                              <img src={mainImage} alt={group.product_name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} />
+                              <img src={mainImage} alt={group.product_name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).onerror=null; (e.target as HTMLImageElement).src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>'; }} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-sm text-slate-800 truncate">{group.product_name}</p>
@@ -820,7 +820,7 @@ export default function LiveAuctionPage() {
                                   src={mainImage} 
                                   alt={auction.product_name} 
                                   className="w-full h-full object-cover" 
-                                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} 
+                                  onError={(e) => { (e.target as HTMLImageElement).onerror=null; (e.target as HTMLImageElement).src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>'; }} 
                                 />
                               </div>
                               <div className="min-w-0 flex-1">
@@ -1268,7 +1268,7 @@ function AuctionCard({
               src={mainImage} 
               alt={auction.product_name} 
               className="w-full h-full object-cover" 
-              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} 
+              onError={(e) => { (e.target as HTMLImageElement).onerror=null; (e.target as HTMLImageElement).src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>'; }} 
             />
           </div>
           <div className="min-w-0 flex-1">
@@ -1316,7 +1316,7 @@ function AuctionCard({
             src={mainImage} 
             alt={auction.product_name} 
             className="w-full h-full object-cover" 
-            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }} 
+            onError={(e) => { (e.target as HTMLImageElement).onerror=null; (e.target as HTMLImageElement).src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>'; }} 
           />
         </div>
         <div className="min-w-0 flex-1">
