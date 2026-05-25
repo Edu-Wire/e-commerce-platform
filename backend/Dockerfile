@@ -2,6 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Add build tools needed for native modules (sharp, etc.)
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
 RUN npm install
 
@@ -12,12 +15,13 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
+# Add build tools for sharp in production too
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
-RUN npm install --omit=dev && \
-    npm install --include=optional sharp 2>/dev/null || true
+RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
-COPY ecosystem.config.js ./
 
 # Ensure uploads directory exists
 RUN mkdir -p uploads/products
