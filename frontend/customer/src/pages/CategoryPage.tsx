@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 import { useCartStore } from '../store/cartStore';
@@ -8,7 +8,7 @@ import FilterSidebar from '../components/filters/FilterSidebar';
 import Pagination from '../components/ui/Pagination';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
-import type { ProductFilters } from '../types';
+import type { ProductFilters, Product } from '../types';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -65,6 +65,11 @@ export default function CategoryPage() {
     "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80&v=4"
   ];
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const imageSearchResults = location.state?.imageSearchResults as Product[] | undefined;
+  const imageSearchKeywords = location.state?.keywords as string[] | undefined;
+
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveDealIndex((prev) => (prev + 1) % dealImages.length);
@@ -76,10 +81,10 @@ export default function CategoryPage() {
   const { items: cartItems, removeItem } = useCartStore();
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const isDeals = slug === 'deals' || slug === 'todays-deals';
-  const isFashion = slug === 'clothing' || slug === 'footwear' || slug?.includes('wear');
-  const isHomeKitchen = slug === 'home-kitchen' || slug === 'home' || slug === 'kitchen' || slug?.includes('kitchen') || slug?.includes('home');
-  const isBooks = slug === 'books';
+  const isDeals = (slug === 'deals' || slug === 'todays-deals') && !imageSearchResults;
+  const isFashion = (slug === 'clothing' || slug === 'footwear' || slug?.includes('wear')) && !imageSearchResults;
+  const isHomeKitchen = (slug === 'home-kitchen' || slug === 'home' || slug === 'kitchen' || slug?.includes('kitchen') || slug?.includes('home')) && !imageSearchResults;
+  const isBooks = slug === 'books' && !imageSearchResults;
 
   const [filters, setFilters] = useState<ProductFilters>({
     category: (slug !== 'all' && !isDeals) ? slug : undefined,
@@ -107,6 +112,7 @@ export default function CategoryPage() {
   }, [slug, isDeals]);
 
   const { data, isLoading, error } = useProducts(filters);
+  const productsToRender = imageSearchResults || data?.data || [];
 
   const currentCategory = categories?.find(c => c.slug === slug);
   const subcategories = categories?.filter(c => c.parent_id === currentCategory?.id) ?? [];
@@ -1131,8 +1137,14 @@ export default function CategoryPage() {
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
         <div className="max-w-[1500px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="text-[14px] text-[#0f1111]">
-            <span className="font-bold">1-{data?.data.length || 0}</span> of over <span className="font-bold">{data?.meta?.total || 0}</span> results for
-            <span className="text-[#c45500] font-bold ml-1">"{slug === 'all' ? 'All Products' : (currentCategory?.name || slug)}"</span>
+            {imageSearchResults ? (
+              <span>Found <span className="font-bold">{productsToRender.length}</span> visually similar products</span>
+            ) : (
+              <>
+                <span className="font-bold">1-{data?.data.length || 0}</span> of over <span className="font-bold">{data?.meta?.total || 0}</span> results for
+                <span className="text-[#c45500] font-bold ml-1">"{slug === 'all' ? 'All Products' : (currentCategory?.name || slug)}"</span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -1208,20 +1220,48 @@ export default function CategoryPage() {
           </div>
 
           <div className="flex-1 min-w-0">
-            {isLoading ? (
+            {imageSearchResults && (
+              <div className="mb-6 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-fadeIn">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-sm">Visual Search Results</h3>
+                    <p className="text-xs text-gray-600">
+                      Products identified using visual feature analysis.
+                      {imageSearchKeywords && imageSearchKeywords.length > 0 && (
+                        <span> Detected tags: <strong className="text-orange-700">{imageSearchKeywords.join(', ')}</strong></span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('.', { replace: true, state: {} })}
+                  className="px-4 py-1.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition-colors flex-shrink-0"
+                >
+                  Clear Visual Search
+                </button>
+              </div>
+            )}
+
+            {isLoading && !imageSearchResults ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 12 }).map((_, i) => <ProductSkeleton key={i} />)}
               </div>
-            ) : !data?.data.length ? (
+            ) : !productsToRender.length ? (
               <EmptyState title="No results found" description="Try adjusting your filters" />
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {data.data.map(product => (
+                  {productsToRender.map(product => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
-                {data.meta && data.meta.total_pages > 1 && (
+                {!imageSearchResults && data?.meta && data.meta.total_pages > 1 && (
                   <div className="mt-12 bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex justify-center">
                     <Pagination
                       page={data.meta.page}

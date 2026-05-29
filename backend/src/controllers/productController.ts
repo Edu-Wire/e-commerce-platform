@@ -4,6 +4,7 @@ import { getCache, setCache } from '../config/redis';
 import { success, error } from '../utils/helpers';
 import { getPaginationParams, getPaginationMeta, getOffset } from '../utils/pagination';
 import { Product } from '../types';
+import { analyzeImage } from '../services/visualSearchService';
 
 export async function getProducts(req: Request, res: Response): Promise<void> {
   try {
@@ -110,7 +111,7 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
       if (typeof images === 'string') {
         try { images = JSON.parse(images); } catch { images = []; }
       }
-      
+
       // Ensure each image is an object { url: string }
       if (Array.isArray(images)) {
         images = images.map(img => typeof img === 'string' ? { url: img, is_primary: true } : img);
@@ -247,6 +248,125 @@ export async function getSuggestedProducts(req: Request, res: Response): Promise
     res.json(success(formattedProducts));
   } catch (err) {
     console.error('getSuggestedProducts error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function searchProductsByImage(req: Request, res: Response): Promise<void> {
+  try {
+    if (!req.file) {
+      res.status(400).json(error('No image file uploaded'));
+      return;
+    }
+
+    const { page, limit } = getPaginationParams(req.query as Record<string, unknown>);
+    const offset = getOffset(page, limit);
+
+    // Read user-confirmed keywords from the modal (if provided)
+    const userKeywordsRaw = (req.body?.keywords as string | undefined) || '';
+    const userKeywords = userKeywordsRaw
+      ? userKeywordsRaw.split(',').map((k: string) => k.trim()).filter(Boolean)
+      : [];
+
+    // Analyze the image automatically for additional signals
+    const autoKeywords = await analyzeImage(req.file.buffer, req.file.originalname);
+
+    // Merge: user-confirmed keywords take priority, then add any unique auto-detected ones
+    const allKeywords = Array.from(new Set([...userKeywords, ...autoKeywords]));
+    const keywords = allKeywords.length > 0 ? allKeywords : autoKeywords;
+    console.log('Image search — user keywords:', userKeywords, '| auto keywords:', autoKeywords, '| merged:', keywords);
+
+
+    if (keywords.length === 0) {
+      // Fallback: If no keywords could be detected, return featured products
+      const products = await query<Product & { category_name: string; category_slug: string }>(
+        `SELECT p.*, c.name as category_name, c.slug as category_slug
+         FROM products p
+         JOIN categories c ON c.id = p.category_id
+         WHERE p.is_active = true
+         ORDER BY p.is_featured DESC, p.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      const countResult = await query<{ count: string }>(
+        `SELECT COUNT(*) as count FROM products WHERE is_active = true`
+      );
+      const total = parseInt(countResult[0].count);
+
+      const formattedProducts = products.map(p => {
+        let images = p.images;
+        if (typeof images === 'string') {
+          try { images = JSON.parse(images); } catch { images = []; }
+        }
+        if (Array.isArray(images)) {
+          images = images.map(img => typeof img === 'string' ? { url: img, is_primary: true } : img);
+        } else {
+          images = [];
+        }
+        return { ...p, images };
+      });
+
+      const meta = getPaginationMeta(total, page, limit);
+      res.json(success(formattedProducts, { ...meta, keywords: [] }));
+      return;
+    }
+
+    // Build query based on keywords
+    const conditions: string[] = ['p.is_active = true'];
+    const params: unknown[] = [];
+    let paramIdx = 1;
+
+    // We build an ILIKE match for each keyword on name, brand, description, tags, and category name
+    const keywordMatches: string[] = [];
+    for (const kw of keywords) {
+      params.push(`%${kw}%`);
+      const idx = paramIdx++;
+      keywordMatches.push(`(p.name ILIKE $${idx} OR p.brand ILIKE $${idx} OR p.description ILIKE $${idx} OR $${idx} = ANY(p.tags) OR c.name ILIKE $${idx})`);
+    }
+
+    conditions.push(`(${keywordMatches.join(' OR ')})`);
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+
+    const countResult = await query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM products p
+       JOIN categories c ON c.id = p.category_id
+       ${whereClause}`,
+      params
+    );
+    const total = parseInt(countResult[0].count);
+
+    // Select matching products
+    const products = await query<Product & { category_name: string; category_slug: string }>(
+      `SELECT p.*,
+              c.name as category_name,
+              c.slug as category_slug
+       FROM products p
+       JOIN categories c ON c.id = p.category_id
+       ${whereClause}
+       ORDER BY p.is_featured DESC, p.created_at DESC
+       LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
+      [...params, limit, offset]
+    );
+
+    const formattedProducts = products.map(p => {
+      let images = p.images;
+      if (typeof images === 'string') {
+        try { images = JSON.parse(images); } catch { images = []; }
+      }
+      if (Array.isArray(images)) {
+        images = images.map(img => typeof img === 'string' ? { url: img, is_primary: true } : img);
+      } else {
+        images = [];
+      }
+      return { ...p, images };
+    });
+
+    const meta = getPaginationMeta(total, page, limit);
+    res.json(success(formattedProducts, { ...meta, keywords }));
+  } catch (err) {
+    console.error('searchProductsByImage error:', err);
     res.status(500).json(error('Internal server error'));
   }
 }
