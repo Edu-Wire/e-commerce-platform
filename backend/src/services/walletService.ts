@@ -27,6 +27,7 @@ export async function getHeldAmount(customerId: number): Promise<number> {
        JOIN auctions a ON a.id = b.auction_id
        WHERE b.customer_id = $1
          AND a.status = 'active'
+         AND a.start_time <= NOW()
          AND a.end_time > NOW()
          AND a.highest_bidder_id = $1
        GROUP BY b.auction_id

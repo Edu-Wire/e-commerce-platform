@@ -96,7 +96,7 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
               c.name as category_name,
               c.slug as category_slug
        FROM products p
-       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.end_time > NOW()
+       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.start_time <= NOW() AND a.end_time > NOW()
        JOIN categories c ON c.id = p.category_id
        ${whereClause}
        ORDER BY ${orderBy}
@@ -156,7 +156,7 @@ export async function getProductBySlug(req: Request, res: Response): Promise<voi
               c.slug as category_slug,
               c.parent_id as category_parent_id
        FROM products p
-       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.end_time > NOW()
+       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.start_time <= NOW() AND a.end_time > NOW()
        JOIN categories c ON c.id = p.category_id
        WHERE p.slug = $1 AND p.is_active = true`,
       [slug]

@@ -28,6 +28,7 @@ export function mapOrderForCustomer(order: Record<string, unknown>) {
   const items = parseOrderItems(order.items).map((item, idx) => ({
     id: item.product_id ?? idx,
     product_id: item.product_id,
+    sku: item.sku || '',
     product_name: item.name || 'Product',
     product_slug: '',
     product_image: null as string | null,

@@ -16,7 +16,7 @@ export async function getActiveAuction(req: Request, res: Response): Promise<voi
               EXISTS(SELECT 1 FROM auction_bids WHERE auction_id = a.id AND customer_id = $1) as user_has_bid,
               (SELECT MAX(bid_amount) FROM auction_bids WHERE auction_id = a.id AND customer_id = $1) as user_highest_bid
        FROM products p
-       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.end_time > NOW()`,
+       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.start_time <= NOW() AND a.end_time > NOW()`,
        [customerId]
     );
     
@@ -163,6 +163,7 @@ export async function getMyBids(req: Request, res: Response): Promise<void> {
        FROM auctions a
        JOIN products p ON a.product_id = p.id
        WHERE a.status = 'active'
+         AND a.start_time <= NOW()
          AND a.end_time > NOW()
          AND EXISTS (
            SELECT 1 FROM auction_bids b
