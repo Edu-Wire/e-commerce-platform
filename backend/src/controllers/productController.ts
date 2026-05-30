@@ -7,7 +7,24 @@ import { Product } from '../types';
 
 export async function getProducts(req: Request, res: Response): Promise<void> {
   try {
-    const { category, search, condition, min_price, max_price, customer_type, sort_by, discount, in_stock_only, b2b_only } = req.query;
+    const {
+      category,
+      search,
+      condition,
+      min_price,
+      max_price,
+      customer_type,
+      sort_by,
+      discount,
+      in_stock_only,
+      b2b_only,
+      brand,
+      rating,
+      ram,
+      storage,
+      size,
+      color
+    } = req.query;
     const { page, limit } = getPaginationParams(req.query as Record<string, unknown>);
     const offset = getOffset(page, limit);
 
@@ -61,6 +78,34 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
     if (b2b_only === 'true') {
       conditions.push(`p.is_b2b_available = true`);
     }
+    if (brand) {
+      conditions.push(`p.brand ILIKE $${paramIdx++}`);
+      params.push(`%${brand}%`);
+    }
+    if (rating) {
+      conditions.push(`p.average_rating >= $${paramIdx++}`);
+      params.push(parseFloat(String(rating)));
+    }
+    if (ram) {
+      conditions.push(`(p.specifications->>'ram' ILIKE $${paramIdx} OR p.specifications->>'RAM' ILIKE $${paramIdx})`);
+      params.push(ram);
+      paramIdx++;
+    }
+    if (storage) {
+      conditions.push(`(p.specifications->>'storage' ILIKE $${paramIdx} OR p.specifications->>'Storage' ILIKE $${paramIdx})`);
+      params.push(storage);
+      paramIdx++;
+    }
+    if (size) {
+      conditions.push(`(p.specifications->>'size' ILIKE $${paramIdx} OR p.specifications->>'Size' ILIKE $${paramIdx})`);
+      params.push(size);
+      paramIdx++;
+    }
+    if (color) {
+      conditions.push(`(p.specifications->>'color' ILIKE $${paramIdx} OR p.specifications->>'Color' ILIKE $${paramIdx})`);
+      params.push(color);
+      paramIdx++;
+    }
 
     if (customer_type === 'b2c') {
       conditions.push('p.is_b2c_available = true');
@@ -74,7 +119,8 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
     if (sort_by === 'price_asc') orderBy = 'p.selling_price ASC, p.created_at DESC';
     else if (sort_by === 'price_desc') orderBy = 'p.selling_price DESC, p.created_at DESC';
     else if (sort_by === 'newest') orderBy = 'p.created_at DESC';
-    else if (sort_by === 'rating') orderBy = 'p.is_featured DESC, p.created_at DESC'; // Fallback until ratings DB table exists
+    else if (sort_by === 'rating') orderBy = 'p.average_rating DESC, p.created_at DESC';
+    else if (sort_by === 'discount_desc') orderBy = 'p.discount_percentage DESC, p.created_at DESC';
 
     const countResult = await query<{ count: string }>(
       `SELECT COUNT(*) as count FROM products p
@@ -110,7 +156,7 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
       if (typeof images === 'string') {
         try { images = JSON.parse(images); } catch { images = []; }
       }
-      
+
       // Ensure each image is an object { url: string }
       if (Array.isArray(images)) {
         images = images.map(img => typeof img === 'string' ? { url: img, is_primary: true } : img);
