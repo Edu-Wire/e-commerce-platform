@@ -33,9 +33,9 @@ export default function StickyAuctionWidget() {
   const [timeLeft, setTimeLeft] = useState('00:00:00');
   const [timerLabel, setTimerLabel] = useState('Ends in');
 
-  const isAuctionPage = location.pathname.startsWith('/live-auction') || 
-                        location.pathname.startsWith('/login') || 
-                        location.pathname.startsWith('/register');
+  const isAuctionPage = location.pathname.startsWith('/live-auction') ||
+    location.pathname.startsWith('/login') ||
+    location.pathname.startsWith('/register');
 
   const resolveImageUrl = (item: any) => {
     if (!item) return '';
@@ -178,15 +178,15 @@ export default function StickyAuctionWidget() {
 
   let images: any[] = [];
   try {
-    images = typeof auction.product_images === 'string' 
-      ? JSON.parse(auction.product_images) 
+    images = typeof auction.product_images === 'string'
+      ? JSON.parse(auction.product_images)
       : auction.product_images;
-  } catch (e) {}
+  } catch (e) { }
   const mainImageObj = images?.[0];
-  let mainImage = typeof mainImageObj === 'string' 
-    ? mainImageObj 
+  let mainImage = typeof mainImageObj === 'string'
+    ? mainImageObj
     : (mainImageObj?.url || '/placeholder.png');
-  
+
   if (mainImage && mainImage.startsWith('/')) {
     mainImage = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${mainImage}`;
   }
@@ -200,7 +200,7 @@ export default function StickyAuctionWidget() {
 
   if (isMinimized) {
     return (
-      <div 
+      <div
         onClick={() => setIsMinimized(false)}
         className="fixed bottom-6 right-6 z-[9999] cursor-pointer bg-slate-100 text-slate-700 flex items-center gap-2 px-3 py-2 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
       >
@@ -222,7 +222,7 @@ export default function StickyAuctionWidget() {
       </div>
 
       {/* Close/Minimize Button */}
-      <button 
+      <button
         onClick={(e) => {
           e.stopPropagation();
           setIsMinimized(true);
@@ -234,43 +234,21 @@ export default function StickyAuctionWidget() {
       </button>
 
       {/* 2. Main Central Card Content (White Theme, no black container/fanned cards) */}
-      <div 
+      <div
         onClick={handleJoin}
         className="w-[225px] border border-orange-100/80 rounded-3xl p-3.5 pt-7 shadow-sm flex flex-col items-center text-center cursor-pointer hover:shadow-md transition-shadow duration-200 bg-transparent backdrop-blur-sm"
       >
         {/* Product Image Wrapper */}
-        <div className="relative w-40 h-28 mt-2 flex items-center justify-center">
-          {/* Left side cards */}
-          {leftImages.map((src, idx) => (
-            <img
-              key={`left-${idx}`}
-              src={src}
-              alt={`side-${idx}`}
-              className={`absolute w-20 h-16 object-cover rounded-3xl border border-white/80 shadow-sm transition-transform duration-500 ${idx === 0 ? 'left-[-1.5rem] top-1 rotate-[-16deg]' : 'left-[-0.75rem] top-8 rotate-[-8deg]'}`}
-              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
-            />
-          ))}
-
+        <div className="relative w-32 h-24 mt-2 flex items-center justify-center">
           {/* Main product image */}
-          <div className="relative z-20 w-32 h-24 rounded-[28px] overflow-hidden border border-slate-200 shadow-xl bg-white">
-            <img 
-              src={mainImage} 
-              alt={auction.product_name} 
+          <div className="relative z-20 w-full h-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+            <img
+              src={mainImage}
+              alt={auction.product_name}
               className="w-full h-full object-cover"
               onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
             />
           </div>
-
-          {/* Right side cards */}
-          {rightImages.map((src, idx) => (
-            <img
-              key={`right-${idx}`}
-              src={src}
-              alt={`side-${idx}`}
-              className={`absolute w-20 h-16 object-cover rounded-3xl border border-white/80 shadow-sm transition-transform duration-500 ${idx === 0 ? 'right-[-0.75rem] top-3 rotate-[10deg]' : 'right-[-1.5rem] top-10 rotate-[18deg]'}`}
-              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
-            />
-          ))}
         </div>
 
         {/* Product Title */}
