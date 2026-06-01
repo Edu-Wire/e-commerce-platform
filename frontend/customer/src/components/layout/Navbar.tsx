@@ -28,6 +28,60 @@ export default function Navbar() {
   const searchRef = useRef<HTMLDivElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Voice Search states & controls
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const startVoiceSearch = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Voice search is not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = language === 'HI' ? 'hi-IN' : 'en-IN';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast('Listening...', { icon: '🎙️', id: 'voice-search' });
+    };
+
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setSearchQuery(transcript);
+      toast.success(`Search for: "${transcript}"`, { id: 'voice-search' });
+      const slug = selectedCategorySlug || 'all';
+      navigate(`/category/${slug}?search=${encodeURIComponent(transcript.trim())}`);
+      
+      const updatedHistory = [transcript, ...searchHistory.filter(h => h !== transcript)].slice(0, 5);
+      setSearchHistory(updatedHistory);
+      localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+      setShowSearchHistory(false);
+    };
+
+    recognition.onerror = (e: any) => {
+      console.error('Speech recognition error', e);
+      toast.error('Could not hear clearly, please try again.', { id: 'voice-search' });
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopVoiceSearch = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
   useEffect(() => {
     const history = localStorage.getItem('searchHistory');
     if (history) {
@@ -223,6 +277,19 @@ export default function Navbar() {
                 placeholder={t.searchPlaceholder || "Search ShopNow.in"}
                 className="flex-1 px-3 py-2 text-black text-sm focus:outline-none placeholder-gray-500 rounded-l-md sm:rounded-l-none"
               />
+
+              <button
+                type="button"
+                onClick={isListening ? stopVoiceSearch : startVoiceSearch}
+                className={`px-3 flex items-center justify-center transition-all ${
+                  isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-gray-400 hover:text-[#f3a847]'
+                }`}
+                title="Search by voice"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </button>
 
               <button
                 type="submit"
@@ -477,6 +544,19 @@ export default function Navbar() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
           All
+        </button>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('toggle-ai-chat'))}
+          className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-orange-500 to-[#f3a847] hover:from-orange-600 hover:to-[#eeb933] text-[#131921] rounded-full transition-all text-xs font-black flex-shrink-0 shadow-md border border-orange-400 active:scale-95 group"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          <svg className="w-4 h-4 text-black group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          ShopNow AI
         </button>
         {topLevelCategories.slice(0, 8).map(cat => (
           <Link

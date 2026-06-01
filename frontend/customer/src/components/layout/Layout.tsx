@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import CartDrawer from './CartDrawer';
 import StickyAuctionWidget from '../auction/StickyAuctionWidget';
+import AIChatbot from '../ai/AIChatbot';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ export default function Layout({ children }: LayoutProps) {
       <Footer />
       <CartDrawer />
       <StickyAuctionWidget />
+      <AIChatbot />
     </div>
   );
 }
