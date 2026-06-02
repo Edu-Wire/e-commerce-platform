@@ -576,6 +576,16 @@ export default function Navbar() {
         <Link to="/category/todays-deals" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden lg:inline flex-shrink-0">
           Today's Deals
         </Link>
+        <Link 
+          to="/live-auction" 
+          className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm flex-shrink-0 text-orange-400 font-bold flex items-center gap-1.5"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+          </span>
+          Live Auctions
+        </Link>
       </div>
 
       {/* Global Sidebar Menu */}
@@ -672,8 +682,13 @@ export default function Navbar() {
                 <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Help & Settings</h3>
                 <div className="space-y-1">
                   <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
-
-
+                  <Link to="/live-auction" onClick={() => setMobileMenuOpen(false)} className="text-sm text-orange-600 font-bold hover:bg-gray-100 -mx-4 px-4 py-3 flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                    </span>
+                    Live Auctions
+                  </Link>
                   <Link to="/customer-service" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Customer Service</Link>
                   {customer ? (
                     <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block w-full text-left text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Sign Out</button>
