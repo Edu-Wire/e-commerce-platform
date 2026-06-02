@@ -10,6 +10,7 @@ import { env } from './config/env';
 import { pool } from './config/database';
 import routes from './routes/index';
 import walletRoutes from './routes/wallet';
+import loyaltyRoutes from './routes/loyalty';
 import { checkAndRotateAuctions } from './utils/auctionManager';
 import { updateAuctionStatus } from './controllers/admin/inventoryController';
 import { authenticateAdmin, authenticateCustomer } from './middleware/auth';
@@ -89,6 +90,9 @@ app.patch('/api/admin/inventory/auction/:id', authenticateAdmin, requireMinRole(
 
 // Wallet (mounted here so routes are always registered after hot-reload)
 app.use('/api/wallet', walletRoutes);
+
+// Loyalty & Gamification routes
+app.use('/api/loyalty', loyaltyRoutes);
 
 // Auction routes that must not be captured by /api/auctions/:id
 app.get('/api/auctions/my-bids', authenticateCustomer, getMyBids);

@@ -213,21 +213,33 @@ export default function CategoryPage() {
         {/* Offer Tiles Grid - Deep Overlap */}
         <div className="max-w-[1500px] mx-auto -mt-24 px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-20">
           {[
-            { title: 'Flat ₹250 cashback', sub: 'on ₹2500', icon: '💰' },
-            { title: 'Prime exclusive coupons', sub: 'on 2 Lakh+ products', icon: '🎟️' },
-            { title: 'Unlimited 5% cashback', sub: 'with Amazon Pay', icon: '💳', brand: 'amazon pay' },
-            { title: 'Unlock assured 5% back*', sub: 'Rewards GOLD', icon: '✨', brand: 'REWARDS GOLD' },
-          ].map((tile, i) => (
-            <div key={i} className="bg-white p-8 rounded-sm shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group flex flex-col items-center text-center min-h-[160px] justify-center">
-              {tile.brand && (
-                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm mb-3 italic ${tile.brand.includes('pay') ? 'bg-[#232f3e] text-white' : 'bg-[#FFD814] text-gray-900'}`}>
-                  {tile.brand}
-                </span>
-              )}
-              <h3 className="text-xl font-black italic tracking-tighter text-[#0f1111] mb-1 group-hover:text-orange-600 transition-colors leading-tight">{tile.title}</h3>
-              <p className="text-sm font-bold text-gray-500">{tile.sub}</p>
-            </div>
-          ))}
+            { title: 'Flat ₹250 cashback', sub: 'on ₹2500', icon: '💰', url: '#' },
+            { title: 'Prime exclusive coupons', sub: 'on 2 Lakh+ products', icon: '🎟️', url: '#' },
+            { title: 'Unlimited 5% cashback', sub: 'with Amazon Pay', icon: '💳', brand: 'amazon pay', url: '#' },
+            { title: 'Unlock assured 5% back*', sub: 'Rewards GOLD', icon: '✨', brand: 'REWARDS GOLD', url: '/rewards' },
+          ].map((tile, i) => {
+            const CardContent = (
+              <>
+                {tile.brand && (
+                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm mb-3 italic ${tile.brand.includes('pay') ? 'bg-[#232f3e] text-white' : 'bg-[#FFD814] text-gray-900'}`}>
+                    {tile.brand}
+                  </span>
+                )}
+                <h3 className="text-xl font-black italic tracking-tighter text-[#0f1111] mb-1 group-hover:text-orange-600 transition-colors leading-tight">{tile.title}</h3>
+                <p className="text-sm font-bold text-gray-500">{tile.sub}</p>
+              </>
+            );
+
+            return tile.url !== '#' ? (
+              <Link to={tile.url} key={i} className="bg-white p-8 rounded-sm shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group flex flex-col items-center text-center min-h-[160px] justify-center">
+                {CardContent}
+              </Link>
+            ) : (
+              <div key={i} className="bg-white p-8 rounded-sm shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group flex flex-col items-center text-center min-h-[160px] justify-center">
+                {CardContent}
+              </div>
+            );
+          })}
         </div>
 
         {/* Spotlight Brands Carousel */}

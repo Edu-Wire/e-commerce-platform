@@ -15,6 +15,7 @@ import B2BDashboardPage from './pages/B2BDashboardPage';
 import AccountPage from './pages/AccountPage';
 import CustomerServicePage from './pages/CServicePage';
 import LiveAuctionPage from './pages/LiveAuctionPage';
+import LoyaltyPage from './pages/LoyaltyPage';
 
 
 
@@ -104,6 +105,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <AccountPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/rewards"
+                  element={
+                    <ProtectedRoute>
+                      <LoyaltyPage />
                     </ProtectedRoute>
                   }
                 />

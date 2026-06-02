@@ -481,6 +481,7 @@ export default function Navbar() {
                     <div className="space-y-1">
                       <Link to="/account" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-orange-600 hover:underline">Your Account</Link>
                       <Link to="/orders" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-orange-600 hover:underline">Your Orders</Link>
+                      <Link to="/rewards" onClick={() => setUserDropdownOpen(false)} className="block text-xs font-bold text-indigo-600 hover:text-orange-600 hover:underline">💎 Rewards Club</Link>
                       {customer?.customer_type === 'b2b' && (
                         <Link to="/b2b" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-orange-600 hover:underline">B2B Dashboard</Link>
                       )}
@@ -672,8 +673,14 @@ export default function Navbar() {
                 <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Help & Settings</h3>
                 <div className="space-y-1">
                   <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
-
-
+                  <Link
+                    to="/rewards"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3 flex items-center gap-2 group"
+                  >
+                    {/* <span className="text-indigo-600">💎</span> */}
+                    <span className="font-bold text-gray-700 group-hover:text-indigo-600 transition-colors">E-COM Rewards Club</span>
+                  </Link>
                   <Link to="/customer-service" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Customer Service</Link>
                   {customer ? (
                     <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block w-full text-left text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Sign Out</button>
