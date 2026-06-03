@@ -14,6 +14,8 @@ import OrderDetailPage from './pages/OrderDetailPage';
 import UsersPage from './pages/UsersPage';
 import SettingsPage from './pages/SettingsPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
+import QueuePage from './pages/QueuePage';
+import ClosedAuctionsPage from './pages/ClosedAuctionsPage';
 
 export default function App() {
   return (
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/auctions" element={<AuctionsPage />} />
         <Route path="/auctions/running" element={<RunningAuctionsPage />} />
+        <Route path="/auctions/history" element={<ClosedAuctionsPage />} />
+        <Route path="/queue" element={<QueuePage />} />
         <Route path="/bulk-upload" element={<BulkUploadPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/:id" element={<OrderDetailPage />} />

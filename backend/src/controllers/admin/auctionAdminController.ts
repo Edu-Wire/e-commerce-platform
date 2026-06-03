@@ -80,3 +80,41 @@ export async function deleteAuction(req: Request, res: Response): Promise<void> 
     res.status(500).json(error('Internal server error'));
   }
 }
+
+export async function getClosedAuctions(req: Request, res: Response): Promise<void> {
+  try {
+    const auctions = await query(
+      `SELECT a.*, p.name as product_name, p.sku as product_sku,
+              c.name as winner_name, c.email as winner_email,
+              (SELECT COUNT(*)::integer FROM auction_bids WHERE auction_id = a.id) as total_bids
+       FROM auctions a 
+       JOIN products p ON a.product_id = p.id 
+       LEFT JOIN customers c ON a.highest_bidder_id = c.id
+       WHERE a.status = 'completed'
+       ORDER BY a.end_time DESC`
+    );
+    res.json(success(auctions));
+  } catch (err) {
+    console.error('getClosedAuctions error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function getAuctionBidders(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const bids = await query(
+      `SELECT b.id, b.bid_amount, b.created_at,
+              c.name as customer_name, c.email as customer_email, c.phone as customer_phone
+       FROM auction_bids b
+       JOIN customers c ON b.customer_id = c.id
+       WHERE b.auction_id = $1
+       ORDER BY b.bid_amount DESC, b.created_at ASC`,
+      [id]
+    );
+    res.json(success(bids));
+  } catch (err) {
+    console.error('getAuctionBidders error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}

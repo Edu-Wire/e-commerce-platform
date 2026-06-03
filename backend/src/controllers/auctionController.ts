@@ -15,8 +15,11 @@ export async function getActiveAuction(req: Request, res: Response): Promise<voi
               (SELECT COUNT(*) FROM auction_bids WHERE auction_id = a.id)::int as total_bids,
               EXISTS(SELECT 1 FROM auction_bids WHERE auction_id = a.id AND customer_id = $1) as user_has_bid,
               (SELECT MAX(bid_amount) FROM auction_bids WHERE auction_id = a.id AND customer_id = $1) as user_highest_bid
-       FROM products p
-       LEFT JOIN auctions a ON a.product_id = p.id AND a.status = 'active' AND a.start_time <= NOW() AND a.end_time > NOW()`,
+       FROM auctions a
+       JOIN products p ON a.product_id = p.id
+       WHERE a.status = 'active' 
+         AND a.start_time <= NOW() 
+         AND a.end_time > NOW()`,
        [customerId]
     );
     
@@ -29,8 +32,9 @@ export async function getActiveAuction(req: Request, res: Response): Promise<voi
 export async function getUpcomingAuctions(req: Request, res: Response): Promise<void> {
   try {
     const auctions = await query<any>(
-      `SELECT p.id as product_id, p.name as product_name, p.images as product_images,
-              a.id as id, a.start_time, a.end_time, a.status, a.reserve_price
+      `SELECT p.id as product_id, p.name as product_name, p.images as product_images, p.selling_price as product_mrp, p.description as product_description,
+              a.id as id, a.start_time, a.end_time, a.status, a.reserve_price, a.current_highest_bid, a.minimum_spread, a.quantity, a.highest_bidder_id,
+              0::int as total_bids
        FROM auctions a
        JOIN products p ON a.product_id = p.id
        WHERE a.status = 'active' 
@@ -44,6 +48,22 @@ export async function getUpcomingAuctions(req: Request, res: Response): Promise<
     res.status(500).json(error('Internal server error'));
   }
 }
+
+export async function getQueuedAuctions(req: Request, res: Response): Promise<void> {
+  try {
+    const products = await query<any>(
+      `SELECT id as product_id, name as product_name, images as product_images, selling_price as product_mrp, description as product_description, auction_priority
+       FROM products
+       WHERE is_auction_ready = true AND stock_quantity > 0
+       ORDER BY auction_priority ASC, id ASC`
+    );
+    res.json(success(products));
+  } catch (err) {
+    console.error('getQueuedAuctions error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
 
 export async function placeBid(req: Request, res: Response): Promise<void> {
   try {

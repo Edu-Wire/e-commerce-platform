@@ -12,7 +12,9 @@ import {
   Users,
   Settings,
   HelpCircle,
-  Megaphone
+  Megaphone,
+  ListOrdered,
+  History
 } from 'lucide-react';
 
 interface NavItem {
@@ -28,6 +30,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Categories', icon: Tags, to: '/categories' },
   { label: 'Inventory', icon: Factory, to: '/inventory' },
   { label: 'Auctions', icon: Hourglass, to: '/auctions' },
+  { label: 'Upcoming Auctions', icon: ListOrdered, to: '/queue' },
+  { label: 'Auction History', icon: History, to: '/auctions/history' },
   { label: 'Bulk Upload', icon: Upload, to: '/bulk-upload' },
   { label: 'Orders', icon: ClipboardList, to: '/orders' },
   { label: 'Users', icon: Users, to: '/users', ownerOnly: true },
@@ -77,6 +81,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
               <li key={item.to}>
                 <NavLink
                   to={item.to}
+                  end
                   onClick={onClose}
                   className={({ isActive }) =>
                     `group flex items-center gap-3 px-3 py-2.5 rounded text-sm font-semibold transition-all ${

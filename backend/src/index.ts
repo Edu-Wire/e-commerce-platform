@@ -14,7 +14,7 @@ import { checkAndRotateAuctions } from './utils/auctionManager';
 import { updateAuctionStatus } from './controllers/admin/inventoryController';
 import { authenticateAdmin, authenticateCustomer } from './middleware/auth';
 import { requireMinRole } from './middleware/rbac';
-import { getMyBids, getWinningDashboard, getWonAuctions } from './controllers/auctionController';
+import { getMyBids, getWinningDashboard, getWonAuctions, getQueuedAuctions } from './controllers/auctionController';
 
 const app = express();
  
@@ -94,6 +94,7 @@ app.use('/api/wallet', walletRoutes);
 app.get('/api/auctions/my-bids', authenticateCustomer, getMyBids);
 app.get('/api/auctions/winning', authenticateCustomer, getWinningDashboard);
 app.get('/api/auctions/won', authenticateCustomer, getWonAuctions);
+app.get('/api/auctions/queued', getQueuedAuctions);
 
 // Mount all API routes
 app.use('/', routes);

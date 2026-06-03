@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/active', optionalCustomerAuth, ctrl.getActiveAuction);
 router.get('/upcoming', ctrl.getUpcomingAuctions);
+router.get('/queued', ctrl.getQueuedAuctions);
 router.get('/won', authenticateCustomer, ctrl.getWonAuctions);
 router.get('/winning', authenticateCustomer, ctrl.getWinningDashboard);
 router.get('/pending-payments', authenticateCustomer, ctrl.getPendingPayments);
