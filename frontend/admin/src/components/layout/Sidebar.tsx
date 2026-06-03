@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import useAdminAuthStore from '../../store/adminAuthStore';
 
 import {
@@ -14,13 +15,20 @@ import {
   HelpCircle,
   Megaphone,
   ListOrdered,
-  History
+  History,
+  ChevronDown
 } from 'lucide-react';
+
+interface SubItem {
+  label: string;
+  to: string;
+}
 
 interface NavItem {
   label: string;
   icon: React.ElementType;
-  to: string;
+  to?: string;
+  subItems?: SubItem[];
   ownerOnly?: boolean;
 }
 
@@ -29,9 +37,15 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Products', icon: Package, to: '/products' },
   { label: 'Categories', icon: Tags, to: '/categories' },
   { label: 'Inventory', icon: Factory, to: '/inventory' },
-  { label: 'Auctions', icon: Hourglass, to: '/auctions' },
-  { label: 'Upcoming Auctions', icon: ListOrdered, to: '/queue' },
-  { label: 'Auction History', icon: History, to: '/auctions/history' },
+  {
+    label: 'Auctions',
+    icon: Hourglass,
+    subItems: [
+      { label: 'Active Auctions', to: '/auctions' },
+      { label: 'Upcoming Auctions', to: '/queue' },
+      { label: 'Auction History', to: '/auctions/history' },
+    ],
+  },
   { label: 'Bulk Upload', icon: Upload, to: '/bulk-upload' },
   { label: 'Orders', icon: ClipboardList, to: '/orders' },
   { label: 'Users', icon: Users, to: '/users', ownerOnly: true },
@@ -44,6 +58,12 @@ interface SidebarProps {
 
 export default function Sidebar({ onClose }: SidebarProps) {
   const { admin } = useAdminAuthStore();
+  const location = useLocation();
+
+  // Keep auctions open if current path matches any auction sub-items
+  const [auctionsOpen, setAuctionsOpen] = useState(() => {
+    return location.pathname.startsWith('/auctions') || location.pathname === '/queue';
+  });
 
   const visibleItems = NAV_ITEMS.filter(
     (item) => !item.ownerOnly || admin?.role === 'owner'
@@ -77,29 +97,92 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <div className="mb-4 px-2">
           <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[2px] mb-4">Main Menu</h3>
           <ul className="space-y-1.5">
-            {visibleItems.map((item) => (
-              <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  end
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `group flex items-center gap-3 px-3 py-2.5 rounded text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-[#f0c14b] text-[#111827]'
-                        : 'text-gray-300 hover:bg-[#334155] hover:text-white'
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <item.icon className={`w-5 h-5 ${isActive ? 'text-[#111827]' : 'text-gray-400 group-hover:text-white'}`} strokeWidth={2} />
-                      <span>{item.label}</span>
-                    </>
+            {visibleItems.map((item) => {
+              const isSubItemActive = item.subItems?.some(
+                (sub) => location.pathname === sub.to
+              );
+
+              return (
+                <li key={item.label}>
+                  {item.subItems ? (
+                    <div>
+                      <button
+                        onClick={() => setAuctionsOpen(!auctionsOpen)}
+                        className={`w-full group flex items-center justify-between px-3 py-2.5 rounded text-sm font-semibold transition-all ${
+                          isSubItemActive || auctionsOpen
+                            ? 'bg-[#334155] text-white'
+                            : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon
+                            className={`w-5 h-5 ${
+                              isSubItemActive || auctionsOpen
+                                ? 'text-white'
+                                : 'text-gray-400 group-hover:text-white'
+                            }`}
+                            strokeWidth={2}
+                          />
+                          <span>{item.label}</span>
+                        </div>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${
+                            auctionsOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      {auctionsOpen && (
+                        <ul className="mt-1.5 pl-8 space-y-1">
+                          {item.subItems.map((subItem) => (
+                            <li key={subItem.to}>
+                              <NavLink
+                                to={subItem.to}
+                                end
+                                onClick={onClose}
+                                className={({ isActive }) =>
+                                  `block px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+                                    isActive
+                                      ? 'text-[#f0c14b] bg-[#334155]/50'
+                                      : 'text-gray-400 hover:text-white hover:bg-[#334155]/30'
+                                  }`
+                                }
+                              >
+                                {subItem.label}
+                              </NavLink>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ) : (
+                    <NavLink
+                      to={item.to!}
+                      end
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `group flex items-center gap-3 px-3 py-2.5 rounded text-sm font-semibold transition-all ${
+                          isActive
+                            ? 'bg-[#f0c14b] text-[#111827]'
+                            : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <item.icon
+                            className={`w-5 h-5 ${
+                              isActive ? 'text-[#111827]' : 'text-gray-400 group-hover:text-white'
+                            }`}
+                            strokeWidth={2}
+                          />
+                          <span>{item.label}</span>
+                        </>
+                      )}
+                    </NavLink>
                   )}
-                </NavLink>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         </div>
 
