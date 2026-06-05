@@ -124,10 +124,22 @@ export default function CheckoutPage() {
   }
 
   const handlePlaceOrder = async (values: AddressForm) => {
-    setIsProcessing(true);
-    // Simulate payment processing
-    await new Promise(r => setTimeout(r, 1500));
+    console.log('=== handlePlaceOrder START ===');
+    console.log('Items:', items);
+    console.log('Form values:', values);
+    
+    if (!items || items.length === 0) {
+      toast.error('No items in cart');
+      return;
+    }
 
+    if (!values.payment_method) {
+      toast.error('Please select a payment method');
+      return;
+    }
+
+    setIsProcessing(true);
+    
     const payload = buildOrderPayload(
       items,
       {
@@ -144,8 +156,14 @@ export default function CheckoutPage() {
       values.notes
     );
 
+    console.log('Payload being sent:', payload);
+    console.log('Customer:', customer);
+
     try {
+      console.log('Calling createOrder.mutateAsync...');
       const order = await createOrder.mutateAsync(payload);
+      console.log('Order created successfully:', order);
+      toast.success('Order placed successfully!');
       setConfirmedOrder({ id: order.id, order_number: order.order_number });
       if (buyNowItem) {
         setBuyNowItem(null);
@@ -153,10 +171,27 @@ export default function CheckoutPage() {
         clearCart();
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to place order';
+      console.error('Order creation error:', err);
+      let message = 'Failed to place order';
+      
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        const errObj = err as any;
+        if (errObj.response?.data?.message) {
+          message = errObj.response.data.message;
+        } else if (errObj.response?.data?.error) {
+          message = errObj.response.data.error;
+        } else if (errObj.message) {
+          message = errObj.message;
+        }
+      }
+      
+      console.error('Final error message:', message);
       toast.error(message);
     } finally {
       setIsProcessing(false);
+      console.log('=== handlePlaceOrder END ===');
     }
   };
 
@@ -193,7 +228,17 @@ export default function CheckoutPage() {
           </button>
         </div>
 
-        <form id="checkout-form" onSubmit={handleSubmit(handlePlaceOrder)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <form 
+          id="checkout-form" 
+          onSubmit={(e) => {
+            console.log('Form submit event triggered');
+            handleSubmit((data) => {
+              console.log('Form validation passed, data:', data);
+              handlePlaceOrder(data);
+            })(e);
+          }} 
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+        >
           
           {/* Left Column: Sections */}
           <div className="lg:col-span-8 space-y-4">
@@ -268,6 +313,7 @@ export default function CheckoutPage() {
                         {...register('city')}
                         className="w-full rounded border border-gray-400 px-3 py-1.5 text-sm focus:border-[#e77600] focus:ring-1 focus:ring-[#e77600] outline-none"
                       />
+                      {errors.city && <p className="text-[#c40000] text-xs mt-1">{errors.city.message}</p>}
                     </div>
                     <div>
                       <label className="block text-[13px] font-bold text-[#0f1111] mb-1">State</label>
@@ -275,6 +321,7 @@ export default function CheckoutPage() {
                         {...register('state')}
                         className="w-full rounded border border-gray-400 px-3 py-1.5 text-sm focus:border-[#e77600] focus:ring-1 focus:ring-[#e77600] outline-none"
                       />
+                      {errors.state && <p className="text-[#c40000] text-xs mt-1">{errors.state.message}</p>}
                     </div>
                     <div>
                       <label className="block text-[13px] font-bold text-[#0f1111] mb-1">Pincode</label>
@@ -282,6 +329,7 @@ export default function CheckoutPage() {
                         {...register('pincode')}
                         className="w-full rounded border border-gray-400 px-3 py-1.5 text-sm focus:border-[#e77600] focus:ring-1 focus:ring-[#e77600] outline-none"
                       />
+                      {errors.pincode && <p className="text-[#c40000] text-xs mt-1">{errors.pincode.message}</p>}
                     </div>
                   </div>
                   <div className="flex gap-2 pt-2">
@@ -328,6 +376,7 @@ export default function CheckoutPage() {
                     </label>
                   ))}
                 </div>
+                {errors.payment_method && <p className="text-[#c40000] text-xs mt-2">{errors.payment_method.message}</p>}
               </div>
             </div>
 

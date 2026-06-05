@@ -114,8 +114,11 @@ export default function AuctionsPage() {
   };
 
   const handleSetDuration = (minutes: number) => {
-    const baseStart = startTime ? new Date(startTime) : new Date();
-    if (isNaN(baseStart.getTime())) return;
+    const now = new Date();
+    const currentStart = startTime ? new Date(startTime) : now;
+    const baseStart = (!startTime || currentStart.getTime() <= now.getTime() + 10000) ? now : currentStart;
+
+    setStartTime(formatLocalDatetime(baseStart));
     const baseEnd = new Date(baseStart.getTime() + minutes * 60 * 1000);
     setEndTime(formatLocalDatetime(baseEnd));
   };
@@ -145,8 +148,8 @@ export default function AuctionsPage() {
     const diffMins = Math.floor(diffMs / 60000);
     const hrs = Math.floor(diffMins / 60);
     const mins = diffMins % 60;
-    if (hrs === 0) return `Auction duration: ${mins} minutes`;
-    return `Auction duration: ${hrs} ${hrs === 1 ? 'hour' : 'hours'}${mins > 0 ? ` and ${mins} minutes` : ''}`;
+    if (hrs === 0) return `Auction duration: ${mins} ${mins === 1 ? 'minute' : 'minutes'}`;
+    return `Auction duration: ${hrs} ${hrs === 1 ? 'hour' : 'hours'}${mins > 0 ? ` and ${mins} ${mins === 1 ? 'minute' : 'minutes'}` : ''}`;
   };
 
   const handleOpenStartModal = (product: Product) => {
@@ -207,6 +210,17 @@ export default function AuctionsPage() {
     setUpdating(selectedProduct.id);
     setIsModalOpen(false);
 
+    // Calculate actual duration and adjust times if starting "now" to prevent duration loss
+    const durationMs = endTimestamp - startTimestamp;
+    let finalStartIso = new Date(startTime).toISOString();
+    let finalEndIso = new Date(endTime).toISOString();
+
+    if (startTimestamp <= Date.now() + 5000) {
+      const actualNow = new Date();
+      finalStartIso = actualNow.toISOString();
+      finalEndIso = new Date(actualNow.getTime() + durationMs).toISOString();
+    }
+
     try {
       await api.patch(`/admin/inventory/auction/${selectedProduct.id}`, {
         is_auction_ready: true,
@@ -217,8 +231,8 @@ export default function AuctionsPage() {
         spread: spread, // Send spread
         quantity: quantity,
         number_of_auctions: numberOfAuctions,
-        start_time: new Date(startTime).toISOString(),
-        end_time: new Date(endTime).toISOString(),
+        start_time: finalStartIso,
+        end_time: finalEndIso,
         outbid_purchase_markup_percent: outbidPurchaseMarkupPercent || null
       });
       toast.success('Auction started successfully!');
@@ -531,8 +545,8 @@ export default function AuctionsPage() {
             <div>
               <span className="block text-[11px] font-bold text-gray-500 mb-1.5">Quick Duration Presets</span>
               <div className="flex flex-wrap gap-1.5">
-                {[15, 30, 40, 60, 120, 1440].map((mins) => {
-                  const label = mins >= 60 ? `${mins / 60} ${mins === 60 ? 'Hour' : 'Hours'}` : `${mins} Mins`;
+                {[1, 15, 30, 40, 60, 120, 1440].map((mins) => {
+                  const label = mins >= 60 ? `${mins / 60} ${mins === 60 ? 'Hour' : 'Hours'}` : `${mins} ${mins === 1 ? 'Min' : 'Mins'}`;
                   return (
                     <button
                       key={mins}

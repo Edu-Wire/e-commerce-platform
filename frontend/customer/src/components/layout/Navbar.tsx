@@ -5,6 +5,7 @@ import { useCartStore } from '../../store/cartStore';
 import toast from 'react-hot-toast';
 import { useCategories } from '../../hooks/useCategories';
 import { useLanguageStore, translations, Language } from '../../store/languageStore';
+import { useNotifications, useMarkAsRead, useMarkAllAsRead, Notification } from '../../hooks/useNotifications';
 
 export default function Navbar() {
   const { customer, logout, updateProfile } = useAuthStore();
@@ -27,6 +28,37 @@ export default function Navbar() {
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Notifications states & queries
+  const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
+  const [activeModalNotification, setActiveModalNotification] = useState<Notification | null>(null);
+  const notificationDropdownRef = useRef<HTMLDivElement>(null);
+
+  const { data: notifications } = useNotifications(!!customer);
+  const { mutate: markReadMutate } = useMarkAsRead();
+  const { mutate: markAllReadMutate } = useMarkAllAsRead();
+
+  // Auto-open modal popup for direct buy offer notifications on fetch
+  useEffect(() => {
+    if (notifications && notifications.length > 0) {
+      const offerNotif = notifications.find(n => !n.is_read && (n.link?.includes('outbid_offer') || n.title.toLowerCase().includes('offer') || n.message.toLowerCase().includes('offer')));
+      if (offerNotif) {
+        const shownPopups = JSON.parse(sessionStorage.getItem('shownNotificationPopups') || '[]');
+        if (!shownPopups.includes(offerNotif.id)) {
+          setActiveModalNotification(offerNotif);
+          sessionStorage.setItem('shownNotificationPopups', JSON.stringify([...shownPopups, offerNotif.id]));
+        }
+      }
+    }
+  }, [notifications]);
+
+  const handleNotificationClick = (notif: Notification) => {
+    markReadMutate(notif.id);
+    setNotificationDropdownOpen(false);
+    if (notif.link) {
+      navigate(notif.link);
+    }
+  };
 
   // Voice Search states & controls
   const [isListening, setIsListening] = useState(false);
@@ -55,7 +87,7 @@ export default function Navbar() {
       toast.success(`Search for: "${transcript}"`, { id: 'voice-search' });
       const slug = selectedCategorySlug || 'all';
       navigate(`/category/${slug}?search=${encodeURIComponent(transcript.trim())}`);
-      
+
       const updatedHistory = [transcript, ...searchHistory.filter(h => h !== transcript)].slice(0, 5);
       setSearchHistory(updatedHistory);
       localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
@@ -138,6 +170,9 @@ export default function Navbar() {
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
         setShowCategoryDropdown(false);
       }
+      if (notificationDropdownRef.current && !notificationDropdownRef.current.contains(e.target as Node)) {
+        setNotificationDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -167,6 +202,10 @@ export default function Navbar() {
   };
 
   const topLevelCategories = categories?.filter(c => !c.parent_id) ?? [];
+  const excludedNavCategorySlugs = new Set(['electronics', 'clothing', 'footwear']);
+  const navCategories = topLevelCategories.filter(
+    cat => !excludedNavCategorySlugs.has(cat.slug.toLowerCase())
+  );
 
   return (
     <header className="bg-[#131921] text-white sticky top-0 z-50 shadow-sm font-sans">
@@ -281,9 +320,8 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={isListening ? stopVoiceSearch : startVoiceSearch}
-                className={`px-3 flex items-center justify-center transition-all ${
-                  isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-gray-400 hover:text-[#f3a847]'
-                }`}
+                className={`px-3 flex items-center justify-center transition-all ${isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-gray-400 hover:text-[#f3a847]'
+                  }`}
                 title="Search by voice"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -432,6 +470,76 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Notifications Bell */}
+          {customer && (
+            <div className="relative" ref={notificationDropdownRef}>
+              <button
+                onClick={() => {
+                  setNotificationDropdownOpen(!notificationDropdownOpen);
+                  setUserDropdownOpen(false);
+                  setLangDropdownOpen(false);
+                }}
+                className="flex items-center p-2 border border-transparent hover:border-white rounded-sm cursor-pointer transition-all relative"
+                title="Notifications"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {notifications && notifications.filter(n => !n.is_read).length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 bg-[#e47911] text-white rounded-full text-[9px] w-4 h-4 flex items-center justify-center font-bold">
+                    {notifications.filter(n => !n.is_read).length}
+                  </span>
+                )}
+              </button>
+
+              {notificationDropdownOpen && (
+                <div className="absolute top-full right-0 mt-0 w-80 bg-white text-gray-900 shadow-2xl border border-gray-200 py-3 z-[70] rounded-b-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="px-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#0f1111]">Notifications</span>
+                    {notifications && notifications.filter(n => !n.is_read).length > 0 && (
+                      <button
+                        onClick={() => markAllReadMutate()}
+                        className="text-xs text-[#007185] hover:text-[#c40000] hover:underline"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-64 overflow-y-auto pr-1">
+                    {notifications && notifications.length > 0 ? (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`px-4 py-3 border-b border-gray-100 flex flex-col gap-1 cursor-pointer transition-colors ${notif.is_read ? 'bg-white hover:bg-gray-50 opacity-80' : 'bg-orange-50/50 hover:bg-orange-50/80 font-medium'
+                            }`}
+                          onClick={() => handleNotificationClick(notif)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                              {!notif.is_read && <span className="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span>}
+                              {notif.title}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              {new Date(notif.created_at).toLocaleDateString('en-IN')}
+                            </span>
+                          </div>
+                          <p className={`text-xs leading-normal ${notif.is_read ? 'text-gray-500' : 'text-gray-900'}`}>{notif.message}</p>
+                          {notif.link && (
+                            <span className="text-[10px] text-[#007185] font-semibold mt-1 hover:underline">Click to view offer &rarr;</span>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-6 text-center text-xs text-gray-500">
+                        No notifications.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Account & Lists */}
           <div className="relative" ref={userDropdownRef}>
             <button
@@ -558,7 +666,7 @@ export default function Navbar() {
           </svg>
           ShopNow AI
         </button>
-        {topLevelCategories.slice(0, 8).map(cat => (
+        {navCategories.slice(0, 8).map(cat => (
           <Link
             key={cat.id}
             to={`/category/${cat.slug}`}
@@ -576,8 +684,8 @@ export default function Navbar() {
         <Link to="/category/todays-deals" className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm hidden lg:inline flex-shrink-0">
           Today's Deals
         </Link>
-        <Link 
-          to="/live-auction" 
+        <Link
+          to="/live-auction"
           className="px-2 py-1 border border-transparent hover:border-white rounded-sm transition-all text-sm flex-shrink-0 text-orange-400 font-bold flex items-center gap-1.5"
         >
           <span className="relative flex h-2 w-2">
@@ -626,7 +734,7 @@ export default function Navbar() {
               <div className="p-4 border-b border-gray-100">
                 <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Shop By Category</h3>
                 <div className="space-y-1">
-                  {topLevelCategories.map(cat => (
+                  {navCategories.map(cat => (
                     <div key={cat.id}>
                       <div
                         onClick={() => {
@@ -809,7 +917,7 @@ export default function Navbar() {
                               address: {
                                 ...customer?.address,
                                 city: city,
-                                pincode: pincode,                    addresses: updatedAddresses
+                                pincode: pincode, addresses: updatedAddresses
                               }
                             });
                           }
@@ -902,6 +1010,72 @@ export default function Navbar() {
                   Apply
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Dynamic Retargeting Modal */}
+      {activeModalNotification && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-300"
+            onClick={() => {
+              setActiveModalNotification(null);
+            }}
+          />
+          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-gray-100 text-gray-900">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-[#f3a847] text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎉</span>
+                <h2 className="text-base font-bold">Exclusive Deal For You!</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveModalNotification(null);
+                }}
+                className="p-1 hover:bg-white/20 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-700 leading-relaxed font-semibold bg-gray-50 p-4 rounded-lg border border-gray-100">
+                {activeModalNotification.message}
+              </p>
+
+              <div className="bg-orange-50/50 border border-orange-100 rounded-lg p-3 text-xs text-orange-800 flex items-start gap-2">
+                <span className="mt-0.5">💡</span>
+                <span>This offer is only valid for a limited time because you participated in the auction.</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  setActiveModalNotification(null);
+                }}
+                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+              >
+                No Thanks
+              </button>
+              {activeModalNotification.link && (
+                <Link
+                  to={activeModalNotification.link}
+                  onClick={() => {
+                    markReadMutate(activeModalNotification.id);
+                    setActiveModalNotification(null);
+                  }}
+                  className="px-5 py-2 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-bold shadow-md shadow-orange-500/20"
+                >
+                  Buy Now
+                </Link>
+              )}
             </div>
           </div>
         </div>

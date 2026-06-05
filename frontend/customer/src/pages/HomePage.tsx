@@ -529,12 +529,12 @@ export default function HomePage() {
           </div>
 
           {/* Right Content (Redesigned Auction Widget container) */}
-          <div className={`w-full ${liveAuctions.length > 0 ? 'lg:w-[64%]' : 'md:w-[52%]'} flex-shrink-0 flex flex-col items-stretch gap-4 z-10`}>
+          <div className={`w-full ${liveAuctions.length > 0 ? 'lg:w-[64%]' : 'md:w-[52%] self-start'} flex-shrink-0 flex flex-col items-stretch gap-4 z-10`}>
             {/* Prime Section or Live Auction Widget */}
             {liveAuctions.length > 0 ? (
               <LiveAuctionBannerWidget auction={liveAuctions[0]} />
             ) : (
-              <div className="bg-blue-600/90 backdrop-blur-sm p-4 rounded-lg border border-white/20 w-full max-w-sm">
+              <div className="bg-blue-600/90 backdrop-blur-sm p-4 rounded-lg border border-white/20 w-full max-w-sm ml-auto">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-white text-sm font-bold">Only for Prime Members</p>

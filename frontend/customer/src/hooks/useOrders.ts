@@ -8,6 +8,7 @@ interface CreateOrderPayload {
     product_id: number;
     quantity: number;
     unit_price: number;
+    auction_id?: number | null;
   }>;
   shipping_address: ShippingAddress;
   payment_method: string;
@@ -64,7 +65,8 @@ export const buildOrderPayload = (
   items: cartItems.map(item => ({
     product_id: item.product_id,
     quantity: item.quantity,
-    unit_price: item.price
+    unit_price: item.price,
+    auction_id: item.auction_id
   })),
   shipping_address: shippingAddress,
   payment_method: paymentMethod,

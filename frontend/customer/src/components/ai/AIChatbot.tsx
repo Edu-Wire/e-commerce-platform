@@ -58,6 +58,20 @@ export default function AIChatbot() {
     return () => window.removeEventListener('toggle-ai-chat', handleToggle);
   }, []);
 
+  // Listen for "ask a question" events from product pages (Ask Rufus)
+  useEffect(() => {
+    const handleAsk = (e: Event) => {
+      const question = (e as CustomEvent).detail?.question;
+      if (question) {
+        setIsOpen(true);
+        // Small delay to allow drawer to open, then send
+        setTimeout(() => handleSendMessage(question), 300);
+      }
+    };
+    window.addEventListener('ai-chat-ask', handleAsk);
+    return () => window.removeEventListener('ai-chat-ask', handleAsk);
+  }, [messages]); // include messages so handleSendMessage has current chat history
+
   // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

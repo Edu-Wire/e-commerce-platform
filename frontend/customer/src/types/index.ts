@@ -47,6 +47,8 @@ export interface Product {
   category?: Category;
   images: ProductImage[];
   specifications?: Record<string, string>;
+  average_rating?: number;
+  review_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -143,6 +145,7 @@ export interface CartItem {
   sku: string;
   stock_quantity: number;
   category_slug?: string;
+  auction_id?: number | null;
 }
 
 export interface CheckoutForm {
