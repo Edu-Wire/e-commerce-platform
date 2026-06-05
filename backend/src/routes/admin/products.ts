@@ -31,6 +31,8 @@ router.post(
 router.get('/:id', requireMinRole('inventory_staff'), ctrl.getById);
 router.post('/', requireMinRole('manager'), ctrl.create);
 router.put('/:id', requireMinRole('manager'), ctrl.update);
+router.delete('/bulk', requireMinRole('manager'), ctrl.bulkDeleteProducts);
+router.patch('/:id/status', requireMinRole('manager'), ctrl.toggleStatus);
 router.delete('/:id', requireMinRole('manager'), ctrl.deleteProduct);
 router.post(
   '/:id/images',

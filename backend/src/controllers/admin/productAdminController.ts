@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import path from 'path';
 import { query, queryOne } from '../../config/database';
 import { delCachePattern, delCache } from '../../config/redis';
-import { success, error, slugify } from '../../utils/helpers';
+import { success, error, slugify, generateSKU } from '../../utils/helpers';
 import { getPaginationParams, getPaginationMeta, getOffset } from '../../utils/pagination';
 import { Product } from '../../types';
 import { uploadToS3 } from '../../utils/s3';
@@ -104,7 +104,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       is_active, is_featured,
     } = req.body;
 
-    const required = ['category_id', 'name', 'sku', 'mrp', 'buying_price', 'selling_price', 'condition'];
+    const required = ['category_id', 'name', 'mrp', 'buying_price', 'selling_price', 'condition'];
     for (const field of required) {
       if (req.body[field] === undefined || req.body[field] === null || req.body[field] === '') {
         res.status(400).json(error(`${field} is required`));
@@ -133,10 +133,21 @@ export async function create(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const skuExists = await queryOne('SELECT id FROM products WHERE sku = $1', [sku]);
-    if (skuExists) {
-      res.status(409).json(error('SKU already exists'));
-      return;
+    let finalSku = sku;
+    if (!finalSku || String(finalSku).trim() === '') {
+      let attempts = 0;
+      while (attempts < 10) {
+        finalSku = generateSKU(brand || 'ITEM');
+        const exists = await queryOne('SELECT id FROM products WHERE sku = $1', [finalSku]);
+        if (!exists) break;
+        attempts++;
+      }
+    } else {
+      const skuExists = await queryOne('SELECT id FROM products WHERE sku = $1', [finalSku]);
+      if (skuExists) {
+        res.status(409).json(error('SKU already exists'));
+        return;
+      }
     }
 
     const slug = slugify(name);
@@ -158,7 +169,7 @@ export async function create(req: Request, res: Response): Promise<void> {
          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26
        ) RETURNING *`,
       [
-        category_id, name, finalSlug, description || null, sku, brand || null,
+        category_id, name, finalSlug, description || null, finalSku, brand || null,
         mrp, buying_price, selling_price,
         condition, damage_description || null, defect_description || null,
         stock_quantity ?? 0, minimum_stock_alert ?? 5,
@@ -280,13 +291,75 @@ export async function deleteProduct(req: Request, res: Response): Promise<void> 
       return;
     }
 
-    await query('UPDATE products SET is_active = false WHERE id = $1', [id]);
+    await query('DELETE FROM products WHERE id = $1', [id]);
     await delCachePattern('products:list:*');
     await delCache(`products:slug:${existing.slug}`);
 
-    res.json(success({ message: 'Product deactivated successfully' }));
+    res.json(success({ message: 'Product deleted successfully' }));
   } catch (err) {
     console.error('admin delete product error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function bulkDeleteProducts(req: Request, res: Response): Promise<void> {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json(error('Product IDs are required'));
+      return;
+    }
+
+    const products = await query<{ slug: string }>(
+      'SELECT slug FROM products WHERE id = ANY($1)',
+      [ids]
+    );
+
+    if (products.length === 0) {
+      res.status(404).json(error('No matching products found'));
+      return;
+    }
+
+    await query('DELETE FROM products WHERE id = ANY($1)', [ids]);
+    await delCachePattern('products:list:*');
+    for (const p of products) {
+      await delCache(`products:slug:${p.slug}`);
+    }
+
+    res.json(success({ message: `${products.length} products deleted successfully` }));
+  } catch (err) {
+    console.error('admin bulk delete products error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function toggleStatus(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+
+    if (is_active === undefined) {
+      res.status(400).json(error('is_active status is required'));
+      return;
+    }
+
+    const existing = await queryOne<Product>('SELECT * FROM products WHERE id = $1', [id]);
+    if (!existing) {
+      res.status(404).json(error('Product not found'));
+      return;
+    }
+
+    const updated = await queryOne<Product>(
+      'UPDATE products SET is_active = $1 WHERE id = $2 RETURNING *',
+      [is_active, id]
+    );
+
+    await delCachePattern('products:list:*');
+    await delCache(`products:slug:${existing.slug}`);
+
+    res.json(success(updated));
+  } catch (err) {
+    console.error('admin toggle product status error:', err);
     res.status(500).json(error('Internal server error'));
   }
 }

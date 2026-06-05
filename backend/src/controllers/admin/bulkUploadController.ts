@@ -5,12 +5,12 @@ import csv from 'csv-parser';
 import * as XLSX from 'xlsx';
 import { query, queryOne } from '../../config/database';
 import { delCachePattern } from '../../config/redis';
-import { success, error, slugify } from '../../utils/helpers';
+import { success, error, slugify, generateSKU } from '../../utils/helpers';
 import { getPaginationParams, getPaginationMeta, getOffset } from '../../utils/pagination';
 import { BulkUploadLog } from '../../types';
 
 const VALID_CONDITIONS = ['new', 'new_with_minor_damage', 'new_with_defect'];
-const REQUIRED_FIELDS = ['name', 'sku', 'category_slug', 'mrp', 'buying_price', 'selling_price', 'condition'];
+const REQUIRED_FIELDS = ['name', 'category_slug', 'mrp', 'buying_price', 'selling_price', 'condition'];
 
 interface RawRow {
   name?: string;
@@ -74,7 +74,22 @@ async function validateAndInsertRow(
   }
 
   const name = String(row.name).trim();
-  const sku = String(row.sku).trim();
+  const brand = row.brand ? String(row.brand).trim() : 'ITEM';
+  let finalSku = row.sku ? String(row.sku).trim() : '';
+  if (!finalSku) {
+    let attempts = 0;
+    while (attempts < 10) {
+      finalSku = generateSKU(brand);
+      const exists = await queryOne('SELECT id FROM products WHERE sku = $1', [finalSku]);
+      if (!exists) break;
+      attempts++;
+    }
+  } else {
+    // Check SKU uniqueness
+    const skuExists = await queryOne('SELECT id FROM products WHERE sku = $1', [finalSku]);
+    if (skuExists) return { success: false, error: `SKU "${finalSku}" already exists`, sku: finalSku };
+  }
+
   const categorySlug = String(row.category_slug).trim();
   const mrp = parseFloat(String(row.mrp));
   const buyingPrice = parseFloat(String(row.buying_price));
@@ -97,10 +112,6 @@ async function validateAndInsertRow(
     categoryId = cat.id;
     categoryCache.set(categorySlug, categoryId);
   }
-
-  // Check SKU uniqueness
-  const skuExists = await queryOne('SELECT id FROM products WHERE sku = $1', [sku]);
-  if (skuExists) return { success: false, error: `SKU "${sku}" already exists`, sku };
 
   const slug = slugify(name);
   const slugExists = await queryOne('SELECT id FROM products WHERE slug = $1', [slug]);
@@ -145,7 +156,7 @@ async function validateAndInsertRow(
     [
       categoryId, name, finalSlug,
       row.description ? String(row.description).trim() : null,
-      sku,
+      finalSku,
       row.brand ? String(row.brand).trim() : null,
       mrp, buyingPrice, sellingPrice,
       condition,
@@ -183,6 +194,39 @@ export async function downloadTemplate(req: Request, res: Response): Promise<voi
   }
 }
 
+function normalizeRowKeys(row: RawRow): RawRow {
+  const normalized: RawRow = {};
+  for (const key of Object.keys(row)) {
+    const normKey = key
+      .toLowerCase()
+      .trim()
+      .replace(/[\s-]+/g, '_');
+    normalized[normKey] = row[key];
+  }
+  
+  // Handle common abbreviations/aliases
+  if (normalized.min_stock_alert && !normalized.minimum_stock_alert) {
+    normalized.minimum_stock_alert = normalized.min_stock_alert;
+  }
+  if (normalized.b2b_min_quantity && !normalized.b2b_minimum_quantity) {
+    normalized.b2b_minimum_quantity = normalized.b2b_min_quantity;
+  }
+  if (normalized.b2b_min_qty && !normalized.b2b_minimum_quantity) {
+    normalized.b2b_minimum_quantity = normalized.b2b_min_qty;
+  }
+  if (normalized.stock_qty && !normalized.stock_quantity) {
+    normalized.stock_quantity = normalized.stock_qty;
+  }
+  if (normalized.image_url && !normalized.image_urls) {
+    normalized.image_urls = normalized.image_url;
+  }
+  if (normalized.category && !normalized.category_slug) {
+    normalized.category_slug = normalized.category;
+  }
+  
+  return normalized;
+}
+
 export async function uploadFile(req: Request, res: Response): Promise<void> {
   try {
     if (!req.file) {
@@ -211,7 +255,8 @@ export async function uploadFile(req: Request, res: Response): Promise<void> {
     const categoryCache = new Map<string, number>();
 
     for (let i = 0; i < rows.length; i++) {
-      const result = await validateAndInsertRow(rows[i], i + 2, adminId, categoryCache);
+      const normalizedRow = normalizeRowKeys(rows[i]);
+      const result = await validateAndInsertRow(normalizedRow, i + 2, adminId, categoryCache);
       if (result.success) {
         successCount++;
       } else {

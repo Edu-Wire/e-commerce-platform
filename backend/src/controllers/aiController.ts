@@ -31,37 +31,37 @@ function localNLPParser(message: string): { reply: string; filters: ParsedFilter
   // 1. Intent Classification: Greetings
   const greetings = ['hi', 'hello', 'hey', 'yo', 'namaste', 'hola', 'greetings', 'good morning', 'good afternoon', 'good evening'];
   const isGreetingOnly = greetings.some(g => text === g || text.startsWith(g + ' ') || text.endsWith(' ' + g));
-  
+
   // 2. Intent Classification: Support / General Inquiry / Contact
-  const isSupportInquiry = text.includes('inquiry') || 
-                            text.includes('question') || 
-                            text.includes('help') || 
-                            text.includes('contact') || 
-                            text.includes('support') || 
-                            text.includes('customer care') || 
-                            text.includes('email') || 
-                            text.includes('phone number') || 
-                            text.includes('contact number') || 
-                            text.includes('mobile number') || 
-                            text.includes('call you') ||
-                            text.includes('address') ||
-                            text.includes('office');
+  const isSupportInquiry = text.includes('inquiry') ||
+    text.includes('question') ||
+    text.includes('help') ||
+    text.includes('contact') ||
+    text.includes('support') ||
+    text.includes('customer care') ||
+    text.includes('email') ||
+    text.includes('phone number') ||
+    text.includes('contact number') ||
+    text.includes('mobile number') ||
+    text.includes('call you') ||
+    text.includes('address') ||
+    text.includes('office');
 
   // 3. Intent Classification: Shipping & Delivery
-  const isShippingInquiry = text.includes('shipping') || 
-                             text.includes('delivery') || 
-                             text.includes('dispatch') || 
-                             text.includes('arrive') || 
-                             text.includes('track') || 
-                             text.includes('status') ||
-                             text.includes('shipment');
+  const isShippingInquiry = text.includes('shipping') ||
+    text.includes('delivery') ||
+    text.includes('dispatch') ||
+    text.includes('arrive') ||
+    text.includes('track') ||
+    text.includes('status') ||
+    text.includes('shipment');
 
   // 4. Intent Classification: Returns & Refunds
-  const isReturnInquiry = text.includes('return') || 
-                           text.includes('refund') || 
-                           text.includes('replace') || 
-                           text.includes('exchange') || 
-                           text.includes('cancel');
+  const isReturnInquiry = text.includes('return') ||
+    text.includes('refund') ||
+    text.includes('replace') ||
+    text.includes('exchange') ||
+    text.includes('cancel');
 
   if (isReturnInquiry) {
     return {
@@ -117,8 +117,8 @@ function localNLPParser(message: string): { reply: string; filters: ParsedFilter
   }
 
   // Extract Storage
-  const storageMatch = text.match(/(\d+)\s*(?:gb|tb|gigabyte|terabyte)?\s*(?:storage|rom|internal)/i) || 
-                       text.match(/(128|256|512|64)\s*(?:gb|tb)/i);
+  const storageMatch = text.match(/(\d+)\s*(?:gb|tb|gigabyte|terabyte)?\s*(?:storage|rom|internal)/i) ||
+    text.match(/(128|256|512|64)\s*(?:gb|tb)/i);
   if (storageMatch) {
     const value = storageMatch[1];
     const unit = text.includes('tb') ? 'TB' : 'GB';
@@ -162,7 +162,7 @@ function localNLPParser(message: string): { reply: string; filters: ParsedFilter
   ]);
 
   let cleanQuery = text.toLowerCase();
-  
+
   // Apply regex to strip out price patterns and RAM patterns
   cleanQuery = cleanQuery
     .replace(/(?:under|below|less than|within|above|greater than|more than|over)\s*(?:rs\.?|inr|rupees)?\s*\d+(?:\s*k)?/gi, '')
@@ -209,8 +209,8 @@ function localNLPParser(message: string): { reply: string; filters: ParsedFilter
   if (filters.max_price) responseParts.push(`under ₹${filters.max_price}`);
 
   const criteria = responseParts.join(' ');
-  const reply = criteria 
-    ? `Sure! I am searching for **${criteria}** products for you.` 
+  const reply = criteria
+    ? `Sure! I am searching for **${criteria}** products for you.`
     : "I'll search our catalog for products matching your query.";
 
   return { reply, filters };
@@ -380,7 +380,7 @@ Response (strictly JSON):`;
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-      
+
       // Select matching products limit to 6 for chat suggestions
       const dbQuery = `
         SELECT p.*, c.name as category_name, c.slug as category_slug

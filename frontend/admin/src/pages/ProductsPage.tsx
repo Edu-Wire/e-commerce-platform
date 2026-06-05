@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import {
   useAdminProducts,
   useDeleteProduct,
+  useBulkDeleteProducts,
   useToggleProductStatus,
   type ProductFilters,
 } from '../hooks/useAdminProducts';
@@ -32,15 +33,48 @@ export default function ProductsPage() {
       setFilters(f => ({ ...f, search, page: 1 }));
     }
   }, [searchParams]);
+
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
   const { data, isLoading } = useAdminProducts(filters);
   const { data: categories } = useAdminCategories();
   const deleteMutation = useDeleteProduct();
+  const bulkDeleteMutation = useBulkDeleteProducts();
   const toggleMutation = useToggleProductStatus();
+
+  // Reset selected IDs when filters change
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [filters]);
 
   const products = data?.data?.products ?? [];
   const meta = data?.data?.meta;
+
+  const areAllSelected = products.length > 0 && products.every(p => selectedIds.includes(String(p.id)));
+
+  const handleSelectAllToggle = () => {
+    if (areAllSelected) {
+      setSelectedIds(prev => prev.filter(id => !products.some(p => String(p.id) === String(id))));
+    } else {
+      setSelectedIds(prev => {
+        const next = [...prev];
+        products.forEach(p => {
+          const pIdStr = String(p.id);
+          if (!next.includes(pIdStr)) next.push(pIdStr);
+        });
+        return next;
+      });
+    }
+  };
+
+  const handleSelectRow = (id: string) => {
+    const idStr = String(id);
+    setSelectedIds(prev =>
+      prev.includes(idStr) ? prev.filter(x => x !== idStr) : [...prev, idStr]
+    );
+  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -50,6 +84,18 @@ export default function ProductsPage() {
       setDeleteTarget(null);
     } catch {
       toast.error('Failed to delete product');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      await bulkDeleteMutation.mutateAsync(selectedIds);
+      toast.success(`${selectedIds.length} products deleted`);
+      setSelectedIds([]);
+      setIsBulkDeleteConfirmOpen(false);
+    } catch {
+      toast.error('Failed to delete selected products');
     }
   };
 
@@ -68,6 +114,14 @@ export default function ProductsPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-black text-gray-900 tracking-tight capitalize">Manage Product</h1>
           <div className="flex items-center gap-3">
+            {selectedIds.length > 0 && (
+              <button
+                onClick={() => setIsBulkDeleteConfirmOpen(true)}
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded shadow-sm transition-all"
+              >
+                Delete Selected ({selectedIds.length})
+              </button>
+            )}
             <button
               onClick={() => navigate('/products/new')}
               className="px-5 py-2 bg-amazon-orange hover:bg-amazon-orangeLight text-amazon-navy text-xs font-bold rounded shadow-sm transition-all"
@@ -168,9 +222,14 @@ export default function ProductsPage() {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-4 py-3 text-left w-10">
-                  <input type="checkbox" className="rounded border-gray-300 text-amazon-orange focus:ring-amazon-orange" />
+                  <input
+                    type="checkbox"
+                    checked={areAllSelected}
+                    onChange={handleSelectAllToggle}
+                    className="rounded border-gray-300 text-amazon-orange focus:ring-amazon-orange cursor-pointer"
+                  />
                 </th>
-                {['Image', 'Status', 'SKU / Product Name', 'Condition', 'MRP', 'Sell Price', 'Discount', 'Available', 'Channel', 'Actions'].map((h) => (
+                {['Image', 'Status', 'Product Name', 'Condition', 'MRP', 'Sell Price', 'Discount', 'Available', 'Channel', 'Actions'].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-[11px] font-black text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     {h}
                   </th>
@@ -206,10 +265,18 @@ export default function ProductsPage() {
                     return (
                       <tr key={p.id} className={`${i % 2 === 1 ? 'bg-gray-50/30' : 'bg-white'} hover:bg-blue-50/30 transition-colors group`}>
                         <td className="px-4 py-3 w-10">
-                          <input type="checkbox" className="rounded border-gray-300 text-amazon-orange focus:ring-amazon-orange" />
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(String(p.id))}
+                            onChange={() => handleSelectRow(String(p.id))}
+                            className="rounded border-gray-300 text-amazon-orange focus:ring-amazon-orange cursor-pointer"
+                          />
                         </td>
                         <td className="px-4 py-3">
-                          <div className="w-12 h-12 bg-white rounded border border-gray-200 overflow-hidden flex items-center justify-center shadow-sm">
+                          <div 
+                            onClick={() => navigate(`/products/${p.id}/edit`)}
+                            className="w-12 h-12 bg-white rounded border border-gray-200 overflow-hidden flex items-center justify-center shadow-sm cursor-pointer hover:border-amazon-blue transition-all"
+                          >
                             {p.images?.[0] ? (
                               <img src={typeof p.images[0] === 'string' ? p.images[0] : p.images[0].url} alt={p.name} className="w-full h-full object-cover" />
                             ) : (
@@ -232,8 +299,12 @@ export default function ProductsPage() {
                         </td>
                         <td className="px-4 py-3 min-w-[200px]">
                           <div className="flex flex-col">
-                            <span className="font-bold text-amazon-blue hover:underline cursor-pointer transition-all line-clamp-1">{p.name}</span>
-                            <span className="text-[11px] font-bold text-gray-400 font-mono mt-0.5">SKU: {p.sku}</span>
+                            <span 
+                              onClick={() => navigate(`/products/${p.id}/edit`)}
+                              className="font-bold text-amazon-blue hover:underline cursor-pointer transition-all line-clamp-1"
+                            >
+                              {p.name}
+                            </span>
                             <span className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-tight">{p.category_name}</span>
                           </div>
                         </td>
@@ -319,6 +390,16 @@ export default function ProductsPage() {
         onCancel={() => setDeleteTarget(null)}
         isLoading={deleteMutation.isPending}
         confirmLabel="Delete"
+      />
+
+      <ConfirmDialog
+        isOpen={isBulkDeleteConfirmOpen}
+        title="Delete Selected Products"
+        message={`Are you sure you want to delete the ${selectedIds.length} selected products? This action cannot be undone.`}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setIsBulkDeleteConfirmOpen(false)}
+        isLoading={bulkDeleteMutation.isPending}
+        confirmLabel="Delete All"
       />
     </div>
   );

@@ -78,6 +78,16 @@ export function useDeleteProduct() {
   });
 }
 
+export function useBulkDeleteProducts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      await api.delete('/admin/products/bulk', { data: { ids } });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'products'] }),
+  });
+}
+
 export function useToggleProductStatus() {
   const qc = useQueryClient();
   return useMutation({

@@ -13,9 +13,9 @@ import type { ApiResponse, ProductImage, SpecTemplate } from '../types';
 
 const schema = z.object({
   name: z.string().min(2, 'Name is required'),
-  sku: z.string().min(1, 'SKU is required'),
+  sku: z.string().optional(),
   brand: z.string().optional(),
-  category_id: z.string().min(1, 'Category is required'),
+  category_id: z.preprocess((val) => (val === null || val === undefined ? '' : String(val)), z.string().min(1, 'Category is required')),
   description: z.string().optional(),
   condition: z.enum(['new', 'new_with_minor_damage', 'new_with_defect']),
   damage_description: z.string().optional(),
@@ -265,22 +265,34 @@ export default function ProductFormPage() {
             </h1>
             <p className="text-xs sm:text-sm text-gray-600 mt-0.5">Provide vital info, offers, and images to list your item.</p>
           </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/products')}
+              className="px-4 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded-md hover:bg-[#f7fafa] shadow-sm transition-colors text-center"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-2 px-6 py-1.5 text-sm font-bold text-[#0f1111] bg-[#F3A847] hover:bg-[#e39a37] border border-[#a88734] rounded-md disabled:opacity-60 shadow-sm transition-colors"
+            >
+              {isSubmitting && <LoadingSpinner size="sm" />}
+              {isEdit ? 'Save and finish' : 'Save and finish'}
+            </button>
+          </div>
         </div>
 
         <div className="w-full space-y-6">
           {/* Vital Info */}
           <FormSection title="Vital Info">
-            <FieldRow>
-              <Field label="Item Name (Title)" error={errors.name?.message} required>
-                <input {...register('name')} className={errors.name ? INPUT_ERR_CLS : INPUT_CLS} placeholder="e.g. Dell Laptop XPS 15" />
-                {watchedName && (
-                  <p className="text-xs text-gray-500 mt-1">Slug: <span className="font-mono">{slugify(watchedName)}</span></p>
-                )}
-              </Field>
-              <Field label="Seller SKU" error={errors.sku?.message} required>
-                <input {...register('sku')} className={errors.sku ? INPUT_ERR_CLS : INPUT_CLS} placeholder="e.g. DELL-XPS15-001" />
-              </Field>
-            </FieldRow>
+            <Field label="Item Name (Title)" error={errors.name?.message} required>
+              <input {...register('name')} className={errors.name ? INPUT_ERR_CLS : INPUT_CLS} placeholder="e.g. Dell Laptop XPS 15" />
+              {watchedName && (
+                <p className="text-xs text-gray-500 mt-1">Slug: <span className="font-mono">{slugify(watchedName)}</span></p>
+              )}
+            </Field>
             <FieldRow>
               <Field label="Brand Name" error={errors.brand?.message}>
                 <input {...register('brand')} className={INPUT_CLS} placeholder="e.g. Dell" />
@@ -619,24 +631,6 @@ export default function ProductFormPage() {
           </FormSection>
         </div>
 
-        {/* Bottom Submit Area */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 p-4 bg-white border border-gray-300 rounded shadow-sm mt-6">
-          <button
-            type="button"
-            onClick={() => navigate('/products')}
-            className="flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded-md hover:bg-[#f7fafa] shadow-sm transition-colors text-center"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-1.5 text-sm font-bold text-[#0f1111] bg-[#F3A847] hover:bg-[#e39a37] border border-[#a88734] rounded-md disabled:opacity-60 shadow-sm transition-colors"
-          >
-            {isSubmitting && <LoadingSpinner size="sm" />}
-            {isEdit ? 'Save and finish' : 'Save and finish'}
-          </button>
-        </div>
       </form>
     </div>
   );
