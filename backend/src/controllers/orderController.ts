@@ -12,6 +12,7 @@ interface OrderItemInput {
   product_id: number;
   quantity: number;
   variant?: string;
+  auction_id?: number | null;
 }
 
 export async function createOrder(req: Request, res: Response): Promise<void> {
@@ -41,6 +42,7 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
         mrp: number;
         selling_price: number;
         variant?: string;
+        auction_id?: number;
       }> = [];
 
       for (const item of items as OrderItemInput[]) {
@@ -65,9 +67,29 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
           throw new Error(`Product "${product.name}" is not available for B2C`);
         }
 
-        const unitPrice = orderType === 'b2b' && product.is_b2b_available && product.b2b_price
+        let unitPrice = orderType === 'b2b' && product.is_b2b_available && product.b2b_price
           ? product.b2b_price
           : product.selling_price;
+
+        if (item.auction_id) {
+          const auctionCheck = await client.query(
+            `SELECT a.*, 
+                    EXISTS(SELECT 1 FROM auction_bids WHERE auction_id = a.id AND customer_id = $1) AS was_bidder
+             FROM auctions a
+             WHERE a.id = $2 AND a.product_id = $3 AND a.status = 'completed'`,
+            [customer.id, item.auction_id, product.id]
+          );
+
+          if (auctionCheck.rows.length > 0 && auctionCheck.rows[0].was_bidder) {
+            const auction = auctionCheck.rows[0];
+            const winningBid = parseFloat(auction.current_highest_bid);
+            const markupPercent = auction.outbid_purchase_markup_percent !== null && auction.outbid_purchase_markup_percent !== undefined
+              ? parseFloat(auction.outbid_purchase_markup_percent)
+              : 50;
+            const offerPrice = Math.round(winningBid * (1 + markupPercent / 100));
+            unitPrice = offerPrice;
+          }
+        }
 
         totalMrp += product.mrp * item.quantity;
         totalSellingPrice += unitPrice * item.quantity;
@@ -80,6 +102,7 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
           mrp: product.mrp,
           selling_price: unitPrice,
           variant: item.variant,
+          auction_id: item.auction_id || undefined,
         });
 
         // Deduct stock

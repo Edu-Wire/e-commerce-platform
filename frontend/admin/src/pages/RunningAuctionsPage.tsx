@@ -20,6 +20,7 @@ export default function RunningAuctionsPage() {
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [ending, setEnding] = useState<number | null>(null);
 
   useEffect(() => {
     fetchRunningAuctions();
@@ -35,6 +36,24 @@ export default function RunningAuctionsPage() {
       toast.error('Failed to load running auctions');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEndAuction = async (id: number) => {
+    if (!window.confirm('Are you sure you want to end this auction early? It will complete immediately and determine a winner if bids exist.')) {
+      return;
+    }
+
+    setEnding(id);
+    try {
+      await api.post(`/admin/auctions/${id}/end`);
+      toast.success('Auction ended and completed successfully');
+      fetchRunningAuctions();
+    } catch (err) {
+      console.error('Failed to end auction:', err);
+      toast.error('Failed to end auction');
+    } finally {
+      setEnding(null);
     }
   };
 
@@ -105,10 +124,17 @@ export default function RunningAuctionsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(auction.end_time).toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3">
+                    <button
+                      onClick={() => handleEndAuction(auction.id)}
+                      disabled={ending === auction.id || deleting === auction.id}
+                      className="text-orange-600 hover:text-orange-950 disabled:opacity-50"
+                    >
+                      {ending === auction.id ? 'Ending...' : 'End Auction'}
+                    </button>
                     <button
                       onClick={() => handleDeleteAuction(auction.id)}
-                      disabled={deleting === auction.id}
+                      disabled={deleting === auction.id || ending === auction.id}
                       className="text-red-600 hover:text-red-900 disabled:opacity-50"
                     >
                       {deleting === auction.id ? 'Deleting...' : 'Delete'}

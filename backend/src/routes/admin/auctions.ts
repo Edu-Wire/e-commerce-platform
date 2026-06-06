@@ -17,5 +17,6 @@ router.get('/running', requireMinRole('inventory_staff'), ctrl.getRunningAuction
 router.get('/history', requireMinRole('inventory_staff'), ctrl.getClosedAuctions);
 router.get('/:id/bidders', requireMinRole('inventory_staff'), ctrl.getAuctionBidders);
 router.delete('/:id', requireMinRole('manager'), ctrl.deleteAuction);
+router.post('/:id/end', requireMinRole('manager'), ctrl.endAuction);
 
 export default router;

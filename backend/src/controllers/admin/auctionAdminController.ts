@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { query, queryOne } from '../../config/database';
 import { success, error } from '../../utils/helpers';
+import { checkAndRotateAuctions } from '../../utils/auctionManager';
 
 export async function getAuctionProducts(req: Request, res: Response): Promise<void> {
   try {
@@ -115,6 +116,37 @@ export async function getAuctionBidders(req: Request, res: Response): Promise<vo
     res.json(success(bids));
   } catch (err) {
     console.error('getAuctionBidders error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function endAuction(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+
+    const existing = await queryOne<{ id: number; status: string }>('SELECT id, status FROM auctions WHERE id = $1', [id]);
+    if (!existing) {
+      res.status(404).json(error('Auction not found'));
+      return;
+    }
+
+    if (existing.status !== 'active') {
+      res.status(400).json(error('Only active auctions can be ended early'));
+      return;
+    }
+
+    // Set end_time to past to trigger rotation logic
+    await query(
+      "UPDATE auctions SET end_time = NOW() - INTERVAL '1 second' WHERE id = $1",
+      [id]
+    );
+
+    // Trigger immediate rotation to process the auction close
+    await checkAndRotateAuctions();
+
+    res.json(success({ message: 'Auction ended and completed successfully' }));
+  } catch (err) {
+    console.error('endAuction error:', err);
     res.status(500).json(error('Internal server error'));
   }
 }

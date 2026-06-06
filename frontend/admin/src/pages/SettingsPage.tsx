@@ -29,17 +29,26 @@ export default function SettingsPage() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [auctionDuration, setAuctionDuration] = useState(60);
   const [updatingDuration, setUpdatingDuration] = useState(false);
+  
+  const [loserTemplate, setLoserTemplate] = useState('');
+  const [updatingTemplate, setUpdatingTemplate] = useState(false);
 
   useEffect(() => {
-    const fetchDuration = async () => {
+    const fetchSettings = async () => {
       try {
-        const res = await api.get('/admin/settings/auction-duration');
-        setAuctionDuration(res.data.data.duration);
+        const durationRes = await api.get('/admin/settings/auction-duration');
+        setAuctionDuration(durationRes.data.data.duration);
       } catch (err) {
         console.error('Failed to fetch duration:', err);
       }
+      try {
+        const templateRes = await api.get('/admin/settings/loser-template');
+        setLoserTemplate(templateRes.data.data.template);
+      } catch (err) {
+        console.error('Failed to fetch template:', err);
+      }
     };
-    fetchDuration();
+    fetchSettings();
   }, []);
 
   const onUpdateDuration = async () => {
@@ -55,6 +64,22 @@ export default function SettingsPage() {
       toast.error('Failed to update duration');
     } finally {
       setUpdatingDuration(false);
+    }
+  };
+
+  const onUpdateTemplate = async () => {
+    if (!loserTemplate.trim()) {
+      toast.error('Template text is required');
+      return;
+    }
+    setUpdatingTemplate(true);
+    try {
+      await api.put('/admin/settings/loser-template', { template: loserTemplate });
+      toast.success('Losing bidder template updated successfully');
+    } catch {
+      toast.error('Failed to update template');
+    } finally {
+      setUpdatingTemplate(false);
     }
   };
 
@@ -232,27 +257,58 @@ export default function SettingsPage() {
           <h3 className="text-sm font-bold text-[#0f1111]">Global Preferences</h3>
         </div>
         <div className="p-5">
-          <div className="max-w-md">
-            <label className="block text-sm font-bold text-[#0f1111] mb-1">
-              Default Auction Duration (Minutes)
-            </label>
-            <p className="text-xs text-gray-600 mb-3">
-              This setting controls the default active bidding period for new auction items.
-            </p>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                value={auctionDuration}
-                onChange={(e) => setAuctionDuration(parseInt(e.target.value, 10))}
-                className={INPUT_CLS}
+          <div className="max-w-xl space-y-6">
+            <div className="max-w-md">
+              <label className="block text-sm font-bold text-[#0f1111] mb-1">
+                Default Auction Duration (Minutes)
+              </label>
+              <p className="text-xs text-gray-600 mb-3">
+                This setting controls the default active bidding period for new auction items.
+              </p>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  value={auctionDuration}
+                  onChange={(e) => setAuctionDuration(parseInt(e.target.value, 10))}
+                  className={INPUT_CLS}
+                />
+                <button
+                  onClick={onUpdateDuration}
+                  disabled={updatingDuration}
+                  className="flex items-center gap-2 px-6 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded hover:bg-[#f7fafa] shadow-sm disabled:opacity-60 transition-colors"
+                >
+                  {updatingDuration && <LoadingSpinner size="sm" />}
+                  Update
+                </button>
+              </div>
+            </div>
+
+            <hr className="border-gray-200" />
+
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-[#0f1111]">
+                Losing Bidders Message Template
+              </label>
+              <p className="text-xs text-gray-600">
+                This template is sent as a direct offer notification to users who lost the auction bid. You can use placeholders:
+                <code className="mx-1 px-1.5 py-0.5 bg-gray-100 text-red-600 rounded text-[11px] font-mono">{"{customer_name}"}</code>, 
+                <code className="mx-1 px-1.5 py-0.5 bg-gray-100 text-red-600 rounded text-[11px] font-mono">{"{product_name}"}</code>, 
+                <code className="mx-1 px-1.5 py-0.5 bg-gray-100 text-red-600 rounded text-[11px] font-mono">{"{offer_price}"}</code>.
+              </p>
+              <textarea
+                value={loserTemplate}
+                onChange={(e) => setLoserTemplate(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-[#888c8c] rounded-[3px] text-sm focus:outline-none focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)] bg-white text-[#0f1111] transition-shadow resize-none font-sans"
+                placeholder="Hi {customer_name}, you were so close..."
               />
               <button
-                onClick={onUpdateDuration}
-                disabled={updatingDuration}
+                onClick={onUpdateTemplate}
+                disabled={updatingTemplate}
                 className="flex items-center gap-2 px-6 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded hover:bg-[#f7fafa] shadow-sm disabled:opacity-60 transition-colors"
               >
-                {updatingDuration && <LoadingSpinner size="sm" />}
-                Update
+                {updatingTemplate && <LoadingSpinner size="sm" />}
+                Save Template
               </button>
             </div>
           </div>

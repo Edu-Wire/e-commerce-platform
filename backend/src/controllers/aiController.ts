@@ -228,6 +228,112 @@ export async function chatWithAI(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    // ── Product-Specific Q&A Detection (Ask Rufus) ──
+    // Messages from Ask Rufus have the pattern: [About: Product Name] Question
+    const productQAMatch = message.match(/^\[About:\s*(.+?)\]\s*(.+)$/);
+    if (productQAMatch) {
+      const productName = productQAMatch[1].trim();
+      const question = productQAMatch[2].trim();
+
+      // Fetch the product from database
+      const productResult = await query<any>(
+        `SELECT p.*, c.name as category_name,
+                COALESCE(
+                  (SELECT ROUND(AVG(r.rating)::numeric, 1) FROM reviews r WHERE r.product_id = p.id),
+                  0
+                ) as avg_rating,
+                COALESCE(
+                  (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id),
+                  0
+                ) as total_reviews
+         FROM products p
+         LEFT JOIN categories c ON c.id = p.category_id
+         WHERE p.name ILIKE $1 AND p.is_active = true
+         LIMIT 1`,
+        [`%${productName}%`]
+      );
+
+      const product = productResult[0];
+
+      if (product) {
+        const specs = product.specifications || {};
+        const specLines = Object.entries(specs)
+          .map(([k, v]) => `${(k as string).replace(/_/g, ' ')}: ${v}`)
+          .join(', ');
+
+        const apiKey = process.env.GEMINI_API_KEY || '';
+        let answer = '';
+
+        if (apiKey) {
+          try {
+            const qaPrompt = `You are a helpful product assistant for ShopNow.in.
+A customer is viewing the product "${product.name}" and has asked a question about it.
+
+Product Details:
+- Name: ${product.name}
+- Brand: ${product.brand || 'N/A'}
+- Category: ${product.category_name || 'N/A'}
+- Price: ₹${product.selling_price} (MRP: ₹${product.mrp})
+- Condition: ${product.condition}
+- Description: ${product.description || 'N/A'}
+- Specifications: ${specLines || 'None listed'}
+- Average Rating: ${product.avg_rating}/5 (${product.total_reviews} reviews)
+- Stock: ${product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
+
+Customer Question: "${question}"
+
+Provide a concise, helpful, friendly answer (2-4 sentences) based on the product information above. If the information isn't available in the product details, say so honestly but suggest the customer check the product page or contact support. Do NOT make up specifications or features that aren't listed. Respond as plain text (no JSON).`;
+
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const geminiRes = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: qaPrompt }] }],
+              })
+            });
+
+            if (geminiRes.ok) {
+              const result = (await geminiRes.json()) as any;
+              answer = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            }
+          } catch (err) {
+            console.error('Gemini Q&A error, using fallback:', err);
+          }
+        }
+
+        // Local fallback if Gemini is unavailable or failed
+        if (!answer) {
+          const qLower = question.toLowerCase();
+          if (qLower.includes('durable') || qLower.includes('quality') || qLower.includes('build')) {
+            answer = `The ${product.brand || ''} ${product.name} is a ${product.condition === 'new' ? 'brand new' : product.condition.replace(/_/g, ' ')} product. ${Number(product.avg_rating) >= 4 ? `With a rating of ${product.avg_rating}/5 from ${product.total_reviews} customers, it's well-regarded for quality.` : Number(product.total_reviews) > 0 ? `It has a ${product.avg_rating}/5 rating from ${product.total_reviews} reviews.` : 'It has no reviews yet, but you can be the first to share your experience!'} ${specLines ? `Key specs include: ${specLines}.` : ''}`;
+          } else if (qLower.includes('warranty')) {
+            const warrantySpec = specs.warranty || specs.Warranty || null;
+            answer = warrantySpec
+              ? `The ${product.name} comes with a ${warrantySpec} warranty.`
+              : `Warranty information isn't listed in the product specifications. We recommend contacting our support at support@shopnow.in for warranty details.`;
+          } else if (qLower.includes('worth') || qLower.includes('price') || qLower.includes('value')) {
+            const discount = Math.round((1 - product.selling_price / product.mrp) * 100);
+            answer = `The ${product.name} is priced at ₹${Number(product.selling_price).toLocaleString('en-IN')} (${discount}% off MRP ₹${Number(product.mrp).toLocaleString('en-IN')}). ${Number(product.avg_rating) >= 4 ? `With a ${product.avg_rating}/5 rating, customers generally find it a good value.` : Number(product.total_reviews) > 0 ? `It has a ${product.avg_rating}/5 rating from ${product.total_reviews} reviews.` : 'Be the first to review it and share if it was worth the price!'}`;
+          } else if (qLower.includes('feature') || qLower.includes('spec')) {
+            answer = specLines
+              ? `Here are the key specifications for the ${product.name}: ${specLines}.`
+              : `Detailed specifications aren't listed for this product. ${product.description ? `Description: "${product.description.substring(0, 200)}"` : ''}`;
+          } else {
+            answer = `About the **${product.name}**${product.brand ? ` by ${product.brand}` : ''}: It's priced at ₹${Number(product.selling_price).toLocaleString('en-IN')}. ${product.description ? product.description.substring(0, 150) + '.' : ''} ${Number(product.avg_rating) > 0 ? `Rated ${product.avg_rating}/5 by ${product.total_reviews} customers.` : ''} For more details, check the product page or contact our support!`;
+          }
+        }
+
+        res.json(success({
+          reply: answer.trim(),
+          products: [],
+          filters: {}
+        }));
+        return;
+      }
+    }
+
+    // ── Standard Product Search Flow ──
     const apiKey = process.env.GEMINI_API_KEY || '';
     let aiResponseText = '';
     let extractedFilters: ParsedFilters = {};

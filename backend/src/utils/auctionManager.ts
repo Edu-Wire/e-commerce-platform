@@ -107,19 +107,51 @@ export async function checkAndRotateAuctions() {
                 [activeAuction.id, activeAuction.highest_bidder_id, quantityLimit]
               );
 
+              // Fetch the loser template
+              const templateRes = await client.query(
+                "SELECT value FROM system_settings WHERE key = 'auction_loser_template'"
+              );
+              const defaultTemplate = "Hi {customer_name}, you were so close to winning the auction for {product_name}! Don't worry, we have a special unit reserved just for you. You can purchase it directly now for only ₹{offer_price}!";
+              const rawTemplate = templateRes.rows[0]?.value || defaultTemplate;
+
               for (const loser of losingBiddersRes.rows) {
-                if (!loser.email) continue;
                 try {
-                  await sendOutbidPurchaseOffer(
-                    loser.email,
-                    loser.name || 'Customer',
-                    product.name,
-                    offerPrice,
-                    auctionUrl
+                  // Render and Save Customer Notification
+                  const renderedMessage = rawTemplate
+                    .replace(/{customer_name}/g, loser.name || 'Customer')
+                    .replace(/{product_name}/g, product.name)
+                    .replace(/{offer_price}/g, offerPrice.toLocaleString('en-IN'))
+                    .replace(/{buy_now_link}/g, `/product/${product.slug}`);
+
+                  await client.query(
+                    `INSERT INTO notifications (customer_id, title, message, link, is_read)
+                     VALUES ($1, $2, $3, $4, false)`,
+                    [
+                      loser.customer_id,
+                      'Special Direct Purchase Offer!',
+                      renderedMessage,
+                      `/product/${product.slug}?outbid_offer=true&price=${offerPrice}&auction_id=${activeAuction.id}`,
+                    ]
                   );
-                  console.log(`[Auction] Sent second-chance offer to customer ${loser.customer_id} for auction ${activeAuction.id}`);
-                } catch (sendErr) {
-                  console.error(`[Auction] Failed to send second-chance offer to customer ${loser.customer_id}:`, sendErr);
+                  console.log(`[Auction] Saved second-chance notification for customer ${loser.customer_id} in db`);
+
+                  // Send Email (isolated try-catch so it won't block db notification if email fails)
+                  if (loser.email) {
+                    try {
+                      await sendOutbidPurchaseOffer(
+                        loser.email,
+                        loser.name || 'Customer',
+                        product.name,
+                        offerPrice,
+                        auctionUrl
+                      );
+                      console.log(`[Auction] Sent second-chance offer to customer ${loser.customer_id} for auction ${activeAuction.id}`);
+                    } catch (emailErr) {
+                      console.error(`[Auction] Failed to send second-chance email to customer ${loser.customer_id}:`, emailErr);
+                    }
+                  }
+                } catch (dbErr) {
+                  console.error(`[Auction] Failed to save second-chance notification for customer ${loser.customer_id}:`, dbErr);
                 }
               }
             }
