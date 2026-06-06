@@ -37,12 +37,19 @@ export default function AIChatbot() {
     {
       title: 'Explore the options',
       icon: '🔍',
-      pills: ['Smartphones', 'Laptops', 'Adidas shoes']
+      pills: [
+        'Tupperware Microwave Steamer',
+        'Signoraware Plastic Mixing Bowl',
+        'Sistema Plastic Salad To Go Container'
+      ]
     },
     {
       title: 'Try something new',
       icon: '✨',
-      pills: ['Sony', 'T-Shirts', 'Puma shoes']
+      pills: [
+        'Rubbermaid Plastic Measuring Cups Set',
+        'Greenware Eco-Friendly Plastic Plates Set'
+      ]
     },
     {
       title: 'Learn before you buy',

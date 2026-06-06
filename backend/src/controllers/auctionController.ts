@@ -395,3 +395,45 @@ export async function getWonAuctions(req: Request, res: Response): Promise<void>
     res.status(500).json(error('Internal server error'));
   }
 }
+
+export async function getOutbidOffers(req: Request, res: Response): Promise<void> {
+  try {
+    const customerId = req.customer?.id;
+    if (!customerId) {
+      res.status(401).json(error('Unauthorized'));
+      return;
+    }
+
+    const offers = await query<any>(
+      `SELECT p.id as product_id, p.name as product_name, p.images as product_images,
+              p.selling_price as product_mrp, p.description as product_description,
+              a.id, a.start_time, a.end_time, a.status, a.reserve_price,
+              a.current_highest_bid, a.minimum_spread, a.quantity, a.highest_bidder_id,
+              a.outbid_purchase_markup_percent,
+              (SELECT COUNT(*)::int FROM auction_bids WHERE auction_id = a.id) as total_bids
+       FROM auctions a
+       JOIN products p ON a.product_id = p.id
+       WHERE a.status = 'completed'
+         AND a.highest_bidder_id != $1
+         AND EXISTS (
+           SELECT 1 FROM auction_bids b
+           WHERE b.auction_id = a.id AND b.customer_id = $1
+         )
+         AND NOT EXISTS (
+           SELECT 1 
+           FROM orders o,
+                jsonb_array_elements(o.items) AS elem
+           WHERE o.customer_id = $1
+             AND (elem->>'auction_id')::int = a.id
+         )
+       ORDER BY a.end_time DESC`,
+      [customerId]
+    );
+
+    res.json(success(offers));
+  } catch (err) {
+    console.error('getOutbidOffers error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+

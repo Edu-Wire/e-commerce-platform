@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import SmartAlternatives from '../components/auction/SmartAlternatives';
 import MyBids from '../components/auction/MyBids';
 import Winning from '../components/auction/Winning';
 import Payments from '../components/auction/Payments';
@@ -43,7 +44,7 @@ const formatAuctionDate = (dateStr: string) => {
   return `${datePart}, ${timePart}`;
 };
 
-function FeaturedLiveCard({ auction, customer, bidAmounts, handleBidChange, handlePlaceBid, navigate }: any) {
+function FeaturedLiveCard({ auction, customer, bidAmounts, handleBidChange, handlePlaceBid, navigate, onOpenAlternatives }: any) {
   let images: any[] = [];
   try {
     images = typeof auction.product_images === 'string' ? JSON.parse(auction.product_images) : auction.product_images;
@@ -77,11 +78,19 @@ function FeaturedLiveCard({ auction, customer, bidAmounts, handleBidChange, hand
               {hasUserBid && (
                 <>
                   <span>•</span>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 items-center">
                     {isWinning ? (
                       <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">Winning</span>
                     ) : (
-                      <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">Outbid</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">Outbid</span>
+                        <button
+                          onClick={() => onOpenAlternatives(auction)}
+                          className="bg-orange-50 hover:bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-[10px] font-extrabold border border-orange-200 transition-all cursor-pointer"
+                        >
+                          Smart Alternatives
+                        </button>
+                      </div>
                     )}
                   </div>
                 </>
@@ -183,6 +192,7 @@ interface Auction {
   highest_bidder_id?: number | null;
   user_has_bid?: boolean;
   user_highest_bid?: string | null;
+  outbid_purchase_markup_percent?: number | null;
 }
 
 interface ProductGroup {
@@ -248,6 +258,30 @@ export default function LiveAuctionPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activities, setActivities] = useState<Activity[]>([]);
   
+  const [selectedAlternativeAuction, setSelectedAlternativeAuction] = useState<{
+    productId: number;
+    currentAuctionId: number;
+    productName: string;
+    mrp: number;
+    catalogPrice: number;
+    outbidMarkupPercent?: number | null;
+    currentHighestBid: number;
+    isCompleted: boolean;
+  } | null>(null);
+
+  const handleOpenAlternatives = (auc: any) => {
+    setSelectedAlternativeAuction({
+      productId: auc.product_id,
+      currentAuctionId: auc.id!,
+      productName: auc.product_name,
+      mrp: parseFloat(auc.product_mrp || '0') * 1.25,
+      catalogPrice: parseFloat(auc.product_mrp || '0'),
+      outbidMarkupPercent: auc.outbid_purchase_markup_percent ?? 30,
+      currentHighestBid: parseFloat(auc.current_highest_bid || auc.reserve_price || '0'),
+      isCompleted: auc.status === 'completed'
+    });
+  };
+
   const [priceFilter, setPriceFilter] = useState('All Prices');
   const [timeFilter, setTimeFilter] = useState('All Times');
   const [sortFilter, setSortFilter] = useState('Recently Updated');
@@ -261,7 +295,43 @@ export default function LiveAuctionPage() {
     retainAuctionSocket();
 
     const unsubBid = onBidUpdate((data) => {
-      setAuctions((prev) => applyBidToAuctionList(prev, data, customer?.id));
+      setAuctions((prev) => {
+        const found = prev.find(a => a.id === data.auction_id);
+        if (found && customer?.id) {
+          const wasHighest = found.highest_bidder_id === customer.id;
+          const isNoLongerHighest = data.highest_bidder_id !== customer.id;
+          if (wasHighest && isNoLongerHighest) {
+            toast.error(
+              (t) => (
+                <div className="flex flex-col gap-1 text-left">
+                  <span className="font-bold text-slate-800">⚠️ You've been outbid!</span>
+                  <span className="text-xs text-slate-500">Someone bid higher on {data.product_name || found.product_name}.</span>
+                  <button
+                    onClick={() => {
+                      toast.dismiss(t.id);
+                      setSelectedAlternativeAuction({
+                        productId: found.product_id,
+                        currentAuctionId: found.id!,
+                        productName: found.product_name,
+                        mrp: parseFloat(found.product_mrp || '0') * 1.25,
+                        catalogPrice: parseFloat(found.product_mrp || '0'),
+                        outbidMarkupPercent: found.outbid_purchase_markup_percent ?? 30,
+                        currentHighestBid: data.current_highest_bid,
+                        isCompleted: false
+                      });
+                    }}
+                    className="mt-1.5 self-start bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition-colors"
+                  >
+                    View Alternatives
+                  </button>
+                </div>
+              ),
+              { duration: 8000 }
+            );
+          }
+        }
+        return applyBidToAuctionList(prev, data, customer?.id);
+      });
     });
     const unsubActivity = onGlobalActivity((data) => {
       setActivities((prev) => [
@@ -888,6 +958,7 @@ export default function LiveAuctionPage() {
                               handleBidChange={handleBidChange}
                               handlePlaceBid={handlePlaceBid}
                               navigate={navigate}
+                              onOpenAlternatives={handleOpenAlternatives}
                             />
 
                             <div className="overflow-y-auto space-y-4 pr-1">

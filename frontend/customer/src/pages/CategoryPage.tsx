@@ -78,7 +78,7 @@ export default function CategoryPage() {
 
   const isDeals = slug === 'deals' || slug === 'todays-deals';
   const isFashion = slug === 'clothing' || slug === 'footwear' || slug?.includes('wear');
-  const isHomeKitchen = slug === 'home-kitchen' || slug === 'home' || slug === 'kitchen' || slug?.includes('kitchen') || slug?.includes('home');
+  const isHomeKitchen = false;
   const isBooks = slug === 'books';
 
   const [filters, setFilters] = useState<ProductFilters>({
@@ -385,69 +385,9 @@ export default function CategoryPage() {
             </div>
           </div>
         </div>
-        {/* Inspired by browsing history */}
-        <div className="bg-white border-t border-gray-200 mt-12 py-10">
-          <div className="max-w-[1500px] mx-auto px-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Inspired by your browsing history</h2>
-              <span className="text-sm text-gray-500">Page 1 of 5</span>
-            </div>
 
-            <div className="relative group">
-              <button className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 bg-white border border-gray-200 rounded-sm shadow-md flex items-center justify-center z-10 hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              </button>
 
-              <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4">
-                {[
-                  { name: 'POPIO Military Grade Tempered Glass Screen Protector for Xiaomi Pad...', price: 284.05, mrp: 599, off: 53, img: 'https://m.media-amazon.com/images/I/61S9aVn9dRL._AC_UL320_.jpg' },
-                  { name: 'Kaspersky Standard Mobile Security 1 Device 1 Year (Physical Pack)', price: 387.00, mrp: 599, off: 35, img: 'https://m.media-amazon.com/images/I/51-mOQ+IeyL._AC_UL320_.jpg' },
-                  { name: 'Logitech Pebble Keys 2 K380s, Multi-Device Bluetooth Wireless Keyboard...', price: 3195.00, mrp: 4995, off: 36, img: 'https://m.media-amazon.com/images/I/61p-vD9XfXL._AC_UL320_.jpg' },
-                  { name: 'Czartech Tempered Glass Screen Protector for Xiaomi Pad 8/8 Pro, 7/7 Pro...', price: 293.01, mrp: 1499, off: 80, img: 'https://m.media-amazon.com/images/I/61k6D8K9L+L._AC_UL320_.jpg' },
-                  { name: 'Xiaomi Focus Pen Pro for Xiaomi Pad 8 | 16384 Levels of Pressure...', price: 5999.00, mrp: 7999, off: 25, img: 'https://m.media-amazon.com/images/I/31M7q3z5TcL._AC_UL320_.jpg' },
-                  { name: 'Argus Tempered Glass for Xiaomi Pad 7 / Pad 7 Pro/Pad 8 / Pad 8 Pro...', price: 289.00, mrp: 599, off: 52, img: 'https://m.media-amazon.com/images/I/71N1u6Y06YL._AC_UL320_.jpg' },
-                  { name: 'ProElite Cover for Xiaomi Mi Pad 8/8 Pro/Mi Pad 7/7 Pro 11.2 inch...', price: 1699.00, mrp: 1999, off: 15, img: 'https://m.media-amazon.com/images/I/71X8k7-u-rL._AC_UL320_.jpg' },
-                ].map((p, i) => (
-                  <div key={i} className="flex-shrink-0 w-[180px] group cursor-pointer">
-                    <div className="aspect-square mb-3 flex items-center justify-center p-2 bg-gray-50 rounded-sm">
-                      <img src={p.img} alt={p.name} className="max-w-full max-h-full object-contain" />
-                    </div>
-                    <h3 className="text-xs text-blue-700 hover:text-orange-700 hover:underline line-clamp-3 mb-1 h-12 leading-tight">{p.name}</h3>
-                    <div className="flex text-[#febd69] text-xs mb-1">
-                      {Array.from({ length: 5 }).map((_, i) => <span key={i}>★</span>)}
-                      <span className="text-blue-600 ml-1">1,015</span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                      <span className="bg-[#cc0000] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm whitespace-nowrap">{p.off}% off</span>
-                      <span className="text-[#cc0000] text-[10px] font-bold uppercase tracking-tight">Great Summer Deal</span>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-lg font-medium text-gray-900 leading-none">₹{p.price.toLocaleString('en-IN')}</span>
-                    </div>
-                    <p className="text-[11px] text-gray-500">M.R.P.: <span className="line-through">₹{p.mrp.toLocaleString('en-IN')}</span></p>
-                    <p className="text-[11px] text-gray-900 mt-1">Get it by <span className="font-bold">Thursday, May 14</span></p>
-                    <p className="text-[11px] text-gray-600">FREE Delivery by Amazon</p>
-                  </div>
-                ))}
-              </div>
 
-              <button className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 bg-white border border-gray-200 rounded-sm shadow-md flex items-center justify-center z-10 hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Personalized Recommendations */}
-        <div className="bg-white border-y border-gray-200 py-10 text-center">
-          <div className="max-w-[400px] mx-auto space-y-3 px-4">
-            <h3 className="text-sm font-bold text-gray-900">See personalized recommendations</h3>
-            <button className="w-full bg-gradient-to-b from-[#f7dfa1] to-[#f0c14b] border border-[#a88734] rounded-md py-1.5 text-sm font-medium shadow-sm hover:from-[#f5d78e] hover:to-[#eeb933] transition-all">
-              Sign in
-            </button>
-            <p className="text-xs text-gray-900">New customer? <Link to="/register" className="text-blue-600 hover:text-orange-700 hover:underline">Start here.</Link></p>
-          </div>
-        </div>
 
       </div>
     );
@@ -1067,59 +1007,9 @@ export default function CategoryPage() {
           </div>
         </div>
 
-        {/* Inspired by browsing history */}
-        <div className="bg-white border-t border-gray-200 mt-12 py-10">
-          <div className="max-w-[1500px] mx-auto px-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Inspired by your browsing history</h2>
-              <span className="text-sm text-gray-500">Page 1 of 5</span>
-            </div>
 
-            <div className="relative group">
-              <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4">
-                {[
-                  { name: 'POPIO Military Grade Tempered Glass Screen Protector for Xiaomi Pad...', price: 284.05, mrp: 599, off: 53, img: 'https://m.media-amazon.com/images/I/61S9aVn9dRL._AC_UL320_.jpg' },
-                  { name: 'Kaspersky Standard Mobile Security 1 Device 1 Year (Physical Pack)', price: 387.00, mrp: 599, off: 35, img: 'https://m.media-amazon.com/images/I/51-mOQ+IeyL._AC_UL320_.jpg' },
-                  { name: 'Logitech Pebble Keys 2 K380s, Multi-Device Bluetooth Wireless Keyboard...', price: 3195.00, mrp: 4995, off: 36, img: 'https://m.media-amazon.com/images/I/61p-vD9XfXL._AC_UL320_.jpg' },
-                  { name: 'Czartech Tempered Glass Screen Protector for Xiaomi Pad 8/8 Pro, 7/7 Pro...', price: 293.01, mrp: 1499, off: 80, img: 'https://m.media-amazon.com/images/I/61k6D8K9L+L._AC_UL320_.jpg' },
-                  { name: 'Xiaomi Focus Pen Pro for Xiaomi Pad 8 | 16384 Levels of Pressure...', price: 5999.00, mrp: 7999, off: 25, img: 'https://m.media-amazon.com/images/I/31M7q3z5TcL._AC_UL320_.jpg' },
-                  { name: 'Argus Tempered Glass for Xiaomi Pad 7 / Pad 7 Pro/Pad 8 / Pad 8 Pro...', price: 289.00, mrp: 599, off: 52, img: 'https://m.media-amazon.com/images/I/71N1u6Y06YL._AC_UL320_.jpg' },
-                  { name: 'ProElite Cover for Xiaomi Mi Pad 8/8 Pro/Mi Pad 7/7 Pro 11.2 inch...', price: 1699.00, mrp: 1999, off: 15, img: 'https://m.media-amazon.com/images/I/71X8k7-u-rL._AC_UL320_.jpg' },
-                ].map((p, i) => (
-                  <div key={i} className="flex-shrink-0 w-[180px] group cursor-pointer">
-                    <div className="aspect-square mb-3 flex items-center justify-center p-2 bg-gray-50 rounded-sm">
-                      <img src={p.img} alt={p.name} className="max-w-full max-h-full object-contain" />
-                    </div>
-                    <h3 className="text-xs text-blue-700 hover:text-orange-700 hover:underline line-clamp-3 mb-1 h-12 leading-tight">{p.name}</h3>
-                    <div className="flex text-[#febd69] text-xs mb-1">
-                      {Array.from({ length: 5 }).map((_, i) => <span key={i}>★</span>)}
-                      <span className="text-blue-600 ml-1">1,015</span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                      <span className="bg-[#cc0000] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm whitespace-nowrap">{p.off}% off</span>
-                      <span className="text-[#cc0000] text-[10px] font-bold uppercase tracking-tight">Great Summer Deal</span>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-lg font-medium text-gray-900 leading-none">₹{p.price.toLocaleString('en-IN')}</span>
-                    </div>
-                    <p className="text-[11px] text-gray-500">M.R.P.: <span className="line-through">₹{p.mrp.toLocaleString('en-IN')}</span></p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Personalized Recommendations */}
-        <div className="bg-white border-y border-gray-200 py-10 text-center">
-          <div className="max-w-[400px] mx-auto space-y-3 px-4">
-            <h3 className="text-sm font-bold text-gray-900">See personalized recommendations</h3>
-            <button className="w-full bg-gradient-to-b from-[#f7dfa1] to-[#f0c14b] border border-[#a88734] rounded-md py-1.5 text-sm font-medium shadow-sm hover:from-[#f5d78e] hover:to-[#eeb933] transition-all">
-              Sign in
-            </button>
-            <p className="text-xs text-gray-900">New customer? <Link to="/register" className="text-blue-600 hover:text-orange-700 hover:underline">Start here.</Link></p>
-          </div>
-        </div>
+
       </div>
     );
   }
