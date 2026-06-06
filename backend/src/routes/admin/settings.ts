@@ -8,4 +8,7 @@ const router = Router();
 router.get('/auction-duration', requireMinRole('viewer'), ctrl.getAuctionDuration);
 router.put('/auction-duration', requireMinRole('manager'), ctrl.updateAuctionDuration);
 
+router.get('/loser-template', requireMinRole('viewer'), ctrl.getLoserTemplate);
+router.put('/loser-template', requireMinRole('manager'), ctrl.updateLoserTemplate);
+
 export default router;

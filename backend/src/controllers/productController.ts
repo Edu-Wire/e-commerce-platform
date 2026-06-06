@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { query, queryOne } from '../config/database';
-import { getCache, setCache } from '../config/redis';
+import { getCache, setCache, delCache, delCachePattern } from '../config/redis';
 import { success, error } from '../utils/helpers';
 import { getPaginationParams, getPaginationMeta, getOffset } from '../utils/pagination';
 import { Product } from '../types';
@@ -296,4 +296,84 @@ export async function getSuggestedProducts(req: Request, res: Response): Promise
     res.status(500).json(error('Internal server error'));
   }
 }
+
+export async function getProductReviews(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const productId = parseInt(id as string);
+    if (isNaN(productId)) {
+      res.status(400).json(error('Invalid product ID'));
+      return;
+    }
+
+    const reviews = await query(
+      `SELECT r.*, c.name as customer_name,
+              EXISTS (
+                SELECT 1 FROM orders, jsonb_to_recordset(items) as x(product_id int)
+                WHERE customer_id = r.customer_id AND status = 'delivered' AND x.product_id = r.product_id
+              ) as is_verified
+       FROM product_reviews r
+       JOIN customers c ON c.id = r.customer_id
+       WHERE r.product_id = $1
+       ORDER BY r.created_at DESC`,
+      [productId]
+    );
+
+    res.json(success(reviews));
+  } catch (err) {
+    console.error('getProductReviews error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
+export async function createProductReview(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const productId = parseInt(id as string);
+    if (isNaN(productId)) {
+      res.status(400).json(error('Invalid product ID'));
+      return;
+    }
+
+    const { rating, title, content } = req.body;
+    const ratingNum = parseInt(rating);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      res.status(400).json(error('Rating must be an integer between 1 and 5'));
+      return;
+    }
+
+    const customerId = req.customer?.id;
+    if (!customerId) {
+      res.status(401).json(error('Unauthorized'));
+      return;
+    }
+
+    // Verify product exists and get its slug
+    const product = await queryOne<{ slug: string }>('SELECT slug FROM products WHERE id = $1', [productId]);
+    if (!product) {
+      res.status(404).json(error('Product not found'));
+      return;
+    }
+
+    // Insert or update review
+    const result = await queryOne(
+      `INSERT INTO product_reviews (product_id, customer_id, rating, title, content)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (product_id, customer_id)
+       DO UPDATE SET rating = EXCLUDED.rating, title = EXCLUDED.title, content = EXCLUDED.content, created_at = NOW()
+       RETURNING *`,
+      [productId, customerId, ratingNum, title || '', content || '']
+    );
+
+    // Clear product cache
+    await delCache(`products:slug:${product.slug}`);
+    await delCachePattern('products:list:*');
+
+    res.json(success(result));
+  } catch (err) {
+    console.error('createProductReview error:', err);
+    res.status(500).json(error('Internal server error'));
+  }
+}
+
 
