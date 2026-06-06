@@ -1,22 +1,16 @@
-import { getQueuedAuctions } from './controllers/auctionController';
+import { query } from './config/database';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 async function main() {
-  const req = {} as any;
-  const res = {
-    json: (data: any) => console.log("JSON response:", data),
-    status: (code: number) => {
-      console.log("Status code:", code);
-      return res;
-    }
-  } as any;
-
-  try {
-    await getQueuedAuctions(req, res);
-  } catch (err) {
-    console.error("Error executing controller:", err);
-  }
+  console.log("Listing queued products...");
+  const res = await query<any>(`
+    SELECT id, name, is_auction_ready, auction_priority
+    FROM products
+    WHERE is_auction_ready = true
+    ORDER BY auction_priority DESC, id ASC
+  `);
+  console.table(res);
 }
 
 main().then(() => process.exit(0)).catch(console.error);

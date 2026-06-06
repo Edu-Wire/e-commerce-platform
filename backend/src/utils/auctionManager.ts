@@ -33,16 +33,16 @@ export async function checkAndRotateAuctions() {
               [activeAuction.product_id]
             );
             console.log(`[Auction] Product ${activeAuction.product_id} stock reduced by 1.`);
-            
+
             // Fetch product and customer details to create the order
             const productRes = await client.query("SELECT * FROM products WHERE id = $1", [activeAuction.product_id]);
             const customerRes = await client.query("SELECT * FROM customers WHERE id = $1", [activeAuction.highest_bidder_id]);
-            
+
             if (productRes.rows[0] && customerRes.rows[0]) {
               const product = productRes.rows[0];
               const customer = customerRes.rows[0];
               const unitPrice = parseFloat(activeAuction.current_highest_bid);
-              
+
               const items = [{
                 product_id: product.id,
                 sku: product.sku,
@@ -51,7 +51,7 @@ export async function checkAndRotateAuctions() {
                 mrp: product.mrp,
                 selling_price: unitPrice
               }];
-              
+
               await client.query(
                 `INSERT INTO orders (customer_id, order_type, status, total_mrp, total_selling_price, total_savings, items, notes)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
@@ -166,11 +166,11 @@ export async function checkAndRotateAuctions() {
            AND notes = 'AUCTION_WIN' 
            AND created_at < NOW() - INTERVAL '6 hours' FOR UPDATE`
       );
-      
+
       for (const order of expiredOrdersRes.rows) {
         // Cancel the order
         await client.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [order.id]);
-        
+
         // Restore stock
         const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
         for (const item of items) {
@@ -192,7 +192,8 @@ export async function checkAndRotateAuctions() {
       const stillActive = parseInt(stillActiveRes.rows[0].count, 10);
 
       if (stillActive === 0) {
-        await startNextAuction(client);
+        // Automatic start from queue has been disabled per user request. New auctions must be started manually by the admin.
+        console.log('[Auction] Automatic queue rotation is disabled. Waiting for manual admin intervention to start the next auction.');
       }
     }));
   } catch (error) {
@@ -234,7 +235,7 @@ async function startNextAuction(client: PoolClient) {
 
   // Find the next product marked for auction with stock > 0
   const nextProductRes = await client.query(
-    `SELECT id FROM products 
+    `SELECT id, selling_price FROM products 
      WHERE is_auction_ready = true AND stock_quantity > 0 
      ORDER BY auction_priority ASC, id ASC 
      LIMIT 1 FOR UPDATE`
@@ -242,13 +243,29 @@ async function startNextAuction(client: PoolClient) {
   const nextProduct = nextProductRes.rows[0];
 
   if (nextProduct) {
+    const reservePrice = parseFloat(nextProduct.selling_price) || 0;
+    const initialBid = Math.round(reservePrice * 0.7) || reservePrice;
+    const minimumSpread = 1.00;
+    const quantity = 1;
+    const spread = 0.00;
+    const outbidPurchaseMarkupPercent = 50;
+
     console.log(`[Auction] Starting new auction for Product ID: ${nextProduct.id} for ${calculatedDurationMinutes} minutes.`);
 
-    // Create new auction with dynamic duration
+    // Create new auction with dynamic duration and correct pricing fields
     await client.query(
-      `INSERT INTO auctions (product_id, start_time, end_time, status) 
-       VALUES ($1, NOW(), NOW() + ($2 || ' minutes')::interval, 'active')`,
-      [nextProduct.id, calculatedDurationMinutes]
+      `INSERT INTO auctions (product_id, start_time, end_time, status, reserve_price, current_highest_bid, minimum_spread, quantity, spread, outbid_purchase_markup_percent) 
+       VALUES ($1, NOW(), NOW() + ($2 || ' minutes')::interval, 'active', $3, $4, $5, $6, $7, $8)`,
+      [
+        nextProduct.id,
+        calculatedDurationMinutes,
+        reservePrice,
+        initialBid,
+        minimumSpread,
+        quantity,
+        spread,
+        outbidPurchaseMarkupPercent
+      ]
     );
 
     // Mark the product as no longer ready

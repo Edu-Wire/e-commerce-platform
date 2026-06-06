@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import toast from 'react-hot-toast';
@@ -14,6 +14,7 @@ export default function Navbar() {
   const t = translations[language] || translations['EN'];
   const { data: categories } = useCategories();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,19 +39,20 @@ export default function Navbar() {
   const { mutate: markReadMutate } = useMarkAsRead();
   const { mutate: markAllReadMutate } = useMarkAllAsRead();
 
-  // Auto-open modal popup for direct buy offer notifications on fetch
+  // Auto-open modal popup for offer notifications — only once ever per notification (localStorage persists)
   useEffect(() => {
+    if (location.pathname !== '/') return;
     if (notifications && notifications.length > 0) {
-      const offerNotif = notifications.find(n => !n.is_read && (n.link?.includes('outbid_offer') || n.title.toLowerCase().includes('offer') || n.message.toLowerCase().includes('offer')));
+      const offerNotif = notifications.find(n => n.link?.includes('outbid_offer') || n.title.toLowerCase().includes('offer') || n.message.toLowerCase().includes('offer'));
       if (offerNotif) {
-        const shownPopups = JSON.parse(sessionStorage.getItem('shownNotificationPopups') || '[]');
-        if (!shownPopups.includes(offerNotif.id)) {
+        const key = `offer_popup_shown_${offerNotif.id}`;
+        if (!localStorage.getItem(key)) {
           setActiveModalNotification(offerNotif);
-          sessionStorage.setItem('shownNotificationPopups', JSON.stringify([...shownPopups, offerNotif.id]));
+          localStorage.setItem(key, '1');
         }
       }
     }
-  }, [notifications]);
+  }, [notifications, location.pathname]);
 
   const handleNotificationClick = (notif: Notification) => {
     markReadMutate(notif.id);
@@ -507,28 +509,57 @@ export default function Navbar() {
                   </div>
                   <div className="max-h-64 overflow-y-auto pr-1">
                     {notifications && notifications.length > 0 ? (
-                      notifications.map((notif) => (
-                        <div
-                          key={notif.id}
-                          className={`px-4 py-3 border-b border-gray-100 flex flex-col gap-1 cursor-pointer transition-colors ${notif.is_read ? 'bg-white hover:bg-gray-50 opacity-80' : 'bg-orange-50/50 hover:bg-orange-50/80 font-medium'
-                            }`}
-                          onClick={() => handleNotificationClick(notif)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                              {!notif.is_read && <span className="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span>}
-                              {notif.title}
-                            </span>
-                            <span className="text-[10px] text-gray-400">
-                              {new Date(notif.created_at).toLocaleDateString('en-IN')}
-                            </span>
+                      notifications.map((notif) => {
+                        const isOffer = notif.link?.includes('outbid_offer') || notif.title.toLowerCase().includes('offer') || notif.message.toLowerCase().includes('offer');
+
+                        if (isOffer) {
+                          return (
+                            <div
+                              key={notif.id}
+                              className="mx-2 my-2 rounded-xl border border-orange-300 bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 p-3 cursor-pointer transition-all hover:shadow-md hover:border-orange-400 group"
+                              onClick={() => handleNotificationClick(notif)}
+                            >
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[9px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                                  <span>⚡</span> Exclusive Bidder Offer
+                                </span>
+                                {!notif.is_read && <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></span>}
+                              </div>
+                              <p className="text-xs font-bold text-slate-800 leading-snug">{notif.title}</p>
+                              <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">{notif.message}</p>
+                              {notif.link && (
+                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-orange-200/50">
+                                  <span className="text-[10px] text-orange-600 font-bold group-hover:underline">View Offer →</span>
+                                  <span className="text-[9px] text-slate-400">{new Date(notif.created_at).toLocaleDateString('en-IN')}</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={notif.id}
+                            className={`px-4 py-3 border-b border-gray-100 flex flex-col gap-1 cursor-pointer transition-colors ${notif.is_read ? 'bg-white hover:bg-gray-50 opacity-80' : 'bg-orange-50/50 hover:bg-orange-50/80 font-medium'
+                              }`}
+                            onClick={() => handleNotificationClick(notif)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                {!notif.is_read && <span className="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span>}
+                                {notif.title}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                {new Date(notif.created_at).toLocaleDateString('en-IN')}
+                              </span>
+                            </div>
+                            <p className={`text-xs leading-normal ${notif.is_read ? 'text-gray-500' : 'text-gray-900'}`}>{notif.message}</p>
+                            {notif.link && (
+                              <span className="text-[10px] text-[#007185] font-semibold mt-1 hover:underline">Click to view offer &rarr;</span>
+                            )}
                           </div>
-                          <p className={`text-xs leading-normal ${notif.is_read ? 'text-gray-500' : 'text-gray-900'}`}>{notif.message}</p>
-                          {notif.link && (
-                            <span className="text-[10px] text-[#007185] font-semibold mt-1 hover:underline">Click to view offer &rarr;</span>
-                          )}
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <div className="px-4 py-6 text-center text-xs text-gray-500">
                         No notifications.

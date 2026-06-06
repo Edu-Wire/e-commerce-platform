@@ -5,6 +5,120 @@ import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ui/ProductCard';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { api } from '../lib/api';
+import { useCartStore } from '../store/cartStore';
+import { useAuthStore } from '../store/authStore';
+
+// Outbid Retargeting Special Purchase Banner
+function OutbidOfferBanner({ offer, onDismiss, setBuyNowItem, navigate }: any) {
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = Date.now();
+      const endTime = new Date(offer.end_time).getTime();
+      const expiresAt = endTime + 6 * 60 * 60 * 1000; // 6 hours
+      const diff = expiresAt - now;
+
+      if (diff <= 0) {
+        setTimeLeft('Expired');
+        onDismiss(offer.id);
+        return;
+      }
+
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${h > 0 ? `${h}h ` : ''}${m}m ${s}s left`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [offer, onDismiss]);
+
+  const markup = offer.outbid_purchase_markup_percent !== null && offer.outbid_purchase_markup_percent !== undefined
+    ? parseFloat(offer.outbid_purchase_markup_percent)
+    : 50;
+  const winningBid = parseFloat(offer.current_highest_bid || '0');
+  const offerPrice = Math.round(winningBid * (1 + markup / 100));
+
+  const handleBuyNow = () => {
+    let img = '/placeholder.png';
+    try {
+      const parsed = typeof offer.product_images === 'string' ? JSON.parse(offer.product_images) : offer.product_images;
+      const firstImg = parsed?.[0];
+      img = typeof firstImg === 'string' ? firstImg : (firstImg?.url || '/placeholder.png');
+      if (img.startsWith('/')) img = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${img}`;
+    } catch { }
+
+    const item: any = {
+      product_id: offer.product_id,
+      name: offer.product_name,
+      slug: offer.product_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      image: img,
+      mrp: parseFloat(offer.product_mrp || '0') * 1.25,
+      price: offerPrice,
+      quantity: 1,
+      condition: 'new',
+      sku: `SKU-${offer.product_id}`,
+      stock_quantity: 10,
+      auction_id: offer.id,
+    };
+    setBuyNowItem(item);
+    navigate('/checkout');
+  };
+
+  return (
+    <div className="max-w-[1500px] mx-auto px-4 mt-6">
+      <div className="bg-gradient-to-r from-orange-600 via-red-500 to-orange-500 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border border-white/10">
+
+        {/* Animated Background Orbs */}
+        <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-orange-700/30 blur-3xl pointer-events-none" />
+
+        <div className="flex items-center gap-5 z-10">
+          <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 text-3xl shadow-inner flex-shrink-0 animate-bounce">
+            ⚡
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-white/20 text-white text-[10px] font-black tracking-widest px-2.5 py-1 rounded-full uppercase border border-white/10">
+                Exclusive Bidder Offer
+              </span>
+              <span className="bg-yellow-400 text-slate-900 text-[10px] font-black tracking-wider px-2.5 py-1 rounded-full uppercase flex items-center gap-1 animate-pulse">
+                ⏰ {timeLeft}
+              </span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black mt-2 leading-tight">
+              Get {offer.product_name} at bidder-only price!
+            </h3>
+            <p className="text-xs sm:text-sm text-orange-50 mt-1 max-w-xl font-medium">
+              You were outbid, but you're eligible to purchase this item instantly at a special price of{' '}
+              <span className="font-extrabold text-yellow-300 text-sm sm:text-base">₹{offerPrice.toLocaleString('en-IN')}</span>{' '}
+              (regular catalog price: ₹{parseFloat(offer.product_mrp || '0').toLocaleString('en-IN')})!
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 z-10 w-full md:w-auto flex-shrink-0 justify-end">
+          <button
+            onClick={() => onDismiss(offer.id)}
+            className="px-5 py-3 hover:bg-white/10 text-white text-xs font-bold rounded-xl transition-all border border-white/20 hover:scale-[1.02] active:scale-95"
+          >
+            No thanks
+          </button>
+          <button
+            onClick={handleBuyNow}
+            className="px-8 py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 text-xs font-black rounded-xl transition-all shadow-md hover:shadow-yellow-400/25 hover:scale-[1.02] active:scale-95 whitespace-nowrap"
+          >
+            Buy Now
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
 
 // Live Auction Banner Widget
 function LiveAuctionBannerWidget({ auction }: { auction: any }) {
@@ -74,19 +188,21 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
   return (
     <div className="w-full flex flex-col md:flex-row gap-6 items-stretch text-slate-800 select-none">
       {/* Middle Panel: Product Image Card (Now on the Left side of widget / middle of hero section) */}
-      <div className="w-full md:w-[38%] rounded-[2rem] bg-gradient-to-tr from-[#E6EEF9] via-[#F3F7FC] to-[#FFFFFF] border border-white/80 shadow-lg relative flex items-center justify-center min-h-[270px] md:min-h-[330px] overflow-hidden flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]">
+      <div className="w-full md:w-[38%] rounded-[2rem] bg-gradient-to-tr from-[#E6EEF9] via-[#F3F7FC] to-[#FFFFFF] border border-white/80 shadow-lg relative flex items-center justify-center min-h-[250px] md:min-h-[300px] overflow-hidden flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]">
 
-        {/* Full-bleed Product Image */}
-        <img
-          key={currentImageIndex}
-          src={imageList[currentImageIndex]}
-          alt={auction.product_name}
-          className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-500 ease-in-out opacity-100"
-          onError={(e) => {
-            (e.target as HTMLImageElement).onerror = null;
-            (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>';
-          }}
-        />
+        {/* Crossfade Product Image Slideshow */}
+        {imageList.map((imgSrc, idx) => (
+          <img
+            key={idx}
+            src={imgSrc}
+            alt={`${auction.product_name} - ${idx + 1}`}
+            className={`absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] object-contain z-0 transition-opacity duration-700 ease-in-out drop-shadow-md ${idx === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
+            onError={(e) => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>';
+            }}
+          />
+        ))}
 
         {/* Left/Right Slider Arrows */}
         {imageList.length > 1 && (
@@ -96,7 +212,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
                 e.stopPropagation();
                 setCurrentImageIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
               }}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 z-25 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 z-[25] w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
             >
               <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -107,7 +223,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
                 e.stopPropagation();
                 setCurrentImageIndex((prev) => (prev + 1) % imageList.length);
               }}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 z-25 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 z-[25] w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
             >
               <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -118,7 +234,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
 
         {/* Dot Indicators */}
         {imageList.length > 1 && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-25 flex gap-1.5 bg-black/35 px-2.5 py-1.5 rounded-full backdrop-blur-xs">
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[25] flex gap-1.5 bg-black/35 px-2.5 py-1.5 rounded-full backdrop-blur-sm">
             {imageList.map((_, idx) => (
               <button
                 key={idx}
@@ -126,7 +242,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
                   e.stopPropagation();
                   setCurrentImageIndex(idx);
                 }}
-                className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'bg-white w-3' : 'bg-white/50'
                   }`}
               />
             ))}
@@ -142,14 +258,10 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
         <div className="absolute top-10 left-32 w-1.5 h-3.5 bg-[#F59E0B]/70 -rotate-[60deg] z-10 rounded-xs"></div>
         <div className="absolute bottom-12 left-28 w-2 h-2.5 bg-[#D97706]/70 rotate-12 z-10 rounded-xs"></div>
 
-        {/* PREMIUM AUCTION BADGE (Tilted Purple Shield with White Border) */}
-        <div className="absolute top-5 left-4 z-20 bg-gradient-to-br from-[#240A5D] to-[#4012A3] text-white py-3 px-3.5 rounded-[1.25rem] shadow-xl border-2 border-white rotate-[-10deg] flex flex-col items-center justify-center text-center max-w-[105px]">
-          <svg className="w-5 h-5 text-white mb-0.5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M5.22 17.56l2.12-2.12 7.07 7.07-2.12 2.12-7.07-7.07zm14.14-11.3l2.83-2.83a1 1 0 000-1.41l-1.41-1.41a1 1 0 00-1.41 0L16.54 4.8l2.82 2.82zM15.13 6.22l-8.49 8.49 2.83 2.83 8.49-8.49-2.83-2.83z" />
-          </svg>
-          <span className="text-[10px] font-black tracking-wider text-yellow-300 uppercase leading-tight">Premium</span>
-          <span className="text-[10px] font-black tracking-wider text-white uppercase leading-none">Auction</span>
-          <div className="text-[8px] text-yellow-300 tracking-widest mt-1 font-bold">★★★</div>
+        {/* Product Info Overlay at Top */}
+        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 via-black/25 to-transparent px-4 pt-3 pb-8 rounded-t-[2rem]">
+          <p className="text-white text-[11px] font-black uppercase tracking-wider line-clamp-1">{auction.product_name}</p>
+          <p className="text-white/70 text-[10px] font-bold mt-0.5">Starting at ₹{(auction.reserve_price || auction.current_highest_bid || 0).toLocaleString()}</p>
         </div>
 
         {/* Authenticity Pill at Bottom */}
@@ -355,6 +467,12 @@ export default function HomePage() {
   const [liveAuctions, setLiveAuctions] = useState<any[]>([]);
   const [liveAuctionsLoading, setLiveAuctionsLoading] = useState(true);
 
+  const customer = useAuthStore(state => state.customer);
+  const setBuyNowItem = useCartStore(state => state.setBuyNowItem);
+
+
+
+
   useEffect(() => {
     const fetchLiveAuctions = async () => {
       try {
@@ -488,7 +606,7 @@ export default function HomePage() {
               </>
             ) : (
               <>
-                <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 mb-6 drop-shadow-sm leading-tight">
+                <h1 className="text-4xl   sm:text-6xl font-extrabold text-slate-900 mb-6 drop-shadow-sm leading-tight">
                   Great Summer Sale <br />
                   <span className="text-[#FF5500]">is live</span>
                 </h1>
