@@ -111,7 +111,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {!product.active_auction_id && (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full shadow-sm flex items-center justify-center text-gray-900 font-bold border z-10 bg-[#FFD814] hover:bg-[#F7CA00] border-[#F2C200]"
+            className="absolute bottom-2 right-2 w-8 h-8 rounded-full shadow-sm flex items-center justify-center text-white font-bold border z-10 bg-green-600 hover:bg-green-700 border-green-700 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
           </button>
@@ -121,11 +121,11 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Sale Badges */}
       <div className="flex flex-wrap items-center gap-2 mb-1.5">
         {product.discount_percentage > 0 && (
-          <span className="bg-[#CC0C39] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm">
+          <span className="bg-green-700 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm">
             {Math.round(product.discount_percentage)}% off
           </span>
         )}
-        <span className="text-[#CC0C39] text-[11px] font-bold uppercase tracking-tight">Great Summer Deal</span>
+        <span className="text-green-700 text-[11px] font-bold uppercase tracking-tight">Great Summer Deal</span>
       </div>
 
       {/* Price Section */}
@@ -141,22 +141,22 @@ export default function ProductCard({ product }: ProductCardProps) {
       )}
 
       {/* Title */}
-      <h3 className="text-sm text-gray-800 line-clamp-2 mb-1 group-hover:text-orange-700 transition-colors">
+      <h3 className="text-sm text-gray-800 line-clamp-2 mb-1 group-hover:text-green-700 transition-colors">
         {translatedName}
       </h3>
 
       {/* Ratings Placeholder */}
       <div className="flex items-center gap-1 mb-2">
-        <div className="flex text-orange-400">
+        <div className="flex text-amber-500">
           {[1, 2, 3, 4].map(i => <svg key={i} className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
           <svg className="w-3.5 h-3.5 text-gray-300 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
         </div>
-        <span className="text-[11px] text-blue-600 hover:text-orange-700 cursor-pointer">4,281</span>
+        <span className="text-[11px] text-green-700 hover:text-green-800 cursor-pointer">4,281</span>
       </div>
 
       {/* Shop Deal Link */}
       <div className="mt-auto">
-        <span className="text-xs text-blue-700 hover:text-orange-700 hover:underline cursor-pointer">
+        <span className="text-xs text-green-700 hover:text-green-800 hover:underline cursor-pointer">
           Shop {product.brand || 'exclusive'} deals
         </span>
       </div>

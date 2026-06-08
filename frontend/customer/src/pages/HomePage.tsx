@@ -533,13 +533,12 @@ export default function HomePage() {
   const { data: newArrivalsData, isLoading: newLoading } = useProducts({ sort: 'newest', limit: 8 });
   const { data: dealsData, isLoading: dealsLoading } = useProducts({ sort: 'discount_desc', limit: 8 });
 
-  const topCategories = categories?.filter(c => !c.parent_id).slice(0, 8) ?? [];
+  const topCategories = categories?.filter(c => !c.parent_id && c.slug !== 'clothing').slice(0, 8) ?? [];
 
   // Map real categories to sale sidebar display names
   const saleDepartments = [
     { name: 'All', slug: undefined },
     { name: 'Electronics', slug: 'electronics' },
-    { name: 'Clothing', slug: 'clothing' },
     { name: 'Footwear', slug: 'footwear' },
     { name: 'Home & Kitchen', slug: 'home-kitchen' },
   ];
@@ -558,134 +557,148 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="relative overflow-hidden bg-gradient-to-r from-[#FFF5EB] via-[#FFEADB] to-[#FCE4D6] py-3 sm:py-5 border-b border-orange-100/20">
-        <div className="max-w-[1500px] mx-auto px-4 flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-12">
-          {/* Left Content (Redesigned Promotion text & features) */}
-          <div className={`w-full ${liveAuctions.length > 0 ? 'lg:w-[36%] items-center text-center lg:px-4' : 'md:w-[48%] text-center md:text-left items-center md:items-start'} z-10 text-slate-800 flex flex-col justify-center`}>
-            {liveAuctions.length > 0 ? (
-              <>
-                <div className="relative flex flex-col items-center">
-                  <h1 className="text-5xl lg:text-6xl font-black text-[#0B1530] leading-none tracking-tight">
-                    Live Bids
-                  </h1>
-                  <div className="relative mt-1 px-14">
-                    <h1 className="text-5xl lg:text-[4.25rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-[#FF8A00] to-[#FF3D00] leading-none tracking-tight select-none">
-                      Active!
-                    </h1>
-                    {/* Big Lightning Bolt Floating to the right */}
-                    <svg className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 text-[#FFB800] fill-current drop-shadow-md animate-pulse" viewBox="0 0 24 24">
-                      <path d="M19 11.5h-5.25L17 3.5H9.75L7 12.5h5.25L9.5 20.5z" />
-                    </svg>
+      <section className="bg-white py-6 md:py-8 border-b border-gray-100">
+        <div className="max-w-[1500px] mx-auto px-4 flex flex-col lg:flex-row items-stretch justify-between gap-6">
+          {liveAuctions.length > 0 ? (
+            <>
+              {/* Left Content: Green-themed Live Bids Info */}
+              <div className="w-full lg:w-[32%] flex flex-col justify-between bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2.5rem] p-8 border border-[#D5E6CD]/30 shadow-xs">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 bg-green-700 text-white text-[9px] font-black uppercase tracking-wider py-1.5 px-3 rounded-full mb-4 animate-pulse">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-300"></span>
+                    </span>
+                    Bidding Live
                   </div>
-                </div>
-
-                {/* Horizontal Accent Line Row */}
-                <div className="flex items-center justify-center gap-2 mt-4 text-[#0B1530] font-black text-[11px] uppercase tracking-wider">
-                  <div className="w-6 h-[1.5px] bg-[#FF7300]/60"></div>
-                  <span>Don't Just Look, Bid & Win!</span>
-                  <div className="w-6 h-[1.5px] bg-[#FF7300]/60"></div>
+                  <h1 className="text-3xl sm:text-4xl font-black text-[#1B3B2B] leading-tight tracking-tight">
+                    Live Bids Active!
+                  </h1>
+                  <p className="text-xs text-[#3E654F] font-semibold mt-3 leading-relaxed">
+                    Don't just look — place your bids, beat other bidders, and win exclusive products at unbelievable discounts!
+                  </p>
                 </div>
 
                 {/* Trophy Alert Card */}
-                <div className="w-full max-w-sm mt-5 bg-white border border-[#FFD8BE] rounded-2xl p-4 flex flex-col items-center gap-2.5 shadow-sm text-center backdrop-blur-xs">
-                  <div className="w-12 h-12 rounded-full bg-[#FFF3EB] border border-[#FFD8BE] flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 flex-shrink-0" viewBox="0 0 40 40" fill="none">
-                      <path d="M12 30 H28 V32 H12 Z" fill="#B35900" />
-                      <path d="M15 26 H25 V30 H15 Z" fill="#D97706" />
-                      <path d="M20 20 V26" stroke="#D97706" strokeWidth="4" />
-                      <path d="M10 8 C10 16 14 20 20 20 C26 20 30 16 30 8 H10 Z" fill="#F59E0B" />
-                      <path d="M10 10 H7 C5 10 5 14 7 14 H10" stroke="#D97706" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                      <path d="M30 10 H33 C35 10 35 14 33 14 H30" stroke="#D97706" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-                      <polygon points="20,11 22,15 26,15 23,17 24,21 20,19 16,21 17,17 14,15 18,15" fill="white" />
+                <div className="w-full mt-6 bg-white border border-[#D5E6CD] rounded-[1.5rem] p-4 flex items-center gap-3.5 shadow-xs">
+                  <div className="w-10 h-10 rounded-full bg-[#E8F5E9] flex items-center justify-center flex-shrink-0 text-xl">
+                    🏆
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-black italic text-gray-800 leading-snug">
+                      Be the highest bidder and claim your prize today!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Content (Live Auction Widget) */}
+              <div className="w-full lg:w-[68%] flex-shrink-0 z-10 flex">
+                <LiveAuctionBannerWidget auction={liveAuctions[0]} />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Left Content: Green Summer Essentials Banner */}
+              <div className="w-full lg:w-[68%] flex-shrink-0 flex">
+                <div className="bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden flex-1 shadow-xs border border-[#D5E6CD]/35">
+                  <div className="flex-1 flex flex-col justify-center text-left max-w-md">
+                    <h1 className="text-3xl sm:text-5xl font-black text-[#1B3B2B] leading-tight tracking-tight">
+                      Refresh Your Space This Summer
+                    </h1>
+                    <p className="text-sm text-[#3E654F] font-semibold mt-3 leading-relaxed">
+                      Smart products. Better living. Amazing prices.
+                    </p>
+                    <Link
+                      to="/category/all"
+                      className="mt-6 px-6 py-3 bg-green-700 hover:bg-green-800 text-white font-extrabold rounded-full text-xs flex items-center gap-2 w-fit transition-all hover:gap-3 shadow-md border border-green-800/20 active:scale-95"
+                    >
+                      Shop Now
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                      </svg>
+                    </Link>
+                  </div>
+                  <div className="w-full md:w-[45%] flex-shrink-0 flex items-center justify-center relative">
+                    <img
+                      src="/summer_essentials_hero.png"
+                      alt="Summer Essentials"
+                      className="max-h-[240px] sm:max-h-[300px] w-auto object-contain drop-shadow-md rounded-2xl transform hover:scale-103 transition-transform duration-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Content: Exclusive Benefits Card */}
+              <div className="w-full lg:w-[32%] flex-shrink-0 flex">
+                <div className="bg-white border border-gray-200/80 rounded-[2.5rem] p-6 shadow-xs flex flex-col justify-between h-full w-full max-w-md mx-auto">
+                  <div>
+                    <h3 className="text-gray-400 font-bold text-[10px] tracking-wider mb-5 uppercase">Exclusive Benefits</h3>
+                    <div className="space-y-4">
+                      {/* Benefit 1 */}
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black text-gray-800 leading-tight">Flat ₹250 Cashback</h4>
+                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">on orders above ₹2500</p>
+                        </div>
+                      </div>
+
+                      {/* Benefit 2 */}
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499c-.105-.183-.265-.318-.453-.382a1.72 1.72 0 0 0-1.447.224l-4.054 2.7A1.72 1.72 0 0 0 4.75 7.42v10.158c0 .616.327 1.187.863 1.5l4.054 2.37a1.72 1.72 0 0 0 1.71 0l4.054-2.37c.536-.313.863-.884.863-1.5V7.42a1.72 1.72 0 0 0-.776-1.378l-4.054-2.543Z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black text-gray-800 leading-tight">Prime Member Deals</h4>
+                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">Extra savings for you</p>
+                        </div>
+                      </div>
+
+                      {/* Benefit 3 */}
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black text-gray-800 leading-tight">100% Secure Payments</h4>
+                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">Shop with confidence</p>
+                        </div>
+                      </div>
+
+                      {/* Benefit 4 */}
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-3.658A8.067 8.067 0 0 1 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black text-gray-800 leading-tight">Priority Support</h4>
+                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">We're here to help</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-gray-150 flex items-center justify-between text-xs font-black text-gray-400 hover:text-green-700 cursor-pointer group transition-colors">
+                    <span>SHOPNOW PREMIUM BENEFITS</span>
+                    <svg className="w-4 h-4 text-gray-400 group-hover:text-green-700 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                     </svg>
                   </div>
-                  <p className="text-[12px] md:text-sm font-black italic text-slate-800 leading-snug">
-                    Be the highest bidder and claim this amazing deal!
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <h1 className="text-4xl   sm:text-6xl font-extrabold text-slate-900 mb-6 drop-shadow-sm leading-tight">
-                  Great Summer Sale <br />
-                  <span className="text-[#FF5500]">is live</span>
-                </h1>
-              </>
-            )}
-
-            {/* Symmetrical Features Columns (replacing Instant Checkout) */}
-            <div className={`grid grid-cols-3 gap-3 pt-6 text-[10px] w-full ${liveAuctions.length > 0 ? 'max-w-sm' : 'max-w-lg'} border-t border-orange-200/40 mt-6`}>
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-white border border-slate-100 shadow-md flex items-center justify-center text-[#EF4444] mb-2.5 transition-transform duration-300 hover:scale-105">
-                  <svg className="w-6 h-6 text-red-500 fill-current" viewBox="0 0 24 24">
-                    <path d="M12.2 2H2v10.2L12.8 23c.4.4 1 .4 1.4 0l8.8-8.8c.4-.4.4-1 0-1.4L12.2 2zM7 9C5.9 9 5 8.1 5 7c0-1.1.9-2 2-2s2 .9 2 2c0 1.1-.9 2-2 2z" />
-                    <polygon points="12,11 13.5,13.5 16.5,13.5 14.2,15.2 15,18.2 12,16.5 9,18.2 9.8,15.2 7.5,13.5 10.5,13.5" fill="white" />
-                  </svg>
-                </div>
-                <span className="font-extrabold text-[#0B1530] text-[10px] leading-tight">Exciting Deals</span>
-                <span className="text-[8px] text-slate-400 font-bold leading-normal mt-1.5 max-w-[90px]">Top products at unbeatable prices</span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-white border border-slate-100 shadow-md flex items-center justify-center text-[#E11D48] mb-2.5 transition-transform duration-300 hover:scale-105">
-                  <svg className="w-6 h-6 text-rose-500 fill-current" viewBox="0 0 24 24">
-                    <path d="M20 6h-2.18A3.28 3.28 0 0018 5a3 3 0 00-3-3 2.92 2.92 0 00-2.7 2 2.92 2.92 0 00-2.7-2 3 3 0 00-3 3 3.28 3.28 0 00.18 1H4a2 2 0 00-2 2v2a2 2 0 001 1.72V19a2 2 0 002 2h14a2 2 0 002-2v-7.28A2 2 0 0022 10V8a2 2 0 00-2-2zM9 5a1 1 0 011 1H8a1 1 0 011-1zm6 0a1 1 0 011 1h-2a1 1 0 011-1zM4 8h7v2H4V8zm2 4h5v7H6v-7zm12 7h-5v-7h5v7zm2-9h-7V8h7v2z" />
-                  </svg>
-                </div>
-                <span className="font-extrabold text-[#0B1530] text-[10px] leading-tight">Super Rewards</span>
-                <span className="text-[8px] text-slate-400 font-bold leading-normal mt-1.5 max-w-[90px]">Earn coins & cashback on every purchase</span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-white border border-slate-100 shadow-md flex items-center justify-center text-[#EF4444] mb-2.5 transition-transform duration-300 hover:scale-105">
-                  <svg className="w-6 h-6 text-red-500 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zm-2-7.8l-3.2-3.2 1.4-1.4 1.8 1.8 4.8-4.8 1.4 1.4-6.2 6.2z" />
-                  </svg>
-                </div>
-                <span className="font-extrabold text-[#0B1530] text-[10px] leading-tight">Secure & Safe</span>
-                <span className="text-[8px] text-slate-400 font-bold leading-normal mt-1.5 max-w-[90px]">100% secure payments & easy returns</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Content (Redesigned Auction Widget container) */}
-          <div className={`w-full ${liveAuctions.length > 0 ? 'lg:w-[64%]' : 'md:w-[52%] self-start'} flex-shrink-0 flex flex-col items-stretch gap-4 z-10`}>
-            {/* Prime Section or Live Auction Widget */}
-            {liveAuctions.length > 0 ? (
-              <LiveAuctionBannerWidget auction={liveAuctions[0]} />
-            ) : (
-              <div className="bg-blue-600/90 backdrop-blur-sm p-4 rounded-lg border border-white/20 w-full max-w-sm ml-auto">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-white text-sm font-bold">Only for Prime Members</p>
-                  </div>
-                  <Link
-                    to="/category/all"
-                    className="px-4 py-1.5 bg-[#fdf200] text-gray-900 font-bold rounded-sm text-sm hover:bg-[#ffe600] transition-colors"
-                  >
-                    Join Prime &rarr;
-                  </Link>
-                </div>
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  <div className="bg-white p-2 rounded text-center">
-                    <p className="text-[10px] font-bold text-gray-800">Flat ₹250 cashback</p>
-                    <p className="text-[9px] text-gray-500">on ₹2500</p>
-                  </div>
-                  <div className="bg-white p-2 rounded text-center">
-                    <p className="text-[10px] font-bold text-gray-800">Unlimited</p>
-                    <p className="text-[9px] text-gray-500">5% cashback</p>
-                  </div>
                 </div>
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
-
-        {/* Decorative Background Elements */}
-        <div className="absolute top-0 right-0 w-1/3 h-full opacity-20 pointer-events-none">
-          <svg className="w-full h-full text-white" fill="currentColor" viewBox="0 0 100 100">
-            <path d="M100 0 L100 100 L0 100 Z" />
-          </svg>
-        </div>
-
       </section>
 
 
@@ -726,7 +739,7 @@ export default function HomePage() {
 
                       <div className="absolute inset-0 bg-gradient-to-t from-black/[0.02] to-transparent"></div>
                     </div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-800 group-hover/item:text-orange-700 cursor-pointer line-clamp-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-800 group-hover/item:text-green-700 cursor-pointer line-clamp-1">
                       {product.brand ? `${product.brand} | ` : ''}{product.name}
                     </p>
                   </Link>
@@ -745,7 +758,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   to="/category/all?sort=discount_desc"
-                  className="mt-3 text-xs sm:text-sm font-bold text-blue-700 hover:text-orange-700 transition-colors"
+                  className="mt-3 text-xs sm:text-sm font-bold text-green-700 hover:text-green-900 transition-colors"
                 >
                   View all deals
                 </Link>
@@ -783,7 +796,7 @@ export default function HomePage() {
                   key={idx}
                   onClick={() => setActiveChip(chip)}
                   className={`flex-shrink-0 px-4 py-2 text-sm rounded-sm border transition-all ${activeChip === chip
-                    ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold'
+                    ? 'border-green-600 bg-green-50 text-green-700 font-bold'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                     }`}
                 >
@@ -805,7 +818,7 @@ export default function HomePage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 mb-2">Filtered by</h3>
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 rounded-sm">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs font-bold border border-green-200 rounded-sm">
                     {saleCategory ? saleCategory.charAt(0).toUpperCase() + saleCategory.slice(1) : 'Blockbuster deals'}
                     <span className="cursor-pointer" onClick={() => setSaleCategory(undefined)}>×</span>
                   </div>
@@ -818,7 +831,7 @@ export default function HomePage() {
                       setMinDiscount(0);
                       setMaxDiscount(100);
                     }}
-                    className="block text-xs text-blue-600 hover:text-orange-700 mt-2"
+                    className="block text-xs text-green-700 hover:text-green-900 mt-2"
                   >
                     Clear Filters
                   </button>
@@ -834,9 +847,9 @@ export default function HomePage() {
                           name="dept"
                           checked={saleCategory === dept.slug}
                           onChange={() => setSaleCategory(dept.slug)}
-                          className="w-4 h-4 border-gray-300 text-blue-600 focus:ring-0"
+                          className="w-4 h-4 border-gray-300 text-green-600 focus:ring-0"
                         />
-                        <span className={`text-sm group-hover:text-orange-700 ${saleCategory === dept.slug ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
+                        <span className={`text-sm group-hover:text-green-700 ${saleCategory === dept.slug ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
                           {dept.name}
                         </span>
                       </label>
@@ -849,11 +862,11 @@ export default function HomePage() {
                   <div className="space-y-2">
                     {['Voltas', 'Sony', 'Panasonic', 'LG'].map((brand, i) => (
                       <label key={i} className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" className="w-4 h-4 border-gray-300 rounded-sm text-blue-600 focus:ring-0" />
-                        <span className="text-sm text-gray-700 group-hover:text-orange-700">{brand}</span>
+                        <input type="checkbox" className="w-4 h-4 border-gray-300 rounded-sm text-green-600 focus:ring-0" />
+                        <span className="text-sm text-gray-700 group-hover:text-green-700">{brand}</span>
                       </label>
                     ))}
-                    <button className="text-xs text-blue-600 hover:text-orange-700 mt-1">See more</button>
+                    <button className="text-xs text-green-700 hover:text-green-900 mt-1">See more</button>
                   </div>
                 </div>
 
@@ -861,16 +874,16 @@ export default function HomePage() {
                   <h3 className="text-sm font-bold text-gray-900 mb-3">Customer Reviews</h3>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="radio" name="rating" defaultChecked className="w-4 h-4 border-gray-300 text-blue-600 focus:ring-0" />
-                      <span className="text-sm text-gray-700 group-hover:text-orange-700">All</span>
+                      <input type="radio" name="rating" defaultChecked className="w-4 h-4 border-gray-300 text-green-600 focus:ring-0" />
+                      <span className="text-sm text-gray-700 group-hover:text-green-700">All</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="radio" name="rating" className="w-4 h-4 border-gray-300 text-blue-600 focus:ring-0" />
-                      <div className="flex text-orange-400">
+                      <input type="radio" name="rating" className="w-4 h-4 border-gray-300 text-green-600 focus:ring-0" />
+                      <div className="flex text-amber-500">
                         {[1, 2, 3, 4].map(i => <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
                         <svg className="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                       </div>
-                      <span className="text-sm text-gray-700 group-hover:text-orange-700">and up</span>
+                      <span className="text-sm text-gray-700 group-hover:text-green-700">and up</span>
                     </label>
                   </div>
                 </div>
@@ -882,14 +895,14 @@ export default function HomePage() {
                     <input
                       type="range" min="0" max="60000" step="1000" value={minPrice}
                       onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 1000))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-blue-600 pointer-events-auto z-20 custom-range"
+                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-20 custom-range"
                     />
                     <input
                       type="range" min="0" max="60000" step="1000" value={maxPrice}
                       onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 1000))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-blue-600 pointer-events-auto z-10 custom-range"
+                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-10 custom-range"
                     />
-                    <div className="absolute h-1.5 bg-blue-600 rounded-full z-0" style={{ left: `${(minPrice / 60000) * 100}%`, right: `${100 - (Math.min(maxPrice, 60000) / 60000) * 100}%` }}></div>
+                    <div className="absolute h-1.5 bg-green-600 rounded-full z-0" style={{ left: `${(minPrice / 60000) * 100}%`, right: `${100 - (Math.min(maxPrice, 60000) / 60000) * 100}%` }}></div>
                   </div>
                 </div>
 
@@ -900,14 +913,14 @@ export default function HomePage() {
                     <input
                       type="range" min="0" max="100" step="5" value={minDiscount}
                       onChange={(e) => setMinDiscount(Math.min(Number(e.target.value), maxDiscount - 5))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-blue-600 pointer-events-auto z-20 custom-range"
+                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-20 custom-range"
                     />
                     <input
                       type="range" min="0" max="100" step="5" value={maxDiscount}
                       onChange={(e) => setMaxDiscount(Math.max(Number(e.target.value), minDiscount + 5))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-blue-600 pointer-events-auto z-10 custom-range"
+                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-10 custom-range"
                     />
-                    <div className="absolute h-1.5 bg-blue-600 rounded-full z-0" style={{ left: `${minDiscount}%`, right: `${100 - maxDiscount}%` }}></div>
+                    <div className="absolute h-1.5 bg-green-600 rounded-full z-0" style={{ left: `${minDiscount}%`, right: `${100 - maxDiscount}%` }}></div>
                   </div>
                 </div>
               </div>
@@ -917,7 +930,7 @@ export default function HomePage() {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900">Featured Products</h2>
-                <Link to="/category/all?is_featured=true" className="text-blue-600 hover:text-orange-700 text-sm">View All</Link>
+                <Link to="/category/all?is_featured=true" className="text-green-705 hover:text-green-900 text-sm font-bold">View All</Link>
               </div>
 
               {featuredLoading ? (
@@ -1021,15 +1034,19 @@ export default function HomePage() {
       </section>
 
       {/* B2B Banner */}
-      <section className="bg-[#232f3e] py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Are You a Business Buyer?</h2>
-          <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+      <section className="bg-gradient-to-br from-[#132a1d] to-[#1e3f2d] py-16 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-green-800/10 blur-3xl pointer-events-none" />
+        <div className="absolute -left-24 -top-24 w-96 h-96 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Are You a Business Buyer?</h2>
+          <p className="text-green-100 text-base mb-8 max-w-2xl mx-auto font-medium">
             Get exclusive B2B pricing, bulk order discounts, and a dedicated account manager. Register as a B2B customer today.
           </p>
           <Link
             to="/register?type=b2b"
-            className="inline-flex items-center gap-2 px-10 py-4 bg-[#febd69] hover:bg-[#f3a847] text-gray-900 font-bold rounded-sm shadow-md transition-all duration-200"
+            className="inline-flex items-center gap-2 px-10 py-4 bg-green-500 hover:bg-green-600 text-white font-extrabold rounded-full shadow-lg hover:shadow-green-500/20 active:scale-95 transition-all duration-200"
           >
             Register as B2B Customer
           </Link>
