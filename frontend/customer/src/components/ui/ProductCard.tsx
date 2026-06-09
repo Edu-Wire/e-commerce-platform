@@ -78,10 +78,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       to={`/product/${product.slug}`}
-      className="group bg-white flex flex-col hover:shadow-md transition-shadow duration-200 border-transparent border hover:border-gray-100 p-2"
+      className="group bg-white flex flex-col hover:shadow-md transition-shadow duration-200 border-transparent border hover:border-gray-100 p-1.5"
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] mb-3 bg-white rounded-sm overflow-hidden flex items-center justify-center p-1">
+      <div className="relative h-[100px] w-full mb-1.2 bg-white rounded-sm overflow-hidden flex items-center justify-center p-1">
         {product.active_auction_id && (
           <button
             onClick={handleAuctionClick}
@@ -130,8 +130,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Price Section */}
       <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-xs align-top mt-1">₹</span>
-        <span className="text-xl font-bold text-gray-900 leading-none">{product.selling_price.toLocaleString('en-IN')}</span>
+        <span className="text-[10px] align-top mt-1">₹</span>
+        <span className="text-lg font-bold text-gray-900 leading-none">{product.selling_price.toLocaleString('en-IN')}</span>
         <span className="text-[11px] text-gray-500 ml-1">M.R.P.: <span className="line-through">{fmt(product.mrp)}</span></span>
       </div>
       {product.active_auction_id && (
@@ -141,7 +141,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       )}
 
       {/* Title */}
-      <h3 className="text-sm text-gray-800 line-clamp-2 mb-1 group-hover:text-green-700 transition-colors">
+      <h3 className="text-xs font-medium text-gray-800 line-clamp-1 mb-1 group-hover:text-green-700 transition-colors">
         {translatedName}
       </h3>
 

@@ -186,9 +186,42 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
   }, [imageList.length]);
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-6 items-stretch text-slate-800 select-none">
-      {/* Middle Panel: Product Image Card (Now on the Left side of widget / middle of hero section) */}
-      <div className="w-full md:w-[38%] rounded-[2rem] bg-gradient-to-tr from-[#E6EEF9] via-[#F3F7FC] to-[#FFFFFF] border border-white/80 shadow-lg relative flex items-center justify-center min-h-[250px] md:min-h-[300px] overflow-hidden flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]">
+    <div className="w-full bg-white rounded-[2rem] border border-gray-200/80 shadow-xs overflow-hidden flex flex-col lg:flex-row items-stretch text-slate-800 select-none">
+
+      {/* 1. Left Content: Green-themed Live Bids Info */}
+      <div className="w-full lg:w-[28%] flex flex-col justify-between bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] p-6 lg:p-8 border-b lg:border-b-0 border-[#D5E6CD]/50">
+        <div>
+          <div className="inline-flex items-center gap-1.5 bg-green-700 text-white text-[9px] font-black uppercase tracking-wider py-1.5 px-3 rounded-full mb-4 animate-pulse">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-300"></span>
+            </span>
+            Bidding Live
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black text-[#1B3B2B] leading-tight tracking-tight">
+            Live Bids Active!
+          </h1>
+          <p className="text-xs text-[#3E654F] font-semibold mt-3 leading-relaxed">
+            Don't just look — place your bids, beat other bidders, and win exclusive products at unbelievable discounts!
+          </p>
+          <p className="text-xs text-[#3E654F]/80 font-medium mt-2">
+            Join the action now! Incredible deals are just a bid away.
+          </p>
+        </div>
+
+        {/* Trophy Alert Card */}
+        <div className="w-full mt-6 bg-white border border-[#D5E6CD] rounded-[1.5rem] p-4 flex items-center gap-3.5 shadow-xs">
+
+          <div className="flex-1">
+            <p className="text-xs font-black italic text-gray-800 leading-snug">
+              Be the highest bidder and claim your prize today!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Middle Panel: Product Image Card */}
+      <div className="w-full lg:w-[35%] bg-gradient-to-tr from-[#E8F5E9] via-[#F4F9F1] to-[#FFFFFF] relative flex items-center justify-center min-h-[220px] md:min-h-[200px] border-b lg:border-b-0 border-slate-100 flex-shrink-0">
 
         {/* Crossfade Product Image Slideshow */}
         {imageList.map((imgSrc, idx) => (
@@ -234,7 +267,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
 
         {/* Dot Indicators */}
         {imageList.length > 1 && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[25] flex gap-1.5 bg-black/35 px-2.5 py-1.5 rounded-full backdrop-blur-sm">
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[25] flex gap-1.5 bg-[#1B3B2B]/30 px-2.5 py-1.5 rounded-full backdrop-blur-sm">
             {imageList.map((_, idx) => (
               <button
                 key={idx}
@@ -258,11 +291,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
         <div className="absolute top-10 left-32 w-1.5 h-3.5 bg-[#F59E0B]/70 -rotate-[60deg] z-10 rounded-xs"></div>
         <div className="absolute bottom-12 left-28 w-2 h-2.5 bg-[#D97706]/70 rotate-12 z-10 rounded-xs"></div>
 
-        {/* Product Info Overlay at Top */}
-        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 via-black/25 to-transparent px-4 pt-3 pb-8 rounded-t-[2rem]">
-          <p className="text-white text-[11px] font-black uppercase tracking-wider line-clamp-1">{auction.product_name}</p>
-          <p className="text-white/70 text-[10px] font-bold mt-0.5">Starting at ₹{(auction.reserve_price || auction.current_highest_bid || 0).toLocaleString()}</p>
-        </div>
+
 
         {/* Authenticity Pill at Bottom */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap w-[90%] flex justify-center">
@@ -275,13 +304,13 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
         </div>
       </div>
 
-      {/* Right Panel: Bidding & Information Card (Now on the Right side of widget / right of hero section) */}
-      <div className="flex-1 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-orange-950/5 p-6 flex flex-col justify-between min-h-[330px]">
+      {/* 3. Right Panel: Bidding & Information Card */}
+      <div className="flex-1 p-5 md:p-6 flex flex-col justify-between relative z-10">
         <div>
           {/* Header Row */}
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className={`inline-flex items-center gap-1.5 ${isUpcoming ? 'bg-amber-500' : 'bg-[#E02424]'} text-white text-[10px] font-black uppercase tracking-wider py-1.5 px-3 rounded-lg shadow-sm mb-3`}>
+              <div className={`inline-flex items-center gap-1.5 ${isUpcoming ? 'bg-amber-500' : 'bg-green-700'} text-white text-[10px] font-black uppercase tracking-wider py-1 px-2.5 rounded-lg shadow-sm mb-2`}>
                 <svg className={`w-3.5 h-3.5 text-white fill-current ${isUpcoming ? 'animate-pulse' : 'animate-bounce'}`} viewBox="0 0 20 20">
                   {isUpcoming ? (
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -299,95 +328,15 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
               </p>
             </div>
 
-            {/* Premium Gold Medallion Shield Ribbon Badge */}
-            <div className="relative flex items-center justify-center w-[75px] h-[75px] flex-shrink-0 -mt-2 -mr-1">
-              <svg className="w-[75px] h-[75px] drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#FFF2B2" />
-                    <stop offset="30%" stopColor="#F1A80A" />
-                    <stop offset="70%" stopColor="#C68904" />
-                    <stop offset="100%" stopColor="#8A5A00" />
-                  </linearGradient>
-                  <linearGradient id="shieldBg" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#1C1917" />
-                    <stop offset="100%" stopColor="#0C0A09" />
-                  </linearGradient>
-                </defs>
-                <path d="M50 5 L85 15 V45 C85 68 50 85 50 85 C50 85 15 68 15 45 V15 L50 5 Z" fill="url(#goldGrad)" />
-                <path d="M50 9 L81 18 V45 C81 65 50 81 50 81 C50 81 19 65 19 45 V18 L50 9 Z" fill="url(#shieldBg)" stroke="url(#goldGrad)" strokeWidth="2" />
-                <path d="M25 22 L50 14 L75 22" stroke="url(#goldGrad)" strokeWidth="1" strokeDasharray="2 2" />
-                <text x="50" y="38" textAnchor="middle" fill="url(#goldGrad)" fontSize="26" fontWeight="950" fontFamily="sans-serif">1</text>
-                <text x="50" y="50" textAnchor="middle" fill="url(#goldGrad)" fontSize="10" fontWeight="800" fontFamily="sans-serif" letterSpacing="1">YEAR</text>
-                <path d="M10 65 L22 80 L35 70 Z" fill="#996500" />
-                <path d="M90 65 L78 80 L65 70 Z" fill="#996500" />
-                <path d="M12 60 C30 65 70 65 88 60 L85 72 C70 77 30 77 15 72 Z" fill="url(#goldGrad)" stroke="#B37D00" strokeWidth="1" />
-                <path d="M12 60 L15 72 L8 68 Z" fill="#8A5A00" />
-                <path d="M88 60 L85 72 L92 68 Z" fill="#8A5A00" />
-                <text x="50" y="69" textAnchor="middle" fill="#1C1917" fontSize="8.5" fontWeight="950" fontFamily="sans-serif" letterSpacing="0.5">WARRANTY</text>
-              </svg>
-            </div>
+
           </div>
 
-          <div className="border-t border-dashed border-slate-200 my-4"></div>
 
-          {/* 2x2 Features Grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            {/* Min Bid */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FFFBEB] border border-[#F59E0B] flex items-center justify-center text-[#F59E0B] flex-shrink-0 shadow-xs">
-                <span className="font-extrabold text-sm">₹</span>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Minimum Bid Increment</span>
-                <span className="text-sm text-slate-800 font-black mt-1">₹{(auction.minimum_spread || 1).toLocaleString()}</span>
-              </div>
-            </div>
-
-            {/* Product Quality */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#F5F3FF] border border-[#8B5CF6] flex items-center justify-center text-[#8B5CF6] flex-shrink-0 shadow-xs">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Product Quality</span>
-                <span className="text-sm text-[#1D4ED8] font-black mt-1">100% Brand New</span>
-              </div>
-            </div>
-
-            {/* Shipping */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#EFF6FF] border border-[#3B82F6] flex items-center justify-center text-[#3B82F6] flex-shrink-0 shadow-xs">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125a1.125 1.125 0 001.125-1.125V9.75M8.25 18.75a1.5 1.5 0 01-3 0M21 9.75V4.625c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125 0-1.125 1.125V14.25h18.75V9.75zm0 0H16.5m0 0V3.5" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Shipping & Delivery</span>
-                <span className="text-sm text-[#1D4ED8] font-black mt-1">Free Express Delivery</span>
-              </div>
-            </div>
-
-            {/* Packaging */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FFFBEB] border border-[#D97706] flex items-center justify-center text-[#D97706] flex-shrink-0 shadow-xs">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Secure Packaging</span>
-                <span className="text-sm text-slate-800 font-black mt-1">Safe & Reliable</span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Bidding Ends / Current Bid Dark Blue Console */}
-        <div className="mt-4">
-          <div className="bg-[#09152B] text-white p-4 rounded-[1.25rem] flex items-center justify-between shadow-lg shadow-blue-900/10 border border-white/5">
+        {/* Bidding Ends / Current Bid Dark Green Console */}
+        <div className="mt-3">
+          <div className="bg-[#1B3B2B] text-white p-3 rounded-[1rem] flex items-center justify-between shadow-lg shadow-green-900/10 border border-white/5">
             {/* Countdown */}
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 text-white text-[10px] font-black uppercase tracking-wider mb-2">
@@ -399,33 +348,33 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
               <div className="flex items-center gap-1">
                 <div className="flex flex-col items-center">
                   <span className="bg-white text-slate-900 font-black text-xl px-2 py-1 rounded-lg min-w-[36px] text-center shadow-xs leading-none">{timeLeft.hours}</span>
-                  <span className="text-[8px] text-[#93C5FD] font-black uppercase mt-1 tracking-widest">Hrs</span>
+                  <span className="text-[8px] text-green-300 font-black uppercase mt-1 tracking-widest">Hrs</span>
                 </div>
                 <span className="text-white font-black text-xl -mt-4">:</span>
                 <div className="flex flex-col items-center">
                   <span className="bg-white text-slate-900 font-black text-xl px-2 py-1 rounded-lg min-w-[36px] text-center shadow-xs leading-none">{timeLeft.minutes}</span>
-                  <span className="text-[8px] text-[#93C5FD] font-black uppercase mt-1 tracking-widest">Mins</span>
+                  <span className="text-[8px] text-green-300 font-black uppercase mt-1 tracking-widest">Mins</span>
                 </div>
                 <span className="text-white font-black text-xl -mt-4">:</span>
                 <div className="flex flex-col items-center">
                   <span className="bg-white text-slate-900 font-black text-xl px-2 py-1 rounded-lg min-w-[36px] text-center shadow-xs leading-none">{timeLeft.seconds}</span>
-                  <span className="text-[8px] text-[#93C5FD] font-black uppercase mt-1 tracking-widest">Secs</span>
+                  <span className="text-[8px] text-green-300 font-black uppercase mt-1 tracking-widest">Secs</span>
                 </div>
               </div>
             </div>
 
             {/* Dotted Vertical Divider */}
-            <div className="h-12 border-l border-dashed border-slate-500/30 mx-4"></div>
+            <div className="h-12 border-l border-dashed border-green-500/30 mx-4"></div>
 
             {/* Current Leading Bid - Left Aligned in its section */}
             <div className="flex-1 flex flex-col items-start">
-              <span className="text-[#93C5FD] text-[10px] font-black uppercase tracking-wider">
+              <span className="text-green-200 text-[10px] font-black uppercase tracking-wider">
                 {isUpcoming ? 'Starting Price' : 'Current Leading Bid'}
               </span>
-              <span className="text-[22px] font-black text-[#10B981] mt-1.5 leading-none font-mono">
+              <span className="text-[22px] font-black text-[#4ADE80] mt-1.5 leading-none font-mono">
                 ₹{(auction.current_highest_bid || auction.reserve_price || 0).toLocaleString()}
               </span>
-              <span className="mt-1 px-3 py-1 rounded-full bg-[#E0F2FE] text-[#0369A1] text-[9.5px] font-black border border-blue-200/50 leading-none">
+              <span className="mt-1 px-3 py-1 rounded-full bg-[#E2F0D9] text-[#1B3B2B] text-[9.5px] font-black border border-green-200/50 leading-none">
                 {auction.total_bids || 0} Bids
               </span>
             </div>
@@ -434,7 +383,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
           {/* Place Bid Button */}
           <button
             onClick={() => navigate(`/live-auction/${auction.id}`)}
-            className={`w-full py-3 mt-3.5 ${isUpcoming ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-blue-500/20' : 'bg-gradient-to-r from-[#FF5500] to-[#FF7700] hover:from-[#E64D00] hover:to-[#E66600] hover:shadow-orange-500/20'} text-white font-black text-sm rounded-xl shadow-md transition-all duration-300 active:scale-95 flex items-center justify-center gap-2`}
+            className={`w-full py-2.5 mt-3 ${isUpcoming ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700' : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'} text-white font-black text-sm rounded-[0.8rem] shadow-md transition-all duration-300 active:scale-95 flex items-center justify-center gap-2`}
           >
             <svg className="w-5 h-5 text-white fill-current" viewBox="0 0 20 20">
               <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
@@ -533,6 +482,24 @@ export default function HomePage() {
   const { data: newArrivalsData, isLoading: newLoading } = useProducts({ sort: 'newest', limit: 8 });
   const { data: dealsData, isLoading: dealsLoading } = useProducts({ sort: 'discount_desc', limit: 8 });
 
+  const heroImages = (featuredData?.slice(0, 4) || []).map(p => {
+    let url = typeof p.images?.[0] === 'string' ? p.images[0] : (p.images?.[0]?.url || '/placeholder.png');
+    if (url.startsWith('/')) url = `${(import.meta as any).env.VITE_API_URL || "http://localhost:4000"}${url}`;
+    return url;
+  }).filter(url => url !== '/placeholder.png');
+
+  if (heroImages.length === 0) heroImages.push('/summer_essentials_hero.png');
+
+  const [heroImageIndex, setHeroImageIndex] = useState(0);
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setHeroImageIndex(prev => (prev + 1) % heroImages.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [heroImages.length]);
+
   const topCategories = categories?.filter(c => !c.parent_id && c.slug !== 'clothing').slice(0, 8) ?? [];
 
   // Map real categories to sale sidebar display names
@@ -560,58 +527,24 @@ export default function HomePage() {
       <section className="bg-white py-6 md:py-8 border-b border-gray-100">
         <div className="max-w-[1500px] mx-auto px-4 flex flex-col lg:flex-row items-stretch justify-between gap-6">
           {liveAuctions.length > 0 ? (
-            <>
-              {/* Left Content: Green-themed Live Bids Info */}
-              <div className="w-full lg:w-[32%] flex flex-col justify-between bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2.5rem] p-8 border border-[#D5E6CD]/30 shadow-xs">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 bg-green-700 text-white text-[9px] font-black uppercase tracking-wider py-1.5 px-3 rounded-full mb-4 animate-pulse">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-300"></span>
-                    </span>
-                    Bidding Live
-                  </div>
-                  <h1 className="text-3xl sm:text-4xl font-black text-[#1B3B2B] leading-tight tracking-tight">
-                    Live Bids Active!
-                  </h1>
-                  <p className="text-xs text-[#3E654F] font-semibold mt-3 leading-relaxed">
-                    Don't just look — place your bids, beat other bidders, and win exclusive products at unbelievable discounts!
-                  </p>
-                </div>
-
-                {/* Trophy Alert Card */}
-                <div className="w-full mt-6 bg-white border border-[#D5E6CD] rounded-[1.5rem] p-4 flex items-center gap-3.5 shadow-xs">
-                  <div className="w-10 h-10 rounded-full bg-[#E8F5E9] flex items-center justify-center flex-shrink-0 text-xl">
-                    🏆
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-black italic text-gray-800 leading-snug">
-                      Be the highest bidder and claim your prize today!
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Content (Live Auction Widget) */}
-              <div className="w-full lg:w-[68%] flex-shrink-0 z-10 flex">
-                <LiveAuctionBannerWidget auction={liveAuctions[0]} />
-              </div>
-            </>
+            <div className="w-full flex-shrink-0 z-10 flex">
+              <LiveAuctionBannerWidget auction={liveAuctions[0]} />
+            </div>
           ) : (
             <>
               {/* Left Content: Green Summer Essentials Banner */}
               <div className="w-full lg:w-[68%] flex-shrink-0 flex">
-                <div className="bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden flex-1 shadow-xs border border-[#D5E6CD]/35">
+                <div className="bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden flex-1 shadow-xs border border-[#D5E6CD]/35">
                   <div className="flex-1 flex flex-col justify-center text-left max-w-md">
-                    <h1 className="text-3xl sm:text-5xl font-black text-[#1B3B2B] leading-tight tracking-tight">
-                      Refresh Your Space This Summer
+                    <h1 className="text-2xl sm:text-4xl font-black text-[#1B3B2B] leading-tight tracking-tight">
+                      Discover the Best of ShopNow
                     </h1>
-                    <p className="text-sm text-[#3E654F] font-semibold mt-3 leading-relaxed">
-                      Smart products. Better living. Amazing prices.
+                    <p className="text-xs text-[#3E654F] font-semibold mt-2 leading-relaxed">
+                      Top-rated products, exclusive deals, and fast delivery.
                     </p>
                     <Link
                       to="/category/all"
-                      className="mt-6 px-6 py-3 bg-green-700 hover:bg-green-800 text-white font-extrabold rounded-full text-xs flex items-center gap-2 w-fit transition-all hover:gap-3 shadow-md border border-green-800/20 active:scale-95"
+                      className="mt-4 px-5 py-2.5 bg-green-700 hover:bg-green-800 text-white font-extrabold rounded-full text-xs flex items-center gap-2 w-fit transition-all hover:gap-3 shadow-sm border border-green-800/20 active:scale-95"
                     >
                       Shop Now
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -619,81 +552,86 @@ export default function HomePage() {
                       </svg>
                     </Link>
                   </div>
-                  <div className="w-full md:w-[45%] flex-shrink-0 flex items-center justify-center relative">
-                    <img
-                      src="/summer_essentials_hero.png"
-                      alt="Summer Essentials"
-                      className="max-h-[240px] sm:max-h-[300px] w-auto object-contain drop-shadow-md rounded-2xl transform hover:scale-103 transition-transform duration-500"
-                    />
+                  <div className="w-full md:w-[40%] flex-shrink-0 flex items-center justify-center relative min-h-[200px] sm:min-h-[250px] group/slider">
+                    {heroImages.map((imgSrc, idx) => (
+                      <img
+                        key={idx}
+                        src={imgSrc}
+                        alt="Summer Essentials"
+                        className={`absolute inset-0 m-auto max-h-[240px] sm:max-h-[280px] w-auto object-contain drop-shadow-lg rounded-2xl transform hover:scale-105 transition-all duration-700 ease-in-out ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                      />
+                    ))}
+                    {heroImages.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setHeroImageIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+                          }}
+                          className="absolute left-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
+                        >
+                          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setHeroImageIndex((prev) => (prev + 1) % heroImages.length);
+                          }}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
+                        >
+                          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Right Content: Exclusive Benefits Card */}
+              {/* Right Content: Summer Winter Sale Card */}
               <div className="w-full lg:w-[32%] flex-shrink-0 flex">
-                <div className="bg-white border border-gray-200/80 rounded-[2.5rem] p-6 shadow-xs flex flex-col justify-between h-full w-full max-w-md mx-auto">
-                  <div>
-                    <h3 className="text-gray-400 font-bold text-[10px] tracking-wider mb-5 uppercase">Exclusive Benefits</h3>
-                    <div className="space-y-4">
-                      {/* Benefit 1 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">Flat ₹250 Cashback</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">on orders above ₹2500</p>
-                        </div>
-                      </div>
+                <div className="bg-white border border-gray-200/80 rounded-[2rem] p-6 shadow-xs flex flex-col justify-between h-full w-full max-w-md mx-auto relative overflow-hidden group">
+                  {/* Decorative faint background shape */}
+                  <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-green-50 rounded-full blur-2xl group-hover:bg-green-100 transition-colors duration-500 z-0"></div>
 
-                      {/* Benefit 2 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499c-.105-.183-.265-.318-.453-.382a1.72 1.72 0 0 0-1.447.224l-4.054 2.7A1.72 1.72 0 0 0 4.75 7.42v10.158c0 .616.327 1.187.863 1.5l4.054 2.37a1.72 1.72 0 0 0 1.71 0l4.054-2.37c.536-.313.863-.884.863-1.5V7.42a1.72 1.72 0 0 0-.776-1.378l-4.054-2.543Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">Prime Member Deals</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">Extra savings for you</p>
-                        </div>
-                      </div>
+                  <div className="z-10 relative">
+                    <h3 className="text-green-600 font-bold text-[9px] tracking-widest mb-4 uppercase flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                      Limited Time Offer
+                    </h3>
 
-                      {/* Benefit 3 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">100% Secure Payments</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">Shop with confidence</p>
-                        </div>
-                      </div>
+                    <h2 className="text-2xl font-black text-gray-900 leading-tight mb-2">
+                      Summer & Winter
+                      <span className="block text-green-700 mt-0.5">SUPER SALE</span>
+                    </h2>
 
-                      {/* Benefit 4 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-3.658A8.067 8.067 0 0 1 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">Priority Support</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">We're here to help</p>
-                        </div>
+                    <p className="text-xs text-gray-500 font-medium mb-4 mt-2 leading-relaxed">
+                      Enjoy massive discounts up to <span className="text-gray-900 font-bold">70% OFF</span>
+                    </p>
+
+                    <div className="space-y-2 mt-4">
+                      <div className="flex items-center gap-2 text-[11px] font-bold text-gray-700">
+                        <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        Exclusive Online Deals
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] font-bold text-gray-700">
+                        <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        Fast Free Delivery
                       </div>
                     </div>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-gray-150 flex items-center justify-between text-xs font-black text-gray-400 hover:text-green-700 cursor-pointer group transition-colors">
-                    <span>SHOPNOW PREMIUM BENEFITS</span>
-                    <svg className="w-4 h-4 text-gray-400 group-hover:text-green-700 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                    </svg>
-                  </div>
+
+                  <Link to="/category/all?sort=discount_desc" className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] font-black text-gray-800 hover:text-green-700 cursor-pointer group/btn transition-colors z-10 relative">
+                    <span>EXPLORE ALL DEALS</span>
+                    <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center group-hover/btn:bg-green-100 transition-colors">
+                      <svg className="w-3.5 h-3.5 text-green-700 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                      </svg>
+                    </div>
+                  </Link>
                 </div>
               </div>
             </>
@@ -703,142 +641,47 @@ export default function HomePage() {
 
 
 
-      {/* Spotlight Brands (Amazon Style) */}
-      <section className="bg-white py-12 border-b border-gray-100">
-        <div className="max-w-[1500px] mx-auto px-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Spotlight brands</h2>
-
-          <div className="relative group">
-            {/* Scroll Container */}
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth">
-              {featuredLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-[200px] sm:w-[240px] aspect-square bg-gray-100 animate-pulse rounded-sm" />
-                ))
-              ) : (
-                rawFeaturedData?.data.slice(0, 8).map((product: any) => (
-                  <Link key={product.id} to={`/product/${product.slug}`} className="flex-shrink-0 w-[200px] sm:w-[240px] group/item">
-                    <div
-                      className="aspect-square rounded-sm border border-gray-200 overflow-hidden relative mb-2 transition-all hover:shadow-xl cursor-pointer bg-[#F7F7F7] group/card"
-                    >
-                      {/* Real Product Image from S3 */}
-                      <div className="absolute inset-0 flex items-center justify-center p-2">
-                        <img
-                          src={product.images?.[0]?.url || product.images?.[0] || '/placeholder.png'}
-                          alt={product.name}
-                          className="max-w-full max-h-full object-contain drop-shadow-md group-hover/card:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-
-                      {/* Discount Badge Overlay (Amazon Style) */}
-                      {product.discount_percentage > 0 && (
-                        <div className="absolute top-2 left-2 bg-[#CC0C39] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">
-                          {Math.round(product.discount_percentage)}% off
-                        </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/[0.02] to-transparent"></div>
-                    </div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-800 group-hover/item:text-green-700 cursor-pointer line-clamp-1">
-                      {product.brand ? `${product.brand} | ` : ''}{product.name}
-                    </p>
-                  </Link>
-                ))
-              )}
-
-              {/* View All Deals Card */}
-              <div className="flex-shrink-0 w-[120px] sm:w-[150px] flex flex-col items-center justify-center group/all">
-                <Link
-                  to="/category/all?sort=discount_desc"
-                  className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-full flex items-center justify-center text-blue-600 border border-gray-200 shadow-sm group-hover/all:bg-blue-600 group-hover/all:text-white transition-all duration-300"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-                <Link
-                  to="/category/all?sort=discount_desc"
-                  className="mt-3 text-xs sm:text-sm font-bold text-green-700 hover:text-green-900 transition-colors"
-                >
-                  View all deals
-                </Link>
-              </div>
-            </div>
-
-            {/* Navigation Buttons (Floating) */}
-            <button className="absolute left-0 top-[calc(50%-1.5rem)] -translate-y-1/2 -ml-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <button className="absolute right-0 top-[calc(50%-1.5rem)] -translate-y-1/2 -mr-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Great Summer Sale Results Section */}
-      <section className="bg-white py-8 border-b border-gray-100">
+      <section className="bg-white pt-1 pb-6 border-b border-gray-100">
         <div className="max-w-[1500px] mx-auto px-4">
-          {/* Horizontal Filter Chips */}
-          <div className="flex items-center gap-3 pb-6 border-b border-gray-100 mb-6">
-            <button
-              onClick={() => scroll(scrollRef, 'left')}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-gray-200 rounded-sm text-gray-400 hover:bg-gray-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <div
-              ref={scrollRef}
-              className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth"
-            >
-              {['For you', 'Deals with exchange', 'Blockbuster deals', 'Deals in focus', 'Trending deals', 'Mobiles', 'Coupons', 'Electronics', 'Mobile Accessories', 'Headphones'].map((chip, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveChip(chip)}
-                  className={`flex-shrink-0 px-4 py-2 text-sm rounded-sm border transition-all ${activeChip === chip
-                    ? 'border-green-600 bg-green-50 text-green-700 font-bold'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => scroll(scrollRef, 'right')}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-gray-200 rounded-sm text-gray-400 hover:bg-gray-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sale Sidebar Filters */}
             <aside className="w-full lg:w-64 flex-shrink-0 hidden lg:block sticky top-4 self-start">
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-2">Filtered by</h3>
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs font-bold border border-green-200 rounded-sm">
-                    {saleCategory ? saleCategory.charAt(0).toUpperCase() + saleCategory.slice(1) : 'Blockbuster deals'}
-                    <span className="cursor-pointer" onClick={() => setSaleCategory(undefined)}>×</span>
+                {(saleCategory || minPrice > 0 || maxPrice < 60000 || minDiscount > 0 || maxDiscount < 100) && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Filtered by</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {saleCategory && (
+                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs font-bold border border-green-200 rounded-sm">
+                          {saleCategory.charAt(0).toUpperCase() + saleCategory.slice(1)}
+                          <span className="cursor-pointer" onClick={() => setSaleCategory(undefined)}>×</span>
+                        </div>
+                      )}
+                      {(minPrice > 0 || maxPrice < 60000) && (
+                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs font-bold border border-green-200 rounded-sm">
+                          Price: ₹{minPrice} - ₹{maxPrice >= 60000 ? '60,000+' : maxPrice}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSaleCategory(undefined);
+                        setMinPrice(0);
+                        setMaxPrice(60000);
+                        setMinDiscount(0);
+                        setMaxDiscount(100);
+                      }}
+                      className="block text-xs text-green-700 hover:text-green-900 mt-2"
+                    >
+                      Clear Filters
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      setSaleCategory(undefined);
-                      setActiveChip('Blockbuster deals');
-                      setMinPrice(0);
-                      setMaxPrice(60000);
-                      setMinDiscount(0);
-                      setMaxDiscount(100);
-                    }}
-                    className="block text-xs text-green-700 hover:text-green-900 mt-2"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
+                )}
 
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-3">Department</h3>
+                  <h3 className="text-sm font-bold text-gray-900 mb-3">Filters</h3>
                   <div className="space-y-2">
                     {saleDepartments.map((dept, i) => (
                       <label key={i} className="flex items-center gap-2 cursor-pointer group">
@@ -1038,7 +881,7 @@ export default function HomePage() {
         {/* Background elements */}
         <div className="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-green-800/10 blur-3xl pointer-events-none" />
         <div className="absolute -left-24 -top-24 w-96 h-96 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Are You a Business Buyer?</h2>
           <p className="text-green-100 text-base mb-8 max-w-2xl mx-auto font-medium">
