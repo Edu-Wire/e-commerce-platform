@@ -188,7 +188,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
   return (
     <div className="w-full flex flex-col md:flex-row gap-6 items-stretch text-slate-800 select-none">
       {/* Middle Panel: Product Image Card (Now on the Left side of widget / middle of hero section) */}
-      <div className="w-full md:w-[38%] rounded-[2rem] bg-gradient-to-tr from-[#E6EEF9] via-[#F3F7FC] to-[#FFFFFF] border border-white/80 shadow-lg relative flex items-center justify-center min-h-[250px] md:min-h-[300px] overflow-hidden flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]">
+      <div className="w-full md:w-[38%] rounded-[2rem] bg-gradient-to-tr from-[#E6EEF9] via-[#F3F7FC] to-[#FFFFFF] border border-white/80 shadow-lg relative flex items-center justify-center min-h-[200px] md:min-h-[260px] overflow-hidden flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]">
 
         {/* Crossfade Product Image Slideshow */}
         {imageList.map((imgSrc, idx) => (
@@ -276,7 +276,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
       </div>
 
       {/* Right Panel: Bidding & Information Card (Now on the Right side of widget / right of hero section) */}
-      <div className="flex-1 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-orange-950/5 p-6 flex flex-col justify-between min-h-[330px]">
+      <div className="flex-1 rounded-[2rem] bg-white border border-slate-100 shadow-xl shadow-orange-950/5 p-4 md:p-5 flex flex-col justify-between min-h-[260px]">
         <div>
           {/* Header Row */}
           <div className="flex items-start justify-between gap-4">
@@ -300,7 +300,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
             </div>
 
             {/* Premium Gold Medallion Shield Ribbon Badge */}
-            <div className="relative flex items-center justify-center w-[75px] h-[75px] flex-shrink-0 -mt-2 -mr-1">
+            <div className="relative flex items-center justify-center w-[55px] h-[55px] flex-shrink-0 -mt-2 -mr-1 scale-75 origin-top-right">
               <svg className="w-[75px] h-[75px] drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -329,57 +329,31 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
             </div>
           </div>
 
-          <div className="border-t border-dashed border-slate-200 my-4"></div>
+          <div className="border-t border-dashed border-slate-200 my-2"></div>
 
-          {/* 2x2 Features Grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+          {/* 1x2 Features Row (Compact) */}
+          <div className="flex items-center gap-8">
             {/* Min Bid */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FFFBEB] border border-[#F59E0B] flex items-center justify-center text-[#F59E0B] flex-shrink-0 shadow-xs">
-                <span className="font-extrabold text-sm">₹</span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#FFFBEB] border border-[#F59E0B] flex items-center justify-center text-[#F59E0B] flex-shrink-0 shadow-xs">
+                <span className="font-extrabold text-xs">₹</span>
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Minimum Bid Increment</span>
-                <span className="text-sm text-slate-800 font-black mt-1">₹{(auction.minimum_spread || 1).toLocaleString()}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-none">Min Increment</span>
+                <span className="text-xs text-slate-800 font-black mt-1">₹{(auction.minimum_spread || 1).toLocaleString()}</span>
               </div>
             </div>
 
             {/* Product Quality */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#F5F3FF] border border-[#8B5CF6] flex items-center justify-center text-[#8B5CF6] flex-shrink-0 shadow-xs">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#F5F3FF] border border-[#8B5CF6] flex items-center justify-center text-[#8B5CF6] flex-shrink-0 shadow-xs">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Product Quality</span>
-                <span className="text-sm text-[#1D4ED8] font-black mt-1">100% Brand New</span>
-              </div>
-            </div>
-
-            {/* Shipping */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#EFF6FF] border border-[#3B82F6] flex items-center justify-center text-[#3B82F6] flex-shrink-0 shadow-xs">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125a1.125 1.125 0 001.125-1.125V9.75M8.25 18.75a1.5 1.5 0 01-3 0M21 9.75V4.625c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125 0-1.125 1.125V14.25h18.75V9.75zm0 0H16.5m0 0V3.5" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Shipping & Delivery</span>
-                <span className="text-sm text-[#1D4ED8] font-black mt-1">Free Express Delivery</span>
-              </div>
-            </div>
-
-            {/* Packaging */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FFFBEB] border border-[#D97706] flex items-center justify-center text-[#D97706] flex-shrink-0 shadow-xs">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none">Secure Packaging</span>
-                <span className="text-sm text-slate-800 font-black mt-1">Safe & Reliable</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-none">Quality</span>
+                <span className="text-xs text-[#1D4ED8] font-black mt-1">100% Brand New</span>
               </div>
             </div>
           </div>
