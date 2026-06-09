@@ -461,6 +461,105 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
   );
 }
 
+function ProductSlideshowWidget({ products, isLoading }: { products: any[]; isLoading: boolean }) {
+  const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-full bg-white border border-slate-200 rounded-[2.5rem] flex items-center justify-center animate-pulse">
+        <div className="w-10 h-10 border-4 border-green-700 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const hasProducts = products && products.length > 0;
+  if (!hasProducts) {
+    return (
+      <div className="w-full h-full bg-slate-50 border border-slate-200 rounded-[2.5rem] p-7 flex items-center justify-center text-center">
+        <p className="text-xs text-slate-400 font-bold">No deals available today.</p>
+      </div>
+    );
+  }
+
+  // Duplicate products for infinite scrolling effect
+  const displayProducts = [...products, ...products];
+
+  return (
+    <div className="w-full h-full bg-white border border-slate-200/80 rounded-[2.5rem] flex flex-col overflow-hidden shadow-sm relative group">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white z-20">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+          <h3 className="font-black text-slate-800 text-sm uppercase tracking-widest">Trending Deals</h3>
+        </div>
+        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full uppercase">Live</span>
+      </div>
+
+      {/* Auto-scrolling area */}
+      <div className="flex-1 overflow-hidden relative">
+        <style>{`
+          @keyframes verticalScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+          }
+          .animate-vertical-scroll {
+            animation: verticalScroll 20s linear infinite;
+          }
+          .group:hover .animate-vertical-scroll {
+            animation-play-state: paused;
+          }
+        `}</style>
+        
+        <div className="animate-vertical-scroll flex flex-col absolute w-full">
+          {displayProducts.map((p, i) => {
+            const img = typeof p.images?.[0] === 'string' ? p.images[0] : (p.images?.[0]?.url || '/placeholder.png');
+            const discount = Math.round(p.discount_percentage || 0);
+
+            return (
+              <div 
+                key={`${p.id}-${i}`}
+                onClick={() => navigate(`/product/${p.slug}`)}
+                className="flex items-center gap-3 p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors bg-white w-full h-[100px]"
+              >
+                {/* Product Image */}
+                <div className="w-16 h-16 bg-white border border-slate-100 rounded-xl flex-shrink-0 flex items-center justify-center p-1 shadow-sm">
+                  <img src={img} alt={p.name} className="max-w-full max-h-full object-contain" />
+                </div>
+                
+                {/* Details */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <h4 className="text-xs font-black text-slate-800 line-clamp-2 leading-tight group-hover:text-green-700 transition-colors">
+                    {p.name}
+                  </h4>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-sm font-black text-slate-900">₹{p.selling_price?.toLocaleString('en-IN')}</span>
+                    {discount > 0 && (
+                      <span className="text-[9px] font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded-sm">
+                        {discount}% OFF
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="w-6 h-6 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center flex-shrink-0 group-hover/row:bg-green-50 group-hover/row:text-green-600 transition-colors">
+                  <svg className="w-3 h-3 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                  </svg>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Gradients for smooth fade in/out */}
+        <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-white to-transparent pointer-events-none z-10"></div>
+        <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const navigate = useNavigate();
   const [saleCategory, setSaleCategory] = useState<string | undefined>(undefined);
@@ -493,7 +592,8 @@ export default function HomePage() {
     };
     fetchLiveAuctions();
   }, []);
-  const [activeChip, setActiveChip] = useState<string>('Blockbuster deals');
+  const [activeChip, setActiveChip] = useState<string | undefined>('Blockbuster deals');
+  const [leftBannerIndex, setLeftBannerIndex] = useState<number>(0);
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(60000);
   const [minDiscount, setMinDiscount] = useState<number>(0);
@@ -533,6 +633,18 @@ export default function HomePage() {
   const { data: newArrivalsData, isLoading: newLoading } = useProducts({ sort: 'newest', limit: 8 });
   const { data: dealsData, isLoading: dealsLoading } = useProducts({ sort: 'discount_desc', limit: 8 });
 
+  useEffect(() => {
+    if (!dealsData?.data || dealsData.data.length === 0) return;
+    const interval = setInterval(() => {
+      setLeftBannerIndex((prev) => (prev + 1) % Math.min(dealsData.data.length, 4));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [dealsData]);
+
+  const leftProduct = (dealsData?.data && dealsData.data.length > 0) ? dealsData.data[leftBannerIndex] : null;
+  const leftImageUrl = leftProduct?.images?.[0]?.url || leftProduct?.images?.[0] || '/summer_essentials_hero.png';
+  const leftLink = leftProduct ? `/product/${leftProduct.slug}` : '/category/all';
+
   const topCategories = categories?.filter(c => !c.parent_id && c.slug !== 'clothing').slice(0, 8) ?? [];
 
   // Map real categories to sale sidebar display names
@@ -557,7 +669,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="bg-white py-6 md:py-8 border-b border-gray-100">
+      <section className="bg-white py-3 md:py-4 border-b border-gray-100">
         <div className="max-w-[1500px] mx-auto px-4 flex flex-col lg:flex-row items-stretch justify-between gap-6">
           {liveAuctions.length > 0 ? (
             <>
@@ -599,102 +711,143 @@ export default function HomePage() {
             </>
           ) : (
             <>
-              {/* Left Content: Green Summer Essentials Banner */}
-              <div className="w-full lg:w-[68%] flex-shrink-0 flex">
-                <div className="bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden flex-1 shadow-xs border border-[#D5E6CD]/35">
-                  <div className="flex-1 flex flex-col justify-center text-left max-w-md">
-                    <h1 className="text-3xl sm:text-5xl font-black text-[#1B3B2B] leading-tight tracking-tight">
-                      Refresh Your Space This Summer
-                    </h1>
-                    <p className="text-sm text-[#3E654F] font-semibold mt-3 leading-relaxed">
-                      Smart products. Better living. Amazing prices.
-                    </p>
-                    <Link
-                      to="/category/all"
-                      className="mt-6 px-6 py-3 bg-green-700 hover:bg-green-800 text-white font-extrabold rounded-full text-xs flex items-center gap-2 w-fit transition-all hover:gap-3 shadow-md border border-green-800/20 active:scale-95"
-                    >
-                      Shop Now
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                      </svg>
-                    </Link>
-                  </div>
-                  <div className="w-full md:w-[45%] flex-shrink-0 flex items-center justify-center relative">
-                    <img
-                      src="/summer_essentials_hero.png"
-                      alt="Summer Essentials"
-                      className="max-h-[240px] sm:max-h-[300px] w-auto object-contain drop-shadow-md rounded-2xl transform hover:scale-103 transition-transform duration-500"
+              {/* Left Content: Premium Cover Flow Slider */}
+              <div className="w-full lg:w-[68%] flex-shrink-0 h-[320px] lg:h-[350px] relative overflow-hidden rounded-[2.5rem] bg-slate-100/50 flex items-center justify-center">
+                {/* Background blur/gradient to blend the peeking slides */}
+                <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-slate-200/50 z-0"></div>
+
+                {/* Slides Container */}
+                <div className="relative w-full h-full flex items-center justify-center z-10 perspective-[1200px]">
+                  {dealsData?.data && dealsData.data.slice(0, 4).map((product: any, idx: number) => {
+                    const total = Math.min(dealsData.data.length, 4);
+                    if (total === 0) return null;
+                    
+                    let diff = idx - leftBannerIndex;
+                    if (diff < -1) diff += total;
+                    if (diff > 1) diff -= total;
+
+                    const isCurrent = diff === 0;
+                    const isPrev = diff === -1;
+                    const isNext = diff === 1;
+
+                    let transform = 'translateX(100%) scale(0.5)';
+                    let opacity = 'opacity-0';
+                    let zIndex = 'z-0';
+
+                    if (isCurrent) {
+                      transform = 'translateX(0) scale(1) rotateY(0deg)';
+                      opacity = 'opacity-100';
+                      zIndex = 'z-30';
+                    } else if (isPrev) {
+                      transform = 'translateX(-75%) scale(0.8) rotateY(15deg)';
+                      opacity = 'opacity-50';
+                      zIndex = 'z-10';
+                    } else if (isNext) {
+                      transform = 'translateX(75%) scale(0.8) rotateY(-15deg)';
+                      opacity = 'opacity-50';
+                      zIndex = 'z-10';
+                    }
+
+                    const bgColors = [
+                      'from-[#e2ebf0] to-[#cfd9df]', // Silver
+                      'from-[#fdfbfb] to-[#ebedee]', // White
+                      'from-[#e0c3fc] to-[#8ec5fc]', // Soft Blue/Purple
+                      'from-[#ffecd2] to-[#fcb69f]'  // Peach
+                    ];
+                    const bgClass = bgColors[idx % bgColors.length];
+
+                    const img = typeof product.images?.[0] === 'string' ? product.images[0] : (product.images?.[0]?.url || '/placeholder.png');
+
+                    return (
+                      <div
+                        key={product.id}
+                        className={`absolute w-[85%] h-[85%] rounded-[2rem] bg-gradient-to-br ${bgClass} shadow-xl border border-white/60 transition-all duration-700 ease-in-out flex flex-col md:flex-row items-center p-6 sm:p-8 cursor-pointer ${opacity} ${zIndex}`}
+                        style={{ transform, transformStyle: 'preserve-3d' }}
+                        onClick={() => {
+                          if (isPrev) setLeftBannerIndex((prev) => (prev - 1 + total) % total);
+                          else if (isNext) setLeftBannerIndex((prev) => (prev + 1) % total);
+                          else navigate(`/product/${product.slug}`);
+                        }}
+                      >
+                        {/* Text Content */}
+                        <div className="w-full md:w-1/2 text-left z-20 flex flex-col justify-center h-full">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                            {product.brand || 'Featured Deal'}
+                          </span>
+                          <h2 className="text-2xl sm:text-3xl font-black text-slate-800 leading-tight line-clamp-2">
+                            {product.name}
+                          </h2>
+                          <div className="flex items-center gap-3 mt-3">
+                            <span className="text-xl font-black text-slate-900">
+                              ₹{product.selling_price?.toLocaleString('en-IN')}
+                            </span>
+                            {product.discount_percentage > 0 && (
+                              <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">
+                                {Math.round(product.discount_percentage)}% OFF
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="mt-5">
+                            <button className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-full transition-all shadow-md active:scale-95">
+                              Shop Now
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Image Content */}
+                        <div className="w-full md:w-1/2 h-40 md:h-full mt-4 md:mt-0 flex items-center justify-center relative z-10" style={{ transform: 'translateZ(40px)' }}>
+                          <img
+                            src={img}
+                            alt={product.name}
+                            className="max-w-full max-h-full object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-105"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Left/Right Navigation Buttons */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const total = Math.min(dealsData?.data?.length || 0, 4);
+                    if (total > 0) setLeftBannerIndex((prev) => (prev - 1 + total) % total);
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border border-white shadow-lg flex items-center justify-center text-slate-700 hover:text-black hover:bg-white transition-all z-40 active:scale-95"
+                >
+                  <svg className="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                  </svg>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const total = Math.min(dealsData?.data?.length || 0, 4);
+                    if (total > 0) setLeftBannerIndex((prev) => (prev + 1) % total);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md border border-white shadow-lg flex items-center justify-center text-slate-700 hover:text-black hover:bg-white transition-all z-40 active:scale-95"
+                >
+                  <svg className="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
+                
+                {/* Dot Indicators */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-40">
+                  {dealsData?.data && dealsData.data.slice(0, 4).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === leftBannerIndex ? 'bg-slate-800 w-4' : 'bg-slate-400/50'}`}
                     />
-                  </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Right Content: Exclusive Benefits Card */}
-              <div className="w-full lg:w-[32%] flex-shrink-0 flex">
-                <div className="bg-white border border-gray-200/80 rounded-[2.5rem] p-6 shadow-xs flex flex-col justify-between h-full w-full max-w-md mx-auto">
-                  <div>
-                    <h3 className="text-gray-400 font-bold text-[10px] tracking-wider mb-5 uppercase">Exclusive Benefits</h3>
-                    <div className="space-y-4">
-                      {/* Benefit 1 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">Flat ₹250 Cashback</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">on orders above ₹2500</p>
-                        </div>
-                      </div>
-
-                      {/* Benefit 2 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499c-.105-.183-.265-.318-.453-.382a1.72 1.72 0 0 0-1.447.224l-4.054 2.7A1.72 1.72 0 0 0 4.75 7.42v10.158c0 .616.327 1.187.863 1.5l4.054 2.37a1.72 1.72 0 0 0 1.71 0l4.054-2.37c.536-.313.863-.884.863-1.5V7.42a1.72 1.72 0 0 0-.776-1.378l-4.054-2.543Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">Prime Member Deals</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">Extra savings for you</p>
-                        </div>
-                      </div>
-
-                      {/* Benefit 3 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">100% Secure Payments</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">Shop with confidence</p>
-                        </div>
-                      </div>
-
-                      {/* Benefit 4 */}
-                      <div className="flex items-start gap-3.5">
-                        <div className="w-8 h-8 rounded-full bg-[#E8F5E9] text-green-700 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-3.658A8.067 8.067 0 0 1 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-gray-800 leading-tight">Priority Support</h4>
-                          <p className="text-[10px] text-gray-500 font-bold leading-normal mt-0.5">We're here to help</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-gray-150 flex items-center justify-between text-xs font-black text-gray-400 hover:text-green-700 cursor-pointer group transition-colors">
-                    <span>SHOPNOW PREMIUM BENEFITS</span>
-                    <svg className="w-4 h-4 text-gray-400 group-hover:text-green-700 transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                    </svg>
-                  </div>
-                </div>
+              {/* Right Content: Product Slideshow Card */}
+              <div className="w-full lg:w-[32%] flex-shrink-0 flex h-[320px] lg:h-[350px]">
+                <ProductSlideshowWidget products={dealsData?.data || []} isLoading={dealsLoading} />
               </div>
             </>
           )}
@@ -702,115 +855,9 @@ export default function HomePage() {
       </section>
 
 
-
-      {/* Spotlight Brands (Amazon Style) */}
-      <section className="bg-white py-12 border-b border-gray-100">
-        <div className="max-w-[1500px] mx-auto px-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Spotlight brands</h2>
-
-          <div className="relative group">
-            {/* Scroll Container */}
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth">
-              {featuredLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-[200px] sm:w-[240px] aspect-square bg-gray-100 animate-pulse rounded-sm" />
-                ))
-              ) : (
-                rawFeaturedData?.data.slice(0, 8).map((product: any) => (
-                  <Link key={product.id} to={`/product/${product.slug}`} className="flex-shrink-0 w-[200px] sm:w-[240px] group/item">
-                    <div
-                      className="aspect-square rounded-sm border border-gray-200 overflow-hidden relative mb-2 transition-all hover:shadow-xl cursor-pointer bg-[#F7F7F7] group/card"
-                    >
-                      {/* Real Product Image from S3 */}
-                      <div className="absolute inset-0 flex items-center justify-center p-2">
-                        <img
-                          src={product.images?.[0]?.url || product.images?.[0] || '/placeholder.png'}
-                          alt={product.name}
-                          className="max-w-full max-h-full object-contain drop-shadow-md group-hover/card:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-
-                      {/* Discount Badge Overlay (Amazon Style) */}
-                      {product.discount_percentage > 0 && (
-                        <div className="absolute top-2 left-2 bg-[#CC0C39] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">
-                          {Math.round(product.discount_percentage)}% off
-                        </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/[0.02] to-transparent"></div>
-                    </div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-800 group-hover/item:text-green-700 cursor-pointer line-clamp-1">
-                      {product.brand ? `${product.brand} | ` : ''}{product.name}
-                    </p>
-                  </Link>
-                ))
-              )}
-
-              {/* View All Deals Card */}
-              <div className="flex-shrink-0 w-[120px] sm:w-[150px] flex flex-col items-center justify-center group/all">
-                <Link
-                  to="/category/all?sort=discount_desc"
-                  className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-100 rounded-full flex items-center justify-center text-blue-600 border border-gray-200 shadow-sm group-hover/all:bg-blue-600 group-hover/all:text-white transition-all duration-300"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-                <Link
-                  to="/category/all?sort=discount_desc"
-                  className="mt-3 text-xs sm:text-sm font-bold text-green-700 hover:text-green-900 transition-colors"
-                >
-                  View all deals
-                </Link>
-              </div>
-            </div>
-
-            {/* Navigation Buttons (Floating) */}
-            <button className="absolute left-0 top-[calc(50%-1.5rem)] -translate-y-1/2 -ml-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <button className="absolute right-0 top-[calc(50%-1.5rem)] -translate-y-1/2 -mr-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Great Summer Sale Results Section */}
       <section className="bg-white py-8 border-b border-gray-100">
         <div className="max-w-[1500px] mx-auto px-4">
-          {/* Horizontal Filter Chips */}
-          <div className="flex items-center gap-3 pb-6 border-b border-gray-100 mb-6">
-            <button
-              onClick={() => scroll(scrollRef, 'left')}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-gray-200 rounded-sm text-gray-400 hover:bg-gray-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <div
-              ref={scrollRef}
-              className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth"
-            >
-              {['For you', 'Deals with exchange', 'Blockbuster deals', 'Deals in focus', 'Trending deals', 'Mobiles', 'Coupons', 'Electronics', 'Mobile Accessories', 'Headphones'].map((chip, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveChip(chip)}
-                  className={`flex-shrink-0 px-4 py-2 text-sm rounded-sm border transition-all ${activeChip === chip
-                    ? 'border-green-600 bg-green-50 text-green-700 font-bold'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => scroll(scrollRef, 'right')}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-gray-200 rounded-sm text-gray-400 hover:bg-gray-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sale Sidebar Filters */}
@@ -851,6 +898,31 @@ export default function HomePage() {
                         />
                         <span className={`text-sm group-hover:text-green-700 ${saleCategory === dept.slug ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
                           {dept.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 mb-3">Special Offers</h3>
+                  <div className="space-y-2">
+                    {[
+                      { name: 'All Deals', value: undefined },
+                      { name: 'Deals with Exchange', value: 'Deals with exchange' },
+                      { name: 'Blockbuster Deals', value: 'Blockbuster deals' },
+                      { name: 'Trending Deals', value: 'Trending deals' }
+                    ].map((offer, i) => (
+                      <label key={i} className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name="special-offer"
+                          checked={activeChip === offer.value || (offer.value === undefined && activeChip === undefined)}
+                          onChange={() => setActiveChip(offer.value)}
+                          className="w-4 h-4 border-gray-300 text-green-600 focus:ring-0"
+                        />
+                        <span className={`text-sm group-hover:text-green-700 ${(activeChip === offer.value || (offer.value === undefined && activeChip === undefined)) ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
+                          {offer.name}
                         </span>
                       </label>
                     ))}
@@ -1038,7 +1110,7 @@ export default function HomePage() {
         {/* Background elements */}
         <div className="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-green-800/10 blur-3xl pointer-events-none" />
         <div className="absolute -left-24 -top-24 w-96 h-96 rounded-full bg-green-700/10 blur-3xl pointer-events-none" />
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Are You a Business Buyer?</h2>
           <p className="text-green-100 text-base mb-8 max-w-2xl mx-auto font-medium">

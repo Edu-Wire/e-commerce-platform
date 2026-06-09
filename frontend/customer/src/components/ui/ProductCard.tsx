@@ -78,23 +78,30 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       to={`/product/${product.slug}`}
-      className="group bg-white flex flex-col hover:shadow-md transition-shadow duration-200 border-transparent border hover:border-gray-100 p-2"
+      className="group bg-white flex flex-col hover:shadow-md transition-shadow duration-200 border-transparent border hover:border-gray-100 p-2 h-full text-xs"
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] mb-3 bg-white rounded-sm overflow-hidden flex items-center justify-center p-1">
+      <div className="relative h-28 shrink-0 w-full mb-1.5 bg-white rounded-md overflow-hidden flex items-center justify-center p-1 group">
         {product.active_auction_id && (
           <button
             onClick={handleAuctionClick}
-            className="absolute left-2 top-2 z-10 flex items-center gap-2 animate-pulse cursor-pointer hover:scale-105 transition-transform"
+            className="absolute left-1 top-1 z-10 flex items-center gap-1.5 animate-pulse cursor-pointer hover:scale-105 transition-transform"
           >
-            <span className="rounded-full bg-red-600 text-white text-xs font-bold uppercase px-3 py-1.5 shadow-lg border-2 border-red-400">
-              Live auction
+            <span className="rounded-full bg-red-600 text-white text-[9px] font-bold uppercase px-2 py-1 shadow-md border border-red-400">
+              Live
             </span>
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
           </button>
         )}
+        
+        {/* Discount Badge Overlay */}
+        {!product.active_auction_id && product.discount_percentage > 0 && (
+          <div className="absolute top-1 left-1 z-10">
+            <span className="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-sm shadow-sm">
+              {Math.round(product.discount_percentage)}% OFF
+            </span>
+          </div>
+        )}
+
         {primaryImage ? (
           <img
             src={primaryImage}
@@ -103,7 +110,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-200">
-            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </div>
         )}
 
@@ -111,21 +118,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         {!product.active_auction_id && (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full shadow-sm flex items-center justify-center text-white font-bold border z-10 bg-green-600 hover:bg-green-700 border-green-700 transition-colors"
+            className="absolute bottom-1 right-1 w-7 h-7 rounded-full shadow-md flex items-center justify-center text-white font-bold border z-10 bg-green-600 hover:bg-green-700 border-green-700 transition-colors opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-200"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+            <svg className="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
           </button>
         )}
-      </div>
-
-      {/* Sale Badges */}
-      <div className="flex flex-wrap items-center gap-2 mb-1.5">
-        {product.discount_percentage > 0 && (
-          <span className="bg-green-700 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm">
-            {Math.round(product.discount_percentage)}% off
-          </span>
-        )}
-        <span className="text-green-700 text-[11px] font-bold uppercase tracking-tight">Great Summer Deal</span>
       </div>
 
       {/* Price Section */}
@@ -141,7 +138,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       )}
 
       {/* Title */}
-      <h3 className="text-sm text-gray-800 line-clamp-2 mb-1 group-hover:text-green-700 transition-colors">
+      <h3 className="text-xs font-bold text-gray-800 line-clamp-2 mb-1 group-hover:text-green-700 transition-colors leading-snug">
         {translatedName}
       </h3>
 
@@ -154,12 +151,6 @@ export default function ProductCard({ product }: ProductCardProps) {
         <span className="text-[11px] text-green-700 hover:text-green-800 cursor-pointer">4,281</span>
       </div>
 
-      {/* Shop Deal Link */}
-      <div className="mt-auto">
-        <span className="text-xs text-green-700 hover:text-green-800 hover:underline cursor-pointer">
-          Shop {product.brand || 'exclusive'} deals
-        </span>
-      </div>
     </Link>
   );
 }
