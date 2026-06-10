@@ -203,7 +203,7 @@ export default function Navbar() {
     navigate('/');
   };
 
-  const topLevelCategories = categories?.filter(c => !c.parent_id && c.slug !== 'clothing') ?? [];
+  const topLevelCategories = categories?.filter(c => !c.parent_id && c.slug !== 'clothing' && c.slug !== 'electronics') ?? [];
   const navCategories = topLevelCategories.map(cat => ({
     ...cat,
     children: categories?.filter(c => c.parent_id === cat.id) ?? []

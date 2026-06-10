@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { api } from '../lib/api';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
+import { removeBackground } from '@imgly/background-removal';
 
 // Outbid Retargeting Special Purchase Banner
 function OutbidOfferBanner({ offer, onDismiss, setBuyNowItem, navigate }: any) {
@@ -177,13 +178,43 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
     imageList.push(mainImage);
   }
 
+  const [processedImages, setProcessedImages] = useState<string[]>([]);
+
   useEffect(() => {
-    if (imageList.length <= 1) return;
+    let active = true;
+    const processImages = async () => {
+      const urls: string[] = [];
+      for (const url of imageList) {
+        try {
+          const blob = await removeBackground(url, {
+            publicPath: "https://static.imgly.com/@imgly/background-removal/1.4.3/dist/"
+          });
+          const objUrl = URL.createObjectURL(blob);
+          if (active) urls.push(objUrl);
+        } catch (error) {
+          console.error('Background removal failed for', url, error);
+          if (active) urls.push(url);
+        }
+      }
+      if (active) setProcessedImages(urls);
+    };
+
+    if (imageList.length > 0) {
+      processImages();
+    }
+
+    return () => { active = false; };
+  }, [JSON.stringify(imageList)]);
+
+  const displayImages = processedImages.length > 0 ? processedImages : imageList;
+
+  useEffect(() => {
+    if (displayImages.length <= 1) return;
     const timer = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % imageList.length);
+      setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
     }, 4000); // Auto slide every 4 seconds
     return () => clearInterval(timer);
-  }, [imageList.length]);
+  }, [displayImages.length]);
 
   return (
     <div className="w-full bg-white rounded-[2rem] border border-gray-200/80 shadow-xs overflow-hidden flex flex-col lg:flex-row items-stretch text-slate-800 select-none">
@@ -224,12 +255,12 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
       <div className="w-full lg:w-[35%] bg-gradient-to-tr from-[#E8F5E9] via-[#F4F9F1] to-[#FFFFFF] relative flex items-center justify-center min-h-[220px] md:min-h-[200px] border-b lg:border-b-0 border-slate-100 flex-shrink-0">
 
         {/* Crossfade Product Image Slideshow */}
-        {imageList.map((imgSrc, idx) => (
+        {displayImages.map((imgSrc, idx) => (
           <img
             key={idx}
             src={imgSrc}
             alt={`${auction.product_name} - ${idx + 1}`}
-            className={`absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] object-contain z-0 transition-opacity duration-700 ease-in-out drop-shadow-md ${idx === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] object-contain z-0 transition-opacity duration-700 ease-in-out mix-blend-multiply ${idx === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
               (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>';
@@ -238,12 +269,12 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
         ))}
 
         {/* Left/Right Slider Arrows */}
-        {imageList.length > 1 && (
+        {displayImages.length > 1 && (
           <>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setCurrentImageIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
+                setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
               }}
               className="absolute left-3.5 top-1/2 -translate-y-1/2 z-[25] w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
             >
@@ -254,7 +285,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setCurrentImageIndex((prev) => (prev + 1) % imageList.length);
+                setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
               }}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 z-[25] w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
             >
@@ -266,9 +297,9 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
         )}
 
         {/* Dot Indicators */}
-        {imageList.length > 1 && (
+        {displayImages.length > 1 && (
           <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[25] flex gap-1.5 bg-[#1B3B2B]/30 px-2.5 py-1.5 rounded-full backdrop-blur-sm">
-            {imageList.map((_, idx) => (
+            {displayImages.map((_, idx) => (
               <button
                 key={idx}
                 onClick={(e) => {
@@ -490,15 +521,45 @@ export default function HomePage() {
 
   if (heroImages.length === 0) heroImages.push('/summer_essentials_hero.png');
 
+  const [processedHeroImages, setProcessedHeroImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const processImages = async () => {
+      const urls: string[] = [];
+      for (const url of heroImages) {
+        try {
+          const blob = await removeBackground(url, {
+            publicPath: "https://static.imgly.com/@imgly/background-removal/1.4.3/dist/"
+          });
+          const objUrl = URL.createObjectURL(blob);
+          if (active) urls.push(objUrl);
+        } catch (error) {
+          console.error('Background removal failed for', url, error);
+          if (active) urls.push(url);
+        }
+      }
+      if (active) setProcessedHeroImages(urls);
+    };
+
+    if (heroImages.length > 0) {
+      processImages();
+    }
+
+    return () => { active = false; };
+  }, [JSON.stringify(heroImages)]);
+
+  const displayHeroImages = processedHeroImages.length > 0 ? processedHeroImages : heroImages;
+
   const [heroImageIndex, setHeroImageIndex] = useState(0);
 
   useEffect(() => {
-    if (heroImages.length <= 1) return;
+    if (displayHeroImages.length <= 1) return;
     const timer = setInterval(() => {
-      setHeroImageIndex(prev => (prev + 1) % heroImages.length);
+      setHeroImageIndex(prev => (prev + 1) % displayHeroImages.length);
     }, 3000);
     return () => clearInterval(timer);
-  }, [heroImages.length]);
+  }, [displayHeroImages.length]);
 
   const topCategories = categories?.filter(c => !c.parent_id && c.slug !== 'clothing').slice(0, 8) ?? [];
 
@@ -553,20 +614,20 @@ export default function HomePage() {
                     </Link>
                   </div>
                   <div className="w-full md:w-[40%] flex-shrink-0 flex items-center justify-center relative min-h-[200px] sm:min-h-[250px] group/slider">
-                    {heroImages.map((imgSrc, idx) => (
+                    {displayHeroImages.map((imgSrc, idx) => (
                       <img
                         key={idx}
                         src={imgSrc}
                         alt="Summer Essentials"
-                        className={`absolute inset-0 m-auto max-h-[240px] sm:max-h-[280px] w-auto object-contain drop-shadow-lg rounded-2xl transform hover:scale-105 transition-all duration-700 ease-in-out ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                        className={`absolute inset-0 m-auto max-h-[240px] sm:max-h-[280px] w-auto object-contain transform hover:scale-105 transition-all duration-700 ease-in-out mix-blend-multiply ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                       />
                     ))}
-                    {heroImages.length > 1 && (
+                    {displayHeroImages.length > 1 && (
                       <>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setHeroImageIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+                            setHeroImageIndex((prev) => (prev - 1 + displayHeroImages.length) % displayHeroImages.length);
                           }}
                           className="absolute left-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
                         >
@@ -577,7 +638,7 @@ export default function HomePage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setHeroImageIndex((prev) => (prev + 1) % heroImages.length);
+                            setHeroImageIndex((prev) => (prev + 1) % displayHeroImages.length);
                           }}
                           className="absolute right-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
                         >

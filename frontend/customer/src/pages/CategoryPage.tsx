@@ -1033,36 +1033,6 @@ export default function CategoryPage() {
           </span>
         </nav>
 
-        {/* Category Banner for Electronics - Summer Sale */}
-        {slug === 'electronics' && (
-          <div className="mb-8">
-            <div className="mb-8 relative rounded-lg overflow-hidden group shadow-lg">
-              <img
-                src="/summer_sale_banner.png"
-                alt="Great Summer Sale"
-                className="w-full h-[250px] md:h-[400px] object-cover"
-              />
-            </div>
-
-            {/* Scrolling Brands Carousel - Full Width Text Based */}
-            <div className="mb-12 bg-white py-8 border-y border-gray-200 overflow-hidden relative">
-              <div className="flex animate-scroll whitespace-nowrap w-max">
-                {/* First set of brands */}
-                <div className="flex items-center flex-shrink-0">
-                  {['SAMSUNG', 'APPLE', 'LG', 'SONY', 'XIAOMI', 'HP', 'DELL', 'ACER', 'ASUS', 'BOSE', 'LOGITECH', 'LENOVO', 'NOKIA', 'PANASONIC'].map(brand => (
-                    <span key={brand} className="text-2xl font-black text-[#0f1111] mx-10 tracking-tighter">{brand}</span>
-                  ))}
-                </div>
-                {/* Second identical set for seamless loop */}
-                <div className="flex items-center flex-shrink-0">
-                  {['SAMSUNG', 'APPLE', 'LG', 'SONY', 'XIAOMI', 'HP', 'DELL', 'ACER', 'ASUS', 'BOSE', 'LOGITECH', 'LENOVO', 'NOKIA', 'PANASONIC'].map(brand => (
-                    <span key={brand + '_2'} className="text-2xl font-black text-[#0f1111] mx-10 tracking-tighter">{brand}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="flex gap-8">
           <div className="hidden lg:block w-64 flex-shrink-0">
