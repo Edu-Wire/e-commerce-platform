@@ -355,12 +355,10 @@ export async function createProductReview(req: Request, res: Response): Promise<
       return;
     }
 
-    // Insert or update review
+    // Insert review
     const result = await queryOne(
       `INSERT INTO product_reviews (product_id, customer_id, rating, title, content)
        VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (product_id, customer_id)
-       DO UPDATE SET rating = EXCLUDED.rating, title = EXCLUDED.title, content = EXCLUDED.content, created_at = NOW()
        RETURNING *`,
       [productId, customerId, ratingNum, title || '', content || '']
     );
@@ -372,7 +370,7 @@ export async function createProductReview(req: Request, res: Response): Promise<
     res.json(success(result));
   } catch (err) {
     console.error('createProductReview error:', err);
-    res.status(500).json(error('Internal server error'));
+    res.status(500).json(error(err instanceof Error ? err.message : String(err)));
   }
 }
 

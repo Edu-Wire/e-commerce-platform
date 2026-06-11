@@ -65,8 +65,8 @@ function OutbidOfferBanner({ offer, onDismiss, setBuyNowItem, navigate }: any) {
       stock_quantity: 10,
       auction_id: offer.id,
     };
-    setBuyNowItem(item);
-    navigate('/checkout');
+    useCartStore.getState().addItem(item);
+    navigate('/cart');
   };
 
   return (
@@ -702,173 +702,137 @@ export default function HomePage() {
 
 
 
-      {/* Great Summer Sale Results Section */}
-      <section className="bg-white pt-1 pb-6 border-b border-gray-100">
+      {/* Policy Strip */}
+      <section className="bg-white py-6 border-b border-gray-50">
         <div className="max-w-[1500px] mx-auto px-4">
-
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sale Sidebar Filters */}
-            <aside className="w-full lg:w-64 flex-shrink-0 hidden lg:block sticky top-4 self-start">
-              <div className="space-y-6">
-                {(saleCategory || minPrice > 0 || maxPrice < 60000 || minDiscount > 0 || maxDiscount < 100) && (
-                  <div>
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Filtered by</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {saleCategory && (
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs font-bold border border-green-200 rounded-sm">
-                          {saleCategory.charAt(0).toUpperCase() + saleCategory.slice(1)}
-                          <span className="cursor-pointer" onClick={() => setSaleCategory(undefined)}>×</span>
-                        </div>
-                      )}
-                      {(minPrice > 0 || maxPrice < 60000) && (
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-xs font-bold border border-green-200 rounded-sm">
-                          Price: ₹{minPrice} - ₹{maxPrice >= 60000 ? '60,000+' : maxPrice}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSaleCategory(undefined);
-                        setMinPrice(0);
-                        setMaxPrice(60000);
-                        setMinDiscount(0);
-                        setMaxDiscount(100);
-                      }}
-                      className="block text-xs text-green-700 hover:text-green-900 mt-2"
-                    >
-                      Clear Filters
-                    </button>
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-3">Filters</h3>
-                  <div className="space-y-2">
-                    {saleDepartments.map((dept, i) => (
-                      <label key={i} className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                          type="radio"
-                          name="dept"
-                          checked={saleCategory === dept.slug}
-                          onChange={() => setSaleCategory(dept.slug)}
-                          className="w-4 h-4 border-gray-300 text-green-600 focus:ring-0"
-                        />
-                        <span className={`text-sm group-hover:text-green-700 ${saleCategory === dept.slug ? 'font-bold text-gray-900' : 'text-gray-700'}`}>
-                          {dept.name}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-3">Brands</h3>
-                  <div className="space-y-2">
-                    {['Voltas', 'Sony', 'Panasonic', 'LG'].map((brand, i) => (
-                      <label key={i} className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" className="w-4 h-4 border-gray-300 rounded-sm text-green-600 focus:ring-0" />
-                        <span className="text-sm text-gray-700 group-hover:text-green-700">{brand}</span>
-                      </label>
-                    ))}
-                    <button className="text-xs text-green-700 hover:text-green-900 mt-1">See more</button>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-3">Customer Reviews</h3>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="radio" name="rating" defaultChecked className="w-4 h-4 border-gray-300 text-green-600 focus:ring-0" />
-                      <span className="text-sm text-gray-700 group-hover:text-green-700">All</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <input type="radio" name="rating" className="w-4 h-4 border-gray-300 text-green-600 focus:ring-0" />
-                      <div className="flex text-amber-500">
-                        {[1, 2, 3, 4].map(i => <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
-                        <svg className="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                      </div>
-                      <span className="text-sm text-gray-700 group-hover:text-green-700">and up</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-2">Price</h3>
-                  <p className="text-xs font-bold text-gray-800 mb-4">₹{minPrice.toLocaleString()} - ₹{maxPrice >= 60000 ? '60,000+' : maxPrice.toLocaleString()}</p>
-                  <div className="relative h-1.5 bg-gray-200 rounded-full mb-10 group/slider">
-                    <input
-                      type="range" min="0" max="60000" step="1000" value={minPrice}
-                      onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 1000))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-20 custom-range"
-                    />
-                    <input
-                      type="range" min="0" max="60000" step="1000" value={maxPrice}
-                      onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 1000))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-10 custom-range"
-                    />
-                    <div className="absolute h-1.5 bg-green-600 rounded-full z-0" style={{ left: `${(minPrice / 60000) * 100}%`, right: `${100 - (Math.min(maxPrice, 60000) / 60000) * 100}%` }}></div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 mb-2">Discount</h3>
-                  <p className="text-xs font-bold text-gray-800 mb-4">{minDiscount}% - {maxDiscount}%</p>
-                  <div className="relative h-1.5 bg-gray-200 rounded-full mb-8 group/slider">
-                    <input
-                      type="range" min="0" max="100" step="5" value={minDiscount}
-                      onChange={(e) => setMinDiscount(Math.min(Number(e.target.value), maxDiscount - 5))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-20 custom-range"
-                    />
-                    <input
-                      type="range" min="0" max="100" step="5" value={maxDiscount}
-                      onChange={(e) => setMaxDiscount(Math.max(Number(e.target.value), minDiscount + 5))}
-                      className="absolute inset-0 w-full h-1.5 bg-transparent appearance-none cursor-pointer accent-green-600 pointer-events-auto z-10 custom-range"
-                    />
-                    <div className="absolute h-1.5 bg-green-600 rounded-full z-0" style={{ left: `${minDiscount}%`, right: `${100 - maxDiscount}%` }}></div>
-                  </div>
-                </div>
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </div>
-            </aside>
-
-            {/* Product Grid */}
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">Featured Products</h2>
-                <Link to="/category/all?is_featured=true" className="text-green-705 hover:text-green-900 text-sm font-bold">View All</Link>
+              <div>
+                <h4 className="text-sm font-bold text-gray-900">100% Original</h4>
+                <p className="text-xs text-gray-500 font-medium">Genuine Products</p>
               </div>
-
-              {featuredLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="aspect-[3/4] bg-gray-100 animate-pulse rounded-sm"></div>)}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {featuredData?.map((product: any) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-
-              {/* View more deals bar */}
-              <div className="mt-8 border-t border-gray-100 pt-6">
-                <Link
-                  to="/category/all?is_featured=true"
-                  className="block w-full py-3 bg-[#f7f8f8] hover:bg-gray-100 border border-gray-200 rounded-sm text-center text-sm font-medium text-gray-700 transition-colors"
-                >
-                  View more deals
-                </Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-gray-900">Fast Delivery</h4>
+                <p className="text-xs text-gray-500 font-medium">Quick & Reliable</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-gray-900">Easy Returns</h4>
+                <p className="text-xs text-gray-500 font-medium">Hassle Free</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-gray-900">Secure Payment</h4>
+                <p className="text-xs text-gray-500 font-medium">100% Protected</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-gray-900">Best Prices</h4>
+                <p className="text-xs text-gray-500 font-medium">Everyday Low Prices</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Inspired by browsing history */}
-      <section className="bg-white py-8 border-b border-gray-100">
+
+
+      {/* Deals of the Day */}
+      <section className="bg-white py-6">
         <div className="max-w-[1500px] mx-auto px-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Inspired by your browsing history</h2>
-            <span className="text-xs text-gray-500">Page 1 of 7</span>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Deals of the Day</h2>
+            <Link to="/category/all?sort=discount_desc" className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-green-700 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full transition-colors border border-gray-100">
+              View All
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {dealsData?.data.slice(0, 5).map((product: any) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mid Banner Split */}
+      <section className="bg-white py-6">
+        <div className="max-w-[1500px] mx-auto px-4 flex flex-col md:flex-row gap-6">
+          {/* Bank Offer */}
+          <div className="flex-1 bg-gradient-to-r from-amber-50 to-amber-100/50 rounded-[2rem] p-8 flex items-center justify-between relative overflow-hidden border border-amber-200/50 group cursor-pointer hover:shadow-sm transition-all">
+            <div className="relative z-10">
+              <p className="text-amber-800 text-sm font-bold mb-1">Bank Offer</p>
+              <h3 className="text-4xl font-black text-gray-900 mb-2">20% OFF</h3>
+              <p className="text-gray-600 text-sm font-medium mb-6">On all orders above ₹5000</p>
+              <button className="bg-[#1B3B2B] hover:bg-[#2A4C3A] text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all flex items-center gap-2">
+                Shop Now
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </button>
+            </div>
+            <div className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-64 h-64 bg-amber-200/40 rounded-full blur-3xl"></div>
+            {/* Decorative Card Image Placeholder */}
+            <div className="absolute right-8 top-1/2 -translate-y-1/2 w-40 h-24 bg-gradient-to-tr from-[#3E654F] to-[#5a8c70] rounded-xl shadow-2xl -rotate-12 transform group-hover:rotate-0 transition-transform duration-500 flex items-center justify-center overflow-hidden border border-white/20">
+              <div className="absolute top-3 left-3 w-6 h-4 bg-yellow-400/80 rounded-sm"></div>
+              <div className="absolute bottom-3 left-3 text-white/50 text-[10px] font-mono tracking-widest">**** **** **** 1234</div>
+              <div className="absolute bottom-3 right-3 text-white/80 text-[10px] font-bold italic">BuyMore</div>
+            </div>
+          </div>
+
+          {/* Luxury Sale */}
+          <div className="flex-1 bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-[2rem] p-8 flex items-center justify-between relative overflow-hidden border border-purple-100 group cursor-pointer hover:shadow-sm transition-all">
+            <div className="relative z-10">
+              <p className="text-purple-800 text-sm font-bold mb-1">Luxury Sale</p>
+              <h3 className="text-4xl font-black text-gray-900 mb-2">Up to 40% Off</h3>
+              <p className="text-gray-600 text-sm font-medium mb-6">On selected products</p>
+              <button className="bg-purple-800 hover:bg-purple-900 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all flex items-center gap-2">
+                Explore Now
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </button>
+            </div>
+            <div className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-64 h-64 bg-fuchsia-200/40 rounded-full blur-3xl"></div>
+            {/* Decorative Gift Image Placeholder */}
+            <div className="absolute right-8 bottom-0 w-32 h-32 bg-gradient-to-t from-purple-300 to-purple-200 rounded-t-lg shadow-lg translate-y-4 group-hover:translate-y-0 transition-transform duration-500 border border-white/40 flex items-center justify-center">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 -mt-4 bg-fuchsia-300 rounded-full blur-sm"></div>
+              <div className="w-full h-2 bg-purple-100/50 absolute top-1/2 -translate-y-1/2"></div>
+              <div className="h-full w-2 bg-purple-100/50 absolute left-1/2 -translate-x-1/2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
+
+
+      {/* Customers Also Loved */}
+      <section className="bg-white py-10">
+        <div className="max-w-[1500px] mx-auto px-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Customers Also Loved</h2>
+            <Link to="/category/all?sort=newest" className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-green-700 transition-colors">
+              View All
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
           </div>
 
           <div className="relative group">
@@ -884,7 +848,7 @@ export default function HomePage() {
               className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth"
             >
               {newArrivalsData?.data.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-[180px]">
+                <div key={product.id} className="flex-shrink-0 w-[240px]">
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -900,39 +864,84 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Customers also viewed */}
-      <section className="bg-white py-8 border-b border-gray-100">
+      {/* Latest Deals For This Week */}
+      <section className="bg-white py-12 border-t border-gray-100">
         <div className="max-w-[1500px] mx-auto px-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Customers who viewed items in your browsing history also viewed</h2>
-            <span className="text-xs text-gray-500">Page 1 of 5</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-gray-100 pb-4 gap-2">
+            <div className="flex items-end gap-3">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Latest Deals for This Week</h2>
+              <p className="text-sm text-gray-400 hidden sm:block pb-1">Don't miss out on this week's deals</p>
+            </div>
+            <Link to="/category/all?sort=price_asc" className="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-green-700 transition-colors whitespace-nowrap">
+              View All
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
           </div>
 
-          <div className="relative group">
-            <button
-              onClick={() => scroll(viewedRef, 'left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {dealsData?.data?.slice(2, 4).map((product, idx) => {
+              const discount = Math.round(product.discount_percentage) || 15;
+              const available = product.stock_quantity || 20;
+              const sold = (product.id * 7) % 50 + 10; // Pseudo-random deterministic sold count
+              const percentSold = (sold / (available + sold)) * 100;
+              
+              let imgUrl = '/placeholder.png';
+              try {
+                const parsed = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  imgUrl = typeof parsed[0] === 'string' ? parsed[0] : (parsed[0]?.url || '/placeholder.png');
+                  if (imgUrl.startsWith('/')) imgUrl = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${imgUrl}`;
+                }
+              } catch (e) {}
 
-            <div
-              ref={viewedRef}
-              className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth"
-            >
-              {dealsData?.data.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-[180px]">
-                  <ProductCard product={product} />
+              return (
+                <div key={product.id} className="bg-white rounded-[1rem] border border-gray-200 overflow-hidden flex relative hover:shadow-md transition-shadow group">
+                  {/* Discount Badge */}
+                  <div className="absolute top-0 left-0 bg-[#ef4444] text-white text-xs font-bold px-3 py-2 rounded-br-xl z-10">
+                    {discount}%
+                  </div>
+                  
+                  {/* Image */}
+                  <Link to={`/product/${product.slug}`} className="w-[45%] p-6 flex items-center justify-center bg-white relative">
+                    <img src={imgUrl} alt={product.name} className="w-full h-32 object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+                    <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[#ef4444] shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-colors border border-gray-100 z-10">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                    </button>
+                  </Link>
+
+                  {/* Content */}
+                  <div className="w-[55%] p-5 flex flex-col justify-center border-l border-gray-50 bg-white">
+                    <Link to={`/product/${product.slug}`}>
+                      <h3 className="font-bold text-gray-800 line-clamp-2 hover:text-green-700 transition-colors text-sm">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    
+                    <div className="flex items-center gap-1 mt-2.5">
+                      {[...Array(5)].map((_, i) => (
+                        <svg key={i} className={`w-3.5 h-3.5 ${i < 4 ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                      ))}
+                      <span className="text-xs text-gray-500 ml-1 font-medium">1 review</span>
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-gray-400 text-sm font-medium line-through decoration-gray-300">₹{product.mrp.toLocaleString('en-IN')}</span>
+                      <span className="text-[#ef4444] font-black text-xl">₹{product.selling_price.toLocaleString('en-IN')}</span>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-gradient-to-r from-orange-400 to-[#ef4444] h-1.5 rounded-full" style={{ width: `${percentSold}%` }}></div>
+                      </div>
+                      <div className="flex items-center justify-between mt-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                        <span>Available: <span className="text-gray-800">{available}</span></span>
+                        <span>Sold: <span className="text-gray-800">{sold}</span></span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => scroll(viewedRef, 'right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 w-10 h-10 bg-white border border-gray-200 rounded shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10 hidden md:flex"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
+              );
+            })}
           </div>
         </div>
       </section>

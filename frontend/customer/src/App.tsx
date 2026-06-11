@@ -13,6 +13,7 @@ import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import B2BDashboardPage from './pages/B2BDashboardPage';
 import AccountPage from './pages/AccountPage';
+import WishlistPage from './pages/WishlistPage';
 import CustomerServicePage from './pages/CServicePage';
 import LiveAuctionPage from './pages/LiveAuctionPage';
 
@@ -104,6 +105,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <AccountPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/wishlist"
+                  element={
+                    <ProtectedRoute>
+                      <WishlistPage />
                     </ProtectedRoute>
                   }
                 />

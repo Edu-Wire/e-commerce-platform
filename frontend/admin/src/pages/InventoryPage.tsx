@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { 
-  Search, 
-  Download, 
-  Plus, 
-  Edit2, 
+import {
+  Search,
+  Download,
+  Plus,
+  Edit2,
   Package
 } from 'lucide-react';
 import { useAdminInventory, useUpdateStock, type InventoryFilters } from '../hooks/useAdminInventory';
@@ -118,7 +118,7 @@ export default function InventoryPage() {
   return (
     <div className="min-h-full bg-[#eaeded] -m-6 p-4 sm:p-6 text-[#111] font-sans antialiased">
       <div className="max-w-[1600px] mx-auto space-y-4">
-        
+
         {/* Amazon Seller Central Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white px-5 py-4 border border-gray-300 rounded shadow-sm gap-4">
           <div>
@@ -133,7 +133,7 @@ export default function InventoryPage() {
               <a href="#" className="text-[#0066c0] hover:text-[#c45500] hover:underline ml-1">Learn more</a>
             </p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => void handleExport()}
@@ -166,7 +166,7 @@ export default function InventoryPage() {
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             </div>
-            
+
             {/* Category dropdown */}
             <select
               value={filters.category_id ?? ''}
@@ -174,7 +174,7 @@ export default function InventoryPage() {
               className="px-3 py-1.5 bg-white border border-gray-300 rounded text-xs outline-none focus:ring-1 focus:ring-[#e47911] focus:border-[#e47911]"
             >
               <option value="">All Categories</option>
-              {(categories ?? []).map((c) => (
+              {(categories ?? []).filter((c) => !c.parent_id).map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -182,11 +182,10 @@ export default function InventoryPage() {
             {/* Low stock only filter */}
             <button
               onClick={() => setFilters(f => ({ ...f, low_stock: !f.low_stock, page: 1 }))}
-              className={`px-3 py-1.5 text-xs font-semibold rounded border transition-all ${
-                filters.low_stock 
-                  ? 'bg-amber-50 border-[#e47911] text-[#b25e00]' 
+              className={`px-3 py-1.5 text-xs font-semibold rounded border transition-all ${filters.low_stock
+                  ? 'bg-amber-50 border-[#e47911] text-[#b25e00]'
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
+                }`}
             >
               Low stock only
             </button>
@@ -251,8 +250,8 @@ export default function InventoryPage() {
                 ) : (
                   items.map((item) => {
                     return (
-                      <tr 
-                        key={item.id} 
+                      <tr
+                        key={item.id}
                         className="hover:bg-[#fcfcfc] transition-colors border-b border-gray-200 text-xs"
                       >
                         <td className="px-4 py-4 align-middle">
@@ -268,8 +267,8 @@ export default function InventoryPage() {
                               )}
                             </div>
                             <div className="min-w-0">
-                              <Link 
-                                to={`/products/edit/${item.product_id}`}
+                              <Link
+                                to={`/products/${(item.product_id || item.id)}/edit`}
                                 className="font-semibold text-[#0066c0] hover:text-[#c45500] hover:underline block truncate max-w-[400px]"
                               >
                                 {item.product_name}
@@ -277,7 +276,7 @@ export default function InventoryPage() {
                               <div className="flex items-center gap-2 mt-0.5 text-gray-500 font-mono text-[10px]">
                                 <span>SKU: {item.product_sku ?? 'N/A'}</span>
                                 <span>|</span>
-                                <span>ID: {String(item.product_id ?? item.id ?? '').slice(0, 8)}</span>
+                                <span>ID: {String((item.product_id || item.id) ?? item.id ?? '').slice(0, 8)}</span>
                               </div>
                             </div>
                           </div>
@@ -292,7 +291,7 @@ export default function InventoryPage() {
                           <div className="flex justify-center">
                             <InlineStock
                               item={item}
-                              onSave={(v) => void handleStockSave(item.product_id, v)}
+                              onSave={(v) => void handleStockSave((item.product_id || item.id), v)}
                             />
                           </div>
                         </td>
@@ -304,8 +303,8 @@ export default function InventoryPage() {
                         </td>
                         <td className="px-4 py-4 align-middle text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Link 
-                              to={`/products/edit/${item.product_id}`}
+                            <Link
+                              to={`/products/${(item.product_id || item.id)}/edit`}
                               className="px-2.5 py-1 bg-gradient-to-b from-[#f7f8fa] to-[#e7e9ec] hover:from-[#e7e9ec] hover:to-[#d9dbde] border border-[#adb1b8] text-gray-800 rounded font-semibold text-[11px] shadow-sm transition-all"
                             >
                               Edit
@@ -337,7 +336,7 @@ export default function InventoryPage() {
             ) : (
               items.map((item) => {
                 return (
-                  <div 
+                  <div
                     key={item.id}
                     className="p-4 bg-white hover:bg-gray-50 transition-all flex flex-col gap-3 text-xs"
                   >
@@ -352,7 +351,7 @@ export default function InventoryPage() {
                         </div>
                         <div className="min-w-0">
                           <Link
-                            to={`/products/edit/${item.product_id}`}
+                            to={`/products/${(item.product_id || item.id)}/edit`}
                             className="font-semibold text-[#0066c0] hover:underline truncate block max-w-[200px]"
                           >
                             {item.product_name}
@@ -372,7 +371,7 @@ export default function InventoryPage() {
                           <div className="mt-1">
                             <InlineStock
                               item={item}
-                              onSave={(v) => void handleStockSave(item.product_id, v)}
+                              onSave={(v) => void handleStockSave((item.product_id || item.id), v)}
                             />
                           </div>
                         </div>
@@ -392,8 +391,8 @@ export default function InventoryPage() {
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-0.5">
-                      <Link 
-                        to={`/products/edit/${item.product_id}`}
+                      <Link
+                        to={`/products/${(item.product_id || item.id)}/edit`}
                         className="px-4 py-1.5 bg-gradient-to-b from-[#f7f8fa] to-[#e7e9ec] hover:from-[#e7e9ec] hover:to-[#d9dbde] border border-[#adb1b8] text-gray-800 rounded font-semibold text-center text-xs shadow-sm transition-all flex-1"
                       >
                         Edit Listing

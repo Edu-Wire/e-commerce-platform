@@ -6,17 +6,28 @@ import { Product } from '../../types';
 
 export async function getInventory(req: Request, res: Response): Promise<void> {
   try {
-    const { low_stock, category, search } = req.query;
+    const { low_stock, category, category_id, search } = req.query;
     const { page, limit } = getPaginationParams(req.query as Record<string, unknown>);
     const offset = getOffset(page, limit);
 
-    const conditions: string[] = [];
+    const conditions: string[] = ['p.is_active = true'];
     const params: unknown[] = [];
     let paramIdx = 1;
 
     if (category) {
       conditions.push(`c.slug = $${paramIdx++}`);
       params.push(category);
+    }
+    if (category_id) {
+      conditions.push(`p.category_id IN (
+        WITH RECURSIVE cat_tree AS (
+          SELECT id FROM categories WHERE id = $${paramIdx++}
+          UNION ALL
+          SELECT c.id FROM categories c JOIN cat_tree ct ON ct.id = c.parent_id
+        )
+        SELECT id FROM cat_tree
+      )`);
+      params.push(parseInt(String(category_id), 10));
     }
     if (low_stock === 'true') {
       conditions.push('p.stock_quantity <= p.minimum_stock_alert');
@@ -37,9 +48,10 @@ export async function getInventory(req: Request, res: Response): Promise<void> {
 
     const products = await query<{
       id: number;
-      name: string;
-      sku: string;
-      images: any;
+      product_id: number;
+      product_name: string;
+      product_sku: string;
+      image_url: string | null;
       category_name: string;
       category_slug: string;
       stock_quantity: number;
@@ -54,7 +66,11 @@ export async function getInventory(req: Request, res: Response): Promise<void> {
       auction_priority: number;
     }>(
       `SELECT
-         p.id, p.name, p.sku, p.images,
+         p.id,
+         p.id as product_id,
+         p.name as product_name,
+         p.sku as product_sku,
+         p.images->0->>'url' as image_url,
          c.name as category_name,
          c.slug as category_slug,
          p.stock_quantity,

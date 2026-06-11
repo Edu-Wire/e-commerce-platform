@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Product } from '../../types';
 import { useCartStore } from '../../store/cartStore';
+import { useWishlistStore } from '../../store/wishlistStore';
 import ConditionBadge from './ConditionBadge';
 import { useState, useEffect } from 'react';
 import { useLanguageStore } from '../../store/languageStore';
@@ -18,6 +19,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore(s => s.addItem);
   const setDrawerOpen = useCartStore(s => s.setDrawerOpen);
   const setLastAddedItem = useCartStore(s => s.setLastAddedItem);
+  const { items: wishlistItems, addItem: addWishlistItem, removeItem: removeWishlistItem, isInWishlist } = useWishlistStore();
   const { language } = useLanguageStore();
   const [translatedName, setTranslatedName] = useState(product.name);
 
@@ -75,90 +77,133 @@ export default function ProductCard({ product }: ProductCardProps) {
     navigate(`/live-auction/${product.active_auction_id}`);
   };
 
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInWishlist(product.id)) {
+      removeWishlistItem(product.id);
+      toast.success(`${product.name} removed from wishlist!`);
+    } else {
+      addWishlistItem({
+        product_id: product.id,
+        name: product.name,
+        slug: product.slug,
+        image: primaryImage ?? undefined,
+        mrp: product.mrp,
+        price: product.selling_price,
+        condition: product.condition,
+        sku: product.sku,
+        stock_quantity: product.stock_quantity
+      });
+      toast.success(`${product.name} added to wishlist!`);
+    }
+  };
+
+  const colors = [
+    'bg-[#e6eaf0]', // Gray-blue
+    'bg-[#f4edd4]', // Yellow-orange
+    'bg-[#d5f0ea]', // Teal
+    'bg-[#d7f0df]', // Green
+    'bg-[#f5dadb]', // Red/Pink
+  ];
+  const bgColor = colors[product.id % colors.length];
+
   return (
     <Link
       to={`/product/${product.slug}`}
-      className="group bg-white flex flex-col hover:shadow-md transition-shadow duration-200 border-transparent border hover:border-gray-100 p-1.5"
+      className="group bg-white flex flex-col rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 overflow-hidden relative"
     >
-      {/* Image Container */}
-      <div className="relative h-[100px] w-full mb-1.2 bg-white rounded-sm overflow-hidden flex items-center justify-center p-1">
-        {product.active_auction_id && (
-          <button
-            onClick={handleAuctionClick}
-            className="absolute left-2 top-2 z-10 flex items-center gap-2 animate-pulse cursor-pointer hover:scale-105 transition-transform"
-          >
-            <span className="rounded-full bg-red-600 text-white text-xs font-bold uppercase px-3 py-1.5 shadow-lg border-2 border-red-400">
-              Live auction
-            </span>
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </button>
+      {/* Top Image Section */}
+      <div className={`relative h-[160px] w-full ${bgColor} flex items-center justify-center border-b-[3px] border-dotted border-gray-300/40 p-4`}>
+        {/* Discount Badge */}
+        {product.discount_percentage > 0 && (
+          <div className="absolute top-3 left-3 bg-[#eb3449] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
+            {Math.round(product.discount_percentage)}% off
+          </div>
         )}
+
+        {/* Wishlist Button */}
+        <button
+          onClick={handleWishlistToggle}
+          className={`absolute top-3 right-3 w-7 h-7 rounded-full shadow-sm flex items-center justify-center font-bold z-20 transition-colors ${
+            isInWishlist(product.id)
+              ? 'bg-red-50 text-red-500 hover:bg-red-100'
+              : 'bg-white text-gray-400 hover:text-red-500 hover:bg-red-50'
+          }`}
+          title={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <svg className="w-4 h-4" fill={isInWishlist(product.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
+
+        {/* White Glow Circle */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+           <div className="w-28 h-28 bg-white/60 rounded-full blur-xl"></div>
+           <div className="absolute w-24 h-24 bg-white/50 rounded-full"></div>
+        </div>
+
+        {/* Product Image */}
         {primaryImage ? (
           <img
             src={primaryImage}
             alt={product.name}
-            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+            className="max-w-[110px] max-h-[110px] object-contain relative z-10 group-hover:scale-110 transition-transform duration-500 mix-blend-multiply"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-200">
-            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <div className="w-full h-full flex items-center justify-center text-gray-400 relative z-10">
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </div>
         )}
 
-        {/* Action Button */}
-        {!product.active_auction_id && (
+        {/* Out of Stock Overlay / Badge */}
+        {isOutOfStock && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+            <span className="bg-red-500/90 text-white text-[10px] font-bold uppercase px-3 py-1.5 rounded-full shadow-md backdrop-blur-sm border border-red-400">
+              Out of Stock
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Content Section */}
+      <div className="p-3.5 sm:p-4 flex flex-col flex-1 bg-white">
+        <div className="bg-green-50 text-[#00a859] text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded w-fit flex items-center gap-1 tracking-wider mb-2">
+          <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" /></svg>
+          Great Summer Deal
+        </div>
+
+        <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-1.5 leading-snug group-hover:text-[#00a859] transition-colors">
+          {translatedName}
+        </h3>
+
+        <div className="flex items-center gap-1 mb-4">
+          <div className="flex text-amber-400">
+            {[1, 2, 3, 4].map(i => <svg key={i} className="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
+            <svg className="w-3 h-3 text-gray-200 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+          </div>
+          <span className="text-[10px] font-bold text-gray-500 hover:text-gray-700 cursor-pointer">{Number(product.average_rating || 4.5).toFixed(1)}</span>
+        </div>
+
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base font-extrabold text-gray-900 leading-none">₹{product.selling_price.toLocaleString('en-IN')}</span>
+            <span className="text-[10px] font-medium text-gray-400 line-through">₹{product.mrp.toLocaleString('en-IN')}</span>
+          </div>
+
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full shadow-sm flex items-center justify-center text-white font-bold border z-10 bg-green-600 hover:bg-green-700 border-green-700 transition-colors"
+            disabled={isOutOfStock}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white font-bold text-[11px] transition-colors shadow-sm ${
+              isOutOfStock 
+                ? 'bg-gray-400 cursor-not-allowed opacity-70' 
+                : 'bg-[#00a859] hover:bg-[#008f4c] active:scale-95'
+            }`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            Add
           </button>
-        )}
-      </div>
-
-      {/* Sale Badges */}
-      <div className="flex flex-wrap items-center gap-2 mb-1.5">
-        {product.discount_percentage > 0 && (
-          <span className="bg-green-700 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm">
-            {Math.round(product.discount_percentage)}% off
-          </span>
-        )}
-        <span className="text-green-700 text-[11px] font-bold uppercase tracking-tight">Great Summer Deal</span>
-      </div>
-
-      {/* Price Section */}
-      <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-[10px] align-top mt-1">₹</span>
-        <span className="text-lg font-bold text-gray-900 leading-none">{product.selling_price.toLocaleString('en-IN')}</span>
-        <span className="text-[11px] text-gray-500 ml-1">M.R.P.: <span className="line-through">{fmt(product.mrp)}</span></span>
-      </div>
-      {product.active_auction_id && (
-        <div className="text-[11px] text-red-600 mb-1">
-          Current bid: ₹{Number(product.auction_current_highest_bid ?? product.auction_reserve_price ?? 0).toLocaleString('en-IN')}
         </div>
-      )}
-
-      {/* Title */}
-      <h3 className="text-xs font-medium text-gray-800 line-clamp-1 mb-1 group-hover:text-green-700 transition-colors">
-        {translatedName}
-      </h3>
-
-      {/* Ratings Placeholder */}
-      <div className="flex items-center gap-1 mb-2">
-        <div className="flex text-amber-500">
-          {[1, 2, 3, 4].map(i => <svg key={i} className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
-          <svg className="w-3.5 h-3.5 text-gray-300 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-        </div>
-        <span className="text-[11px] text-green-700 hover:text-green-800 cursor-pointer">4,281</span>
-      </div>
-
-      {/* Shop Deal Link */}
-      <div className="mt-auto">
-        <span className="text-xs text-green-700 hover:text-green-800 hover:underline cursor-pointer">
-          Shop {product.brand || 'exclusive'} deals
-        </span>
       </div>
     </Link>
   );

@@ -2,14 +2,17 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
+import { useWishlistStore } from '../../store/wishlistStore';
 import toast from 'react-hot-toast';
 import { useCategories } from '../../hooks/useCategories';
 import { useLanguageStore, translations, Language } from '../../store/languageStore';
 import { useNotifications, useMarkAsRead, useMarkAllAsRead, Notification } from '../../hooks/useNotifications';
+import { api } from '../../lib/api';
 
 export default function Navbar() {
   const { customer, logout, updateProfile } = useAuthStore();
   const totalItems = useCartStore(s => s.totalItems());
+  const wishlistItems = useWishlistStore(s => s.items);
   const { language, setLanguage } = useLanguageStore();
   const t = translations[language] || translations['EN'];
   const { data: categories } = useCategories();
@@ -128,10 +131,9 @@ export default function Navbar() {
       const timer = setTimeout(async () => {
         setIsSearching(true);
         try {
-          const res = await fetch(`${(import.meta as any).env.VITE_API_URL || ''}/api/products?search=${encodeURIComponent(searchQuery.trim())}&limit=5`);
-          const json = await res.json();
-          if (json.success) {
-            setSuggestions(json.data);
+          const res = await api.get(`/products?search=${encodeURIComponent(searchQuery.trim())}&limit=5`);
+          if (res.data.success) {
+            setSuggestions(res.data.data);
           }
         } catch (err) {
           console.error('Failed to fetch suggestions:', err);
@@ -264,16 +266,21 @@ export default function Navbar() {
         {/* Search Bar - Full width on mobile, Flex-1 on desktop */}
         <div className="w-full lg:flex-1 h-10 lg:mx-4 order-4 lg:order-3">
           <form onSubmit={handleSearch} className="w-full flex h-full group">
-            <div ref={searchRef} className="relative flex w-full h-full bg-white rounded-full border border-gray-300 focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600 overflow-hidden">
+            <div ref={searchRef} className="relative flex w-full h-full bg-white rounded-full border border-gray-300 focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600">
               {/* Category Dropdown - Hidden on very small screens */}
-              <div ref={categoryDropdownRef} className="relative hidden sm:block h-full flex-shrink-0">
+              <div 
+                ref={categoryDropdownRef} 
+                className="relative hidden sm:block h-full flex-shrink-0"
+                onMouseEnter={() => setShowCategoryDropdown(true)}
+                onMouseLeave={() => setShowCategoryDropdown(false)}
+              >
                 <button
                   type="button"
                   onClick={() => {
                     setShowCategoryDropdown(!showCategoryDropdown);
                     setShowSearchHistory(false);
                   }}
-                  className="flex items-center gap-1.5 h-full px-4 bg-gray-50 text-gray-700 text-xs font-bold border-r border-gray-200 hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-1.5 h-full px-4 bg-gray-50 text-gray-700 text-xs font-bold border-r border-gray-200 hover:bg-gray-100 transition-colors rounded-l-full"
                 >
                   <span className="truncate max-w-[95px]">{selectedCategory}</span>
                   <svg className="w-3 h-3 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,6 +295,7 @@ export default function Navbar() {
                         setSelectedCategory('All');
                         setSelectedCategorySlug('');
                         setShowCategoryDropdown(false);
+                        navigate('/category/all');
                       }}
                       className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer"
                     >
@@ -300,6 +308,7 @@ export default function Navbar() {
                           setSelectedCategory(cat.name);
                           setSelectedCategorySlug(cat.slug);
                           setShowCategoryDropdown(false);
+                          navigate(`/category/${cat.slug}`);
                         }}
                         className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer"
                       >
@@ -334,7 +343,7 @@ export default function Navbar() {
                 </svg>
               </button>
 
-              <div className="flex items-center justify-center pr-1.5 pl-0.5 bg-white">
+              <div className="flex items-center justify-center pr-1.5 pl-0.5 bg-white rounded-r-full">
                 <button
                   type="submit"
                   className="w-8 h-8 rounded-full bg-green-700 hover:bg-green-800 text-white flex items-center justify-center transition-colors shadow-sm"
@@ -413,7 +422,12 @@ export default function Navbar() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-1 sm:gap-2 order-3 lg:order-4">
           {/* Language Selector - Desktop Only */}
-          <div className="relative hidden lg:block" ref={langDropdownRef}>
+          <div 
+            className="relative hidden lg:block" 
+            ref={langDropdownRef}
+            onMouseEnter={() => setLangDropdownOpen(true)}
+            onMouseLeave={() => setLangDropdownOpen(false)}
+          >
             <div
               onClick={() => setLangDropdownOpen(v => !v)}
               className="flex items-center p-2 rounded-md hover:bg-gray-100 cursor-pointer transition-all gap-1 text-gray-700"
@@ -478,7 +492,12 @@ export default function Navbar() {
 
           {/* Notifications Bell */}
           {customer && (
-            <div className="relative" ref={notificationDropdownRef}>
+            <div 
+              className="relative" 
+              ref={notificationDropdownRef}
+              onMouseEnter={() => setNotificationDropdownOpen(true)}
+              onMouseLeave={() => setNotificationDropdownOpen(false)}
+            >
               <button
                 onClick={() => {
                   setNotificationDropdownOpen(!notificationDropdownOpen);
@@ -576,7 +595,12 @@ export default function Navbar() {
           )}
 
           {/* Account & Lists */}
-          <div className="relative" ref={userDropdownRef}>
+          <div 
+            className="relative" 
+            ref={userDropdownRef}
+            onMouseEnter={() => setUserDropdownOpen(true)}
+            onMouseLeave={() => setUserDropdownOpen(false)}
+          >
             <button
               onClick={() => setUserDropdownOpen(v => !v)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-all text-left text-gray-700 min-w-0"
@@ -613,8 +637,7 @@ export default function Navbar() {
                   <div className="flex-1">
                     <h3 className="text-sm font-bold mb-2">Your Lists</h3>
                     <div className="space-y-1">
-                      <Link to="#" className="block text-xs text-gray-600 hover:text-green-600 hover:underline">Create a Wish List</Link>
-                      <Link to="#" className="block text-xs text-gray-600 hover:text-green-600 hover:underline">Find a Wish List</Link>
+                      <Link to="/wishlist" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-green-600 hover:underline">View Wishlist</Link>
                     </div>
                   </div>
                   <div className="flex-1 border-l border-gray-100 pl-4">
@@ -636,10 +659,17 @@ export default function Navbar() {
           </div>
 
           {/* Wishlist */}
-          <Link to="#" className="flex items-center p-2 rounded-md hover:bg-gray-100 transition-all text-gray-700" title="Wishlist">
-            <svg className="w-6 h-6 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-            </svg>
+          <Link to="/wishlist" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-all text-gray-700 relative group" title="Wishlist">
+            <div className="relative">
+              <svg className="w-6 h-6 text-gray-500 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              </svg>
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full text-[9px] min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </div>
           </Link>
 
           {/* Cart */}
@@ -648,7 +678,7 @@ export default function Navbar() {
               <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
               </svg>
-              <span className="absolute -top-1.5 -right-1.5 bg-green-600 text-white rounded-full text-[9px] w-4.5 h-4.5 flex items-center justify-center font-bold">
+              <span className="absolute -top-1.5 -right-1.5 bg-green-600 text-white rounded-full text-[9px] min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold">
                 {totalItems}
               </span>
             </div>
@@ -685,7 +715,7 @@ export default function Navbar() {
           Browse Categories
         </button>
 
-        <div className="flex-1 flex items-center gap-6 text-[11px] font-bold text-gray-700 tracking-wider overflow-x-auto no-scrollbar">
+        <div className="flex-1 flex items-center justify-center gap-6 text-[11px] font-bold text-gray-700 tracking-wider overflow-x-auto no-scrollbar">
           {topLevelCategories.map(cat => (
             <Link
               key={cat.id}
@@ -699,13 +729,20 @@ export default function Navbar() {
           <Link to="/category/todays-deals" className="hover:text-green-600 uppercase flex-shrink-0 transition-colors duration-150">OFFERS</Link>
         </div>
 
+        <button
+          onClick={() => window.dispatchEvent(new Event('toggle-ai-chat'))}
+          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-full text-xs font-bold text-orange-700 hover:bg-orange-200 transition-all cursor-pointer"
+        >
+          ✨ AI Assistant 
+        </button>
+
         <Link
           to="/live-auction"
-          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#FFF2F2] border border-[#FFD2D2] rounded-full text-xs font-bold text-[#D32F2F] hover:bg-[#FFE5E5] transition-all"
+          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#E2F0D9] border border-[#D5E6CD] rounded-full text-xs font-bold text-[#1B3B2B] hover:bg-[#D5E6CD] transition-all"
         >
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
           </span>
           Live Auctions
         </Link>
