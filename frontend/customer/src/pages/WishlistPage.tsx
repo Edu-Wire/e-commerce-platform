@@ -81,7 +81,7 @@ export default function WishlistPage() {
         {/* Wishlist Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {items.map(item => (
-            <div key={item.product_id} className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col group relative">
+            <div key={item.product_id} className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col group relative h-full">
               
               {/* Remove from Wishlist Button */}
               <button
@@ -100,13 +100,13 @@ export default function WishlistPage() {
                 <img 
                   src={item.image || '/placeholder.png'} 
                   alt={item.name} 
-                  className="max-w-full max-h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-300" 
+                  className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-300" 
                 />
               </div>
 
               {/* Details */}
               <div className="flex-1 flex flex-col">
-                <Link to={`/product/${item.slug}`} className="text-sm font-bold text-gray-900 hover:text-green-600 transition-colors line-clamp-2 mb-2">
+                <Link to={`/product/${item.slug}`} className="text-sm font-bold text-gray-900 hover:text-brand-primary transition-colors line-clamp-2 mb-2">
                   {item.name}
                 </Link>
                 

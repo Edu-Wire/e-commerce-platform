@@ -287,7 +287,7 @@ export default function CartPage() {
                   {suggestions.slice(0, 3).map((p) => (
                     <div key={p.id} className="flex flex-col group cursor-pointer border border-gray-100 rounded-xl p-3 bg-white hover:shadow-md transition-shadow" onClick={() => navigate(`/product/${p.slug}`)}>
                       <div className="aspect-square mb-3 flex items-center justify-center">
-                        <img src={p.images?.[0]?.url || '/placeholder.png'} className="max-w-full max-h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" alt="" />
+                        <img src={p.images?.[0]?.url || '/placeholder.png'} className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform" alt="" />
                       </div>
                       <h4 className="text-[11px] font-medium text-gray-900 line-clamp-2 leading-tight mb-2 group-hover:text-green-600 transition-colors text-center">{p.name}</h4>
                       <div className="mt-auto">

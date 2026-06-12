@@ -7,17 +7,28 @@ import Modal from '../components/ui/Modal';
 
 interface Product {
   id: number;
-  name: string;
-  sku: string;
+  name?: string;
+  product_name?: string;
+  sku?: string;
+  product_sku?: string;
   stock_quantity: number;
   is_auction_ready: boolean;
   auction_priority: number;
   images?: any;
+  image_url?: string | null;
   selling_price?: number;
   mrp?: number;
 }
 
 const getProductImage = (product: Product) => {
+  if (product.image_url) {
+    let url = product.image_url;
+    if (url.startsWith('/')) {
+      url = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${url}`;
+    }
+    return url;
+  }
+
   let images: any[] = [];
   try {
     images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
@@ -280,10 +291,10 @@ export default function AuctionsPage() {
             {products.map((product) => (
               <tr key={product.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center gap-3">
-                  <img src={getProductImage(product)} alt={product.name} className="w-10 h-10 object-contain rounded" />
-                  <span>{product.name}</span>
+                  <img src={getProductImage(product)} alt={product.name || product.product_name} className="w-10 h-10 object-contain rounded" />
+                  <span>{product.name || product.product_name}</span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.sku}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.sku || product.product_sku}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock_quantity}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.is_auction_ready ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -399,7 +410,7 @@ export default function AuctionsPage() {
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Starting auction for: <span className="font-semibold">{selectedProduct?.name}</span>
+            Starting auction for: <span className="font-semibold">{selectedProduct?.name || selectedProduct?.product_name}</span>
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

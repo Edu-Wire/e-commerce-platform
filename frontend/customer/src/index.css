@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Rebuild trigger for theme changes */
 @layer base {
   html {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -77,3 +78,20 @@
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
+
+/* Premium Dropdown Animations */
+@keyframes dropdownFadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dropdown {
+  animation: dropdownFadeInSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

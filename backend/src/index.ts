@@ -16,7 +16,7 @@ import { authenticateAdmin, authenticateCustomer } from './middleware/auth';
 import { requireMinRole } from './middleware/rbac';
 import { getMyBids, getWinningDashboard, getWonAuctions, getQueuedAuctions } from './controllers/auctionController';
 
-const app = express();
+const app = express(); // trigger tsx reload
  
 // Security & utility middleware
 app.use(helmet({

@@ -585,7 +585,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="bg-white py-6 md:py-8 border-b border-gray-100">
+      <section className="bg-white py-3 md:py-4 border-b border-gray-100">
         <div className="max-w-[1500px] mx-auto px-4 flex flex-col lg:flex-row items-stretch justify-between gap-6">
           {liveAuctions.length > 0 ? (
             <div className="w-full flex-shrink-0 z-10 flex">
@@ -595,17 +595,17 @@ export default function HomePage() {
             <>
               {/* Left Content: Green Summer Essentials Banner */}
               <div className="w-full lg:w-[68%] flex-shrink-0 flex">
-                <div className="bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden flex-1 shadow-xs border border-[#D5E6CD]/35">
+                <div className="bg-gradient-to-br from-[#E2F0D9] to-[#F4F9F1] rounded-[2rem] p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden flex-1 shadow-xs border border-[#D5E6CD]/35">
                   <div className="flex-1 flex flex-col justify-center text-left max-w-md">
                     <h1 className="text-2xl sm:text-4xl font-black text-[#1B3B2B] leading-tight tracking-tight">
                       Discover the Best of ShopNow
                     </h1>
-                    <p className="text-xs text-[#3E654F] font-semibold mt-2 leading-relaxed">
+                    <p className="text-xs text-[#3E654F] font-semibold mt-1.5 leading-relaxed">
                       Top-rated products, exclusive deals, and fast delivery.
                     </p>
                     <Link
                       to="/category/all"
-                      className="mt-4 px-5 py-2.5 bg-green-700 hover:bg-green-800 text-white font-extrabold rounded-full text-xs flex items-center gap-2 w-fit transition-all hover:gap-3 shadow-sm border border-green-800/20 active:scale-95"
+                      className="mt-2.5 px-5 py-2 bg-brand-primary hover:bg-brand-primaryHover text-white font-extrabold rounded-full text-xs flex items-center gap-2 w-fit transition-all hover:gap-3 shadow-sm border border-brand-primary/20 active:scale-95"
                     >
                       Shop Now
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -613,13 +613,13 @@ export default function HomePage() {
                       </svg>
                     </Link>
                   </div>
-                  <div className="w-full md:w-[40%] flex-shrink-0 flex items-center justify-center relative min-h-[200px] sm:min-h-[250px] group/slider">
+                  <div className="w-full md:w-[40%] flex-shrink-0 flex items-center justify-center relative min-h-[160px] sm:min-h-[180px] group/slider">
                     {displayHeroImages.map((imgSrc, idx) => (
                       <img
                         key={idx}
                         src={imgSrc}
                         alt="Summer Essentials"
-                        className={`absolute inset-0 m-auto max-h-[240px] sm:max-h-[280px] w-auto object-contain transform hover:scale-105 transition-all duration-700 ease-in-out mix-blend-multiply ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                        className={`absolute inset-0 m-auto max-h-[170px] sm:max-h-[190px] w-auto object-contain transform hover:scale-105 transition-all duration-700 ease-in-out mix-blend-multiply ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                       />
                     ))}
                     {displayHeroImages.length > 1 && (
@@ -631,7 +631,7 @@ export default function HomePage() {
                           }}
                           className="absolute left-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
                         >
-                          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                           </svg>
                         </button>
@@ -642,7 +642,7 @@ export default function HomePage() {
                           }}
                           className="absolute right-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
                         >
-                          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                           </svg>
                         </button>
@@ -654,41 +654,41 @@ export default function HomePage() {
 
               {/* Right Content: Summer Winter Sale Card */}
               <div className="w-full lg:w-[32%] flex-shrink-0 flex">
-                <div className="bg-white border border-gray-200/80 rounded-[2rem] p-6 shadow-xs flex flex-col justify-between h-full w-full max-w-md mx-auto relative overflow-hidden group">
+                <div className="bg-white border border-gray-200/80 rounded-[2rem] p-4 shadow-xs flex flex-col justify-between h-full w-full max-w-md mx-auto relative overflow-hidden group">
                   {/* Decorative faint background shape */}
-                  <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-green-50 rounded-full blur-2xl group-hover:bg-green-100 transition-colors duration-500 z-0"></div>
+                  <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-brand-primaryLight rounded-full blur-2xl group-hover:bg-brand-primaryLight/80 transition-colors duration-500 z-0"></div>
 
                   <div className="z-10 relative">
-                    <h3 className="text-green-600 font-bold text-[9px] tracking-widest mb-4 uppercase flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <h3 className="text-brand-primary font-bold text-[9px] tracking-widest mb-2 uppercase flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
                       Limited Time Offer
                     </h3>
 
-                    <h2 className="text-2xl font-black text-gray-900 leading-tight mb-2">
+                    <h2 className="text-2xl font-black text-gray-900 leading-tight mb-1">
                       Summer & Winter
-                      <span className="block text-green-700 mt-0.5">SUPER SALE</span>
+                      <span className="block text-brand-primary mt-0.5">SUPER SALE</span>
                     </h2>
 
-                    <p className="text-xs text-gray-500 font-medium mb-4 mt-2 leading-relaxed">
+                    <p className="text-xs text-gray-500 font-medium mb-2 mt-1 leading-relaxed">
                       Enjoy massive discounts up to <span className="text-gray-900 font-bold">70% OFF</span>
                     </p>
 
-                    <div className="space-y-2 mt-4">
+                    <div className="space-y-1 mt-2">
                       <div className="flex items-center gap-2 text-[11px] font-bold text-gray-700">
-                        <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <svg className="w-3.5 h-3.5 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                         Exclusive Online Deals
                       </div>
                       <div className="flex items-center gap-2 text-[11px] font-bold text-gray-700">
-                        <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <svg className="w-3.5 h-3.5 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                         Fast Free Delivery
                       </div>
                     </div>
                   </div>
 
-                  <Link to="/category/all?sort=discount_desc" className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] font-black text-gray-800 hover:text-green-700 cursor-pointer group/btn transition-colors z-10 relative">
+                  <Link to="/category/all?sort=discount_desc" className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px] font-black text-gray-800 hover:text-brand-primaryHover cursor-pointer group/btn transition-colors z-10 relative">
                     <span>EXPLORE ALL DEALS</span>
-                    <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center group-hover/btn:bg-green-100 transition-colors">
-                      <svg className="w-3.5 h-3.5 text-green-700 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <div className="w-7 h-7 rounded-full bg-brand-primaryLight flex items-center justify-center group-hover/btn:bg-brand-primaryLight/80 transition-colors">
+                      <svg className="w-3.5 h-3.5 text-brand-primary transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                       </svg>
                     </div>
@@ -703,11 +703,11 @@ export default function HomePage() {
 
 
       {/* Policy Strip */}
-      <section className="bg-white py-6 border-b border-gray-50">
+      <section className="bg-white py-3 border-b border-gray-50">
         <div className="max-w-[1500px] mx-auto px-4">
           <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+              <div className="w-10 h-10 rounded-full bg-brand-primaryLight flex items-center justify-center text-brand-primary">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </div>
               <div>
@@ -716,7 +716,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+              <div className="w-10 h-10 rounded-full bg-brand-primaryLight flex items-center justify-center text-brand-primary">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               </div>
               <div>
@@ -725,7 +725,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+              <div className="w-10 h-10 rounded-full bg-brand-primaryLight flex items-center justify-center text-brand-primary">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
               </div>
               <div>
@@ -734,7 +734,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+              <div className="w-10 h-10 rounded-full bg-brand-primaryLight flex items-center justify-center text-brand-primary">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <div>
@@ -743,7 +743,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+              <div className="w-10 h-10 rounded-full bg-brand-primaryLight flex items-center justify-center text-brand-primary">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <div>
@@ -758,11 +758,11 @@ export default function HomePage() {
 
 
       {/* Deals of the Day */}
-      <section className="bg-white py-6">
+      <section className="bg-white pt-2 pb-6">
         <div className="max-w-[1500px] mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-2xl font-bold text-gray-900">Deals of the Day</h2>
-            <Link to="/category/all?sort=discount_desc" className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-green-700 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full transition-colors border border-gray-100">
+            <Link to="/category/all?sort=discount_desc" className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-brand-primaryHover bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full transition-colors border border-gray-100">
               View All
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
@@ -829,7 +829,7 @@ export default function HomePage() {
         <div className="max-w-[1500px] mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">Customers Also Loved</h2>
-            <Link to="/category/all?sort=newest" className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-green-700 transition-colors">
+            <Link to="/category/all?sort=newest" className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-brand-primary transition-colors">
               View All
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
@@ -872,7 +872,7 @@ export default function HomePage() {
               <h2 className="text-xl md:text-2xl font-bold text-gray-900">Latest Deals for This Week</h2>
               <p className="text-sm text-gray-400 hidden sm:block pb-1">Don't miss out on this week's deals</p>
             </div>
-            <Link to="/category/all?sort=price_asc" className="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-green-700 transition-colors whitespace-nowrap">
+            <Link to="/category/all?sort=price_asc" className="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-brand-primary transition-colors whitespace-nowrap">
               View All
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
@@ -884,7 +884,7 @@ export default function HomePage() {
               const available = product.stock_quantity || 20;
               const sold = (product.id * 7) % 50 + 10; // Pseudo-random deterministic sold count
               const percentSold = (sold / (available + sold)) * 100;
-              
+
               let imgUrl = '/placeholder.png';
               try {
                 const parsed = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
@@ -892,7 +892,7 @@ export default function HomePage() {
                   imgUrl = typeof parsed[0] === 'string' ? parsed[0] : (parsed[0]?.url || '/placeholder.png');
                   if (imgUrl.startsWith('/')) imgUrl = `${import.meta.env.VITE_API_URL || "http://localhost:4000"}${imgUrl}`;
                 }
-              } catch (e) {}
+              } catch (e) { }
 
               return (
                 <div key={product.id} className="bg-white rounded-[1rem] border border-gray-200 overflow-hidden flex relative hover:shadow-md transition-shadow group">
@@ -900,10 +900,10 @@ export default function HomePage() {
                   <div className="absolute top-0 left-0 bg-[#ef4444] text-white text-xs font-bold px-3 py-2 rounded-br-xl z-10">
                     {discount}%
                   </div>
-                  
+
                   {/* Image */}
                   <Link to={`/product/${product.slug}`} className="w-[45%] p-6 flex items-center justify-center bg-white relative">
-                    <img src={imgUrl} alt={product.name} className="w-full h-32 object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+                    <img src={imgUrl} alt={product.name} className="w-full h-32 object-contain mix-blend-multiply transition-transform" />
                     <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[#ef4444] shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-colors border border-gray-100 z-10">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                     </button>
@@ -912,11 +912,11 @@ export default function HomePage() {
                   {/* Content */}
                   <div className="w-[55%] p-5 flex flex-col justify-center border-l border-gray-50 bg-white">
                     <Link to={`/product/${product.slug}`}>
-                      <h3 className="font-bold text-gray-800 line-clamp-2 hover:text-green-700 transition-colors text-sm">
+                      <h3 className="font-bold text-gray-800 line-clamp-2 hover:text-brand-primary transition-colors text-sm">
                         {product.name}
                       </h3>
                     </Link>
-                    
+
                     <div className="flex items-center gap-1 mt-2.5">
                       {[...Array(5)].map((_, i) => (
                         <svg key={i} className={`w-3.5 h-3.5 ${i < 4 ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
@@ -959,7 +959,7 @@ export default function HomePage() {
           </p>
           <Link
             to="/register?type=b2b"
-            className="inline-flex items-center gap-2 px-10 py-4 bg-green-500 hover:bg-green-600 text-white font-extrabold rounded-full shadow-lg hover:shadow-green-500/20 active:scale-95 transition-all duration-200"
+            className="inline-flex items-center gap-2 px-10 py-4 bg-brand-primary hover:bg-brand-primaryHover text-white font-extrabold rounded-full shadow-lg hover:shadow-brand-primary/20 active:scale-95 transition-all duration-200"
           >
             Register as B2B Customer
           </Link>

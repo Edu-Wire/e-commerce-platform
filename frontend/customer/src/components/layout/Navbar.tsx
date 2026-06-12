@@ -233,7 +233,7 @@ export default function Navbar() {
             to="/"
             className="flex items-center p-1 sm:p-2 rounded-md hover:bg-gray-50 transition-all flex-shrink-0"
           >
-            <svg className="w-8 h-8 text-green-600 mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-brand-primary mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16 6V5a4 4 0 0 0-8 0v1H4v13a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V6h-4zM9 5a3 3 0 0 1 6 0v1H9V5zm9 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8h12v11z"/>
               <path d="M9 10a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm4 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0z"/>
             </svg>
@@ -266,13 +266,11 @@ export default function Navbar() {
         {/* Search Bar - Full width on mobile, Flex-1 on desktop */}
         <div className="w-full lg:flex-1 h-10 lg:mx-4 order-4 lg:order-3">
           <form onSubmit={handleSearch} className="w-full flex h-full group">
-            <div ref={searchRef} className="relative flex w-full h-full bg-white rounded-full border border-gray-300 focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600">
+            <div ref={searchRef} className="relative flex w-full h-full bg-white rounded-full border border-gray-300 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary">
               {/* Category Dropdown - Hidden on very small screens */}
               <div 
                 ref={categoryDropdownRef} 
                 className="relative hidden sm:block h-full flex-shrink-0"
-                onMouseEnter={() => setShowCategoryDropdown(true)}
-                onMouseLeave={() => setShowCategoryDropdown(false)}
               >
                 <button
                   type="button"
@@ -289,32 +287,34 @@ export default function Navbar() {
                 </button>
 
                 {showCategoryDropdown && (
-                  <div className="absolute top-full left-0 w-52 bg-white shadow-lg border border-gray-200 mt-1 rounded-md z-50 max-h-60 overflow-y-auto">
-                    <div
-                      onClick={() => {
-                        setSelectedCategory('All');
-                        setSelectedCategorySlug('');
-                        setShowCategoryDropdown(false);
-                        navigate('/category/all');
-                      }}
-                      className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer"
-                    >
-                      All Categories
-                    </div>
-                    {categories?.map((cat: any) => (
+                  <div className="absolute top-full left-0 pt-2 w-52 z-50">
+                    <div className="bg-white shadow-lg border border-gray-200 rounded-md max-h-60 overflow-y-auto animate-dropdown">
                       <div
-                        key={cat.id}
                         onClick={() => {
-                          setSelectedCategory(cat.name);
-                          setSelectedCategorySlug(cat.slug);
+                          setSelectedCategory('All');
+                          setSelectedCategorySlug('');
                           setShowCategoryDropdown(false);
-                          navigate(`/category/${cat.slug}`);
+                          navigate('/category/all');
                         }}
                         className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer"
                       >
-                        {cat.name}
+                        All Categories
                       </div>
-                    ))}
+                      {categories?.map((cat: any) => (
+                        <div
+                          key={cat.id}
+                          onClick={() => {
+                            setSelectedCategory(cat.name);
+                            setSelectedCategorySlug(cat.slug);
+                            setShowCategoryDropdown(false);
+                            navigate(`/category/${cat.slug}`);
+                          }}
+                          className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer"
+                        >
+                          {cat.name}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -334,7 +334,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={isListening ? stopVoiceSearch : startVoiceSearch}
-                className={`px-3 flex items-center justify-center transition-all ${isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-gray-400 hover:text-green-600'
+                className={`px-3 flex items-center justify-center transition-all ${isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-gray-400 hover:text-brand-primary'
                   }`}
                 title="Search by voice"
               >
@@ -346,7 +346,7 @@ export default function Navbar() {
               <div className="flex items-center justify-center pr-1.5 pl-0.5 bg-white rounded-r-full">
                 <button
                   type="submit"
-                  className="w-8 h-8 rounded-full bg-green-700 hover:bg-green-800 text-white flex items-center justify-center transition-colors shadow-sm"
+                  className="w-8 h-8 rounded-full bg-brand-primary hover:bg-brand-primaryHover text-white flex items-center justify-center transition-colors shadow-sm"
                   aria-label="Search"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -425,8 +425,6 @@ export default function Navbar() {
           <div 
             className="relative hidden lg:block" 
             ref={langDropdownRef}
-            onMouseEnter={() => setLangDropdownOpen(true)}
-            onMouseLeave={() => setLangDropdownOpen(false)}
           >
             <div
               onClick={() => setLangDropdownOpen(v => !v)}
@@ -444,47 +442,49 @@ export default function Navbar() {
             </div>
 
             {langDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-60 bg-white text-gray-900 shadow-xl border border-gray-200 py-3 z-50 rounded-md">
-                <div className="px-4 py-1">
-                  <p className="text-xs font-semibold text-gray-600 mb-3">Change Language</p>
-                  <div className="space-y-3">
-                    {[
-                      { id: 'EN', label: 'English - EN' },
-                      { id: 'HI', label: 'हिन्दी - HI' },
-                      { id: 'TA', label: 'தமிழ் - TA' },
-                      { id: 'TE', label: 'తెలుగు - TE' },
-                      { id: 'KN', label: 'ಕನ್ನಡ - KN' },
-                      { id: 'ML', label: 'മലയാളം - ML' },
-                      { id: 'BN', label: 'বাংলা - BN' },
-                      { id: 'MR', label: 'मराठी - MR' },
-                    ].map(lang => (
-                      <label key={lang.id} className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                          type="radio"
-                          name="lang"
-                          checked={language === lang.id}
-                          onChange={() => {
-                            setLanguage(lang.id as Language);
-                            setLangDropdownOpen(false);
-                          }}
-                          className="w-4 h-4 accent-green-600"
-                        />
-                        <span className="text-xs text-gray-700 group-hover:text-green-600 group-hover:underline">{lang.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <hr className="my-3 border-gray-100" />
-                <div className="px-4">
-                  <div className="flex items-center gap-2 text-[11px] text-gray-600 mb-2">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="w-4 h-0.5 bg-orange-400"></div>
-                      <div className="w-4 h-0.5 bg-white"></div>
-                      <div className="w-4 h-0.5 bg-green-600"></div>
+              <div className="absolute top-full left-0 pt-2 w-60 z-50">
+                <div className="bg-white text-gray-900 shadow-xl border border-gray-200 py-3 rounded-md animate-dropdown">
+                  <div className="px-4 py-1">
+                    <p className="text-xs font-semibold text-gray-600 mb-3">Change Language</p>
+                    <div className="space-y-3">
+                      {[
+                        { id: 'EN', label: 'English - EN' },
+                        { id: 'HI', label: 'हिन्दी - HI' },
+                        { id: 'TA', label: 'தமிழ் - TA' },
+                        { id: 'TE', label: 'తెలుగు - TE' },
+                        { id: 'KN', label: 'ಕನ್ನಡ - KN' },
+                        { id: 'ML', label: 'മലയാളം - ML' },
+                        { id: 'BN', label: 'বাংলা - BN' },
+                        { id: 'MR', label: 'मराठी - MR' },
+                      ].map(lang => (
+                        <label key={lang.id} className="flex items-center gap-2 cursor-pointer group">
+                          <input
+                            type="radio"
+                            name="lang"
+                            checked={language === lang.id}
+                            onChange={() => {
+                              setLanguage(lang.id as Language);
+                              setLangDropdownOpen(false);
+                            }}
+                            className="w-4 h-4 accent-brand-primary"
+                          />
+                          <span className="text-xs text-gray-700 group-hover:text-brand-primary group-hover:underline">{lang.label}</span>
+                        </label>
+                      ))}
                     </div>
-                    You are shopping on ShopNow.in
                   </div>
-                  <Link to="#" className="text-xs text-blue-700 hover:text-green-600 hover:underline">Change country/region</Link>
+                  <hr className="my-3 border-gray-100" />
+                  <div className="px-4">
+                    <div className="flex items-center gap-2 text-[11px] text-gray-600 mb-2">
+                      <div className="flex flex-col gap-0.5">
+                        <div className="w-4 h-0.5 bg-orange-400"></div>
+                        <div className="w-4 h-0.5 bg-white"></div>
+                        <div className="w-4 h-0.5 bg-brand-primary"></div>
+                      </div>
+                      You are shopping on ShopNow.in
+                    </div>
+                    <Link to="#" className="text-xs text-blue-700 hover:text-brand-primary hover:underline">Change country/region</Link>
+                  </div>
                 </div>
               </div>
             )}
@@ -495,8 +495,6 @@ export default function Navbar() {
             <div 
               className="relative" 
               ref={notificationDropdownRef}
-              onMouseEnter={() => setNotificationDropdownOpen(true)}
-              onMouseLeave={() => setNotificationDropdownOpen(false)}
             >
               <button
                 onClick={() => {
@@ -511,83 +509,85 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {notifications && notifications.filter(n => !n.is_read).length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 bg-green-600 text-white rounded-full text-[9px] w-4 h-4 flex items-center justify-center font-bold">
+                  <span className="absolute top-1.5 right-1.5 bg-brand-primary text-white rounded-full text-[9px] w-4 h-4 flex items-center justify-center font-bold">
                     {notifications.filter(n => !n.is_read).length}
                   </span>
                 )}
               </button>
 
               {notificationDropdownOpen && (
-                <div className="absolute top-full right-0 mt-1 w-80 bg-white text-gray-900 shadow-2xl border border-gray-200 py-3 z-[70] rounded-md">
-                  <div className="px-4 pb-2 border-b border-gray-100 flex items-center justify-between">
-                    <span className="text-sm font-bold text-[#0f1111]">Notifications</span>
-                    {notifications && notifications.filter(n => !n.is_read).length > 0 && (
-                      <button
-                        onClick={() => markAllReadMutate()}
-                        className="text-xs text-[#007185] hover:text-[#c40000] hover:underline"
-                      >
-                        Mark all as read
-                      </button>
-                    )}
-                  </div>
-                  <div className="max-h-64 overflow-y-auto pr-1">
-                    {notifications && notifications.length > 0 ? (
-                      notifications.map((notif) => {
-                        const isOffer = notif.link?.includes('outbid_offer') || notif.title.toLowerCase().includes('offer') || notif.message.toLowerCase().includes('offer');
+                <div className="absolute top-full right-0 pt-2 w-80 z-[70]">
+                  <div className="bg-white text-gray-900 shadow-2xl border border-gray-200 py-3 rounded-md animate-dropdown">
+                    <div className="px-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+                      <span className="text-sm font-bold text-[#0f1111]">Notifications</span>
+                      {notifications && notifications.filter(n => !n.is_read).length > 0 && (
+                        <button
+                          onClick={() => markAllReadMutate()}
+                          className="text-xs text-[#007185] hover:text-[#c40000] hover:underline"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-64 overflow-y-auto pr-1">
+                      {notifications && notifications.length > 0 ? (
+                        notifications.map((notif) => {
+                          const isOffer = notif.link?.includes('outbid_offer') || notif.title.toLowerCase().includes('offer') || notif.message.toLowerCase().includes('offer');
 
-                        if (isOffer) {
+                          if (isOffer) {
+                            return (
+                              <div
+                                key={notif.id}
+                                className="mx-2 my-2 rounded-xl border border-orange-300 bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 p-3 cursor-pointer transition-all hover:shadow-md hover:border-orange-400 group"
+                                onClick={() => handleNotificationClick(notif)}
+                              >
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[9px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                                    <span>⚡</span> Exclusive Bidder Offer
+                                  </span>
+                                  {!notif.is_read && <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></span>}
+                                </div>
+                                <p className="text-xs font-bold text-slate-800 leading-snug">{notif.title}</p>
+                                <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">{notif.message}</p>
+                                {notif.link && (
+                                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-orange-200/50">
+                                    <span className="text-[10px] text-orange-600 font-bold group-hover:underline">View Offer →</span>
+                                    <span className="text-[9px] text-slate-400">{new Date(notif.created_at).toLocaleDateString('en-IN')}</span>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+
                           return (
                             <div
                               key={notif.id}
-                              className="mx-2 my-2 rounded-xl border border-orange-300 bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 p-3 cursor-pointer transition-all hover:shadow-md hover:border-orange-400 group"
+                              className={`px-4 py-3 border-b border-gray-100 flex flex-col gap-1 cursor-pointer transition-colors ${notif.is_read ? 'bg-white hover:bg-gray-50 opacity-80' : 'bg-orange-50/50 hover:bg-orange-50/80 font-medium'
+                                }`}
                               onClick={() => handleNotificationClick(notif)}
                             >
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-[9px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
-                                  <span>⚡</span> Exclusive Bidder Offer
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                  {!notif.is_read && <span className="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span>}
+                                  {notif.title}
                                 </span>
-                                {!notif.is_read && <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></span>}
+                                <span className="text-[10px] text-gray-400">
+                                  {new Date(notif.created_at).toLocaleDateString('en-IN')}
+                                </span>
                               </div>
-                              <p className="text-xs font-bold text-slate-800 leading-snug">{notif.title}</p>
-                              <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">{notif.message}</p>
+                              <p className={`text-xs leading-normal ${notif.is_read ? 'text-gray-500' : 'text-gray-900'}`}>{notif.message}</p>
                               {notif.link && (
-                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-orange-200/50">
-                                  <span className="text-[10px] text-orange-600 font-bold group-hover:underline">View Offer →</span>
-                                  <span className="text-[9px] text-slate-400">{new Date(notif.created_at).toLocaleDateString('en-IN')}</span>
-                                </div>
+                                <span className="text-[10px] text-[#007185] font-semibold mt-1 hover:underline">Click to view offer &rarr;</span>
                               )}
                             </div>
                           );
-                        }
-
-                        return (
-                          <div
-                            key={notif.id}
-                            className={`px-4 py-3 border-b border-gray-100 flex flex-col gap-1 cursor-pointer transition-colors ${notif.is_read ? 'bg-white hover:bg-gray-50 opacity-80' : 'bg-orange-50/50 hover:bg-orange-50/80 font-medium'
-                              }`}
-                            onClick={() => handleNotificationClick(notif)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                                {!notif.is_read && <span className="w-1.5 h-1.5 bg-orange-500 rounded-full inline-block"></span>}
-                                {notif.title}
-                              </span>
-                              <span className="text-[10px] text-gray-400">
-                                {new Date(notif.created_at).toLocaleDateString('en-IN')}
-                              </span>
-                            </div>
-                            <p className={`text-xs leading-normal ${notif.is_read ? 'text-gray-500' : 'text-gray-900'}`}>{notif.message}</p>
-                            {notif.link && (
-                              <span className="text-[10px] text-[#007185] font-semibold mt-1 hover:underline">Click to view offer &rarr;</span>
-                            )}
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="px-4 py-6 text-center text-xs text-gray-500">
-                        No notifications.
-                      </div>
-                    )}
+                        })
+                      ) : (
+                        <div className="px-4 py-6 text-center text-xs text-gray-500">
+                          No notifications.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -598,10 +598,9 @@ export default function Navbar() {
           <div 
             className="relative" 
             ref={userDropdownRef}
-            onMouseEnter={() => setUserDropdownOpen(true)}
-            onMouseLeave={() => setUserDropdownOpen(false)}
           >
             <button
+              type="button"
               onClick={() => setUserDropdownOpen(v => !v)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-all text-left text-gray-700 min-w-0"
             >
@@ -620,37 +619,39 @@ export default function Navbar() {
             </button>
 
             {userDropdownOpen && (
-              <div className="absolute top-full right-0 mt-1 w-64 bg-white text-gray-900 shadow-2xl border border-gray-200 py-4 z-[70] rounded-md animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="px-4 mb-4">
-                  {!customer && (
-                    <div className="text-center">
-                      <Link to="/login" className="block w-full py-1.5 bg-gradient-to-b from-[#f8e3ad] to-[#eeb933] border border-[#a88734] rounded shadow-sm text-sm font-medium hover:from-[#f3d078] hover:to-[#d4a216]">
-                        Sign in
-                      </Link>
-                      <p className="text-[11px] mt-2 text-gray-600">
-                        New customer? <Link to="/register" className="text-blue-700 hover:text-green-600 hover:underline">Start here.</Link>
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="border-t border-gray-100 flex p-4 gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold mb-2">Your Lists</h3>
-                    <div className="space-y-1">
-                      <Link to="/wishlist" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-green-600 hover:underline">View Wishlist</Link>
-                    </div>
+              <div className="absolute top-full right-0 pt-2 w-64 z-[70]">
+                <div className="bg-white text-gray-900 shadow-2xl border border-gray-200 py-4 rounded-md animate-dropdown">
+                  <div className="px-4 mb-4">
+                    {!customer && (
+                      <div className="text-center">
+                        <Link to="/login" onClick={() => setUserDropdownOpen(false)} className="block w-full py-1.5 bg-brand-primary hover:bg-brand-primaryHover text-white rounded text-sm font-bold transition-all shadow-sm text-center">
+                          Sign in
+                        </Link>
+                        <p className="text-[11px] mt-2 text-gray-500">
+                          New customer? <Link to="/register" onClick={() => setUserDropdownOpen(false)} className="text-brand-primary hover:text-brand-primaryHover hover:underline font-bold">Start here.</Link>
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 border-l border-gray-100 pl-4">
-                    <h3 className="text-sm font-bold mb-2">Your Account</h3>
-                    <div className="space-y-1">
-                      <Link to="/account" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-green-600 hover:underline">Your Account</Link>
-                      <Link to="/orders" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-green-600 hover:underline">Your Orders</Link>
-                      {customer?.customer_type === 'b2b' && (
-                        <Link to="/b2b" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-green-600 hover:underline">B2B Dashboard</Link>
-                      )}
-                      {customer && (
-                        <button onClick={handleLogout} className="block w-full text-left text-xs text-red-600 hover:underline mt-2">Sign Out</button>
-                      )}
+                  <div className="border-t border-gray-100 flex p-4 gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-2.5">Your Lists</h3>
+                      <div className="space-y-1">
+                        <Link to="/wishlist" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-brand-primary hover:underline py-0.5">View Wishlist</Link>
+                      </div>
+                    </div>
+                    <div className="flex-1 border-l border-gray-100 pl-4">
+                      <h3 className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-2.5">Your Account</h3>
+                      <div className="space-y-1">
+                        <Link to="/account" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-brand-primary hover:underline py-0.5">Your Account</Link>
+                        <Link to="/orders" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-brand-primary hover:underline py-0.5">Your Orders</Link>
+                        {customer?.customer_type === 'b2b' && (
+                          <Link to="/b2b" onClick={() => setUserDropdownOpen(false)} className="block text-xs text-gray-600 hover:text-brand-primary hover:underline py-0.5">B2B Dashboard</Link>
+                        )}
+                        {customer && (
+                          <button onClick={handleLogout} className="block w-full text-left text-xs text-red-600 hover:underline mt-2">Sign Out</button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -678,7 +679,7 @@ export default function Navbar() {
               <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
               </svg>
-              <span className="absolute -top-1.5 -right-1.5 bg-green-600 text-white rounded-full text-[9px] min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold">
+              <span className="absolute -top-1.5 -right-1.5 bg-brand-primary text-white rounded-full text-[9px] min-w-[18px] h-[18px] px-1 flex items-center justify-center font-bold">
                 {totalItems}
               </span>
             </div>
@@ -707,7 +708,7 @@ export default function Navbar() {
       <div className="bg-white border-t border-b border-gray-200 text-gray-700 flex items-center px-4 py-1.5 gap-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth">
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-sm transition-all text-xs font-bold flex-shrink-0"
+          className="flex items-center gap-1.5 px-4 py-2 bg-brand-primary hover:bg-brand-primaryHover text-white rounded-sm transition-all text-xs font-bold flex-shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -720,13 +721,13 @@ export default function Navbar() {
             <Link
               key={cat.id}
               to={`/category/${cat.slug}`}
-              className="hover:text-green-600 uppercase flex-shrink-0 transition-colors duration-150"
+              className="hover:text-brand-primary uppercase flex-shrink-0 transition-colors duration-150"
             >
               {cat.name}
             </Link>
           ))}
-          <Link to="/category/all?sort=discount_desc" className="hover:text-green-600 uppercase flex-shrink-0 transition-colors duration-150">BRANDS</Link>
-          <Link to="/category/todays-deals" className="hover:text-green-600 uppercase flex-shrink-0 transition-colors duration-150">OFFERS</Link>
+          <Link to="/category/all?sort=discount_desc" className="hover:text-brand-primary uppercase flex-shrink-0 transition-colors duration-150">BRANDS</Link>
+          <Link to="/category/todays-deals" className="hover:text-brand-primary uppercase flex-shrink-0 transition-colors duration-150">OFFERS</Link>
         </div>
 
         <button

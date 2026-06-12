@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS product_reviews (
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   title VARCHAR(255),
   content TEXT,
+  image_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(product_id, customer_id)
 );

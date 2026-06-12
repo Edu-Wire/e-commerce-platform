@@ -100,18 +100,33 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   const colors = [
-    'bg-[#e6eaf0]', // Gray-blue
-    'bg-[#f4edd4]', // Yellow-orange
-    'bg-[#d5f0ea]', // Teal
-    'bg-[#d7f0df]', // Green
-    'bg-[#f5dadb]', // Red/Pink
+    'bg-[#e6eaf0]', // Slate Blue
+    'bg-[#f4edd4]', // Soft Sand
+    'bg-[#d5f0ea]', // Sage Mint
+    'bg-[#d7f0df]', // Mint Green
+    'bg-[#f5dadb]', // Rose Pink
+    'bg-[#ebf3f5]', // Ice Blue
+    'bg-[#f6ebf5]', // Pale Lavender
+    'bg-[#faf0e6]', // Linen/Almond
+    'bg-[#f0fff0]', // Honeydew Green
+    'bg-[#fdf5e6]', // Old Lace
   ];
-  const bgColor = colors[product.id % colors.length];
+
+  const getBgColor = (slug: string, name: string) => {
+    const key = slug || name || '';
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+      hash = key.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const bgColor = getBgColor(product.slug, product.name);
 
   return (
     <Link
       to={`/product/${product.slug}`}
-      className="group bg-white flex flex-col rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 overflow-hidden relative"
+      className="group/card bg-white flex flex-col rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 overflow-hidden relative h-full"
     >
       {/* Top Image Section */}
       <div className={`relative h-[160px] w-full ${bgColor} flex items-center justify-center border-b-[3px] border-dotted border-gray-300/40 p-4`}>
@@ -148,7 +163,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <img
             src={primaryImage}
             alt={product.name}
-            className="max-w-[110px] max-h-[110px] object-contain relative z-10 group-hover:scale-110 transition-transform duration-500 mix-blend-multiply"
+            className="max-w-[110px] max-h-[110px] object-contain relative z-10 transition-transform duration-500 mix-blend-multiply"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400 relative z-10">
@@ -168,12 +183,12 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Bottom Content Section */}
       <div className="p-3.5 sm:p-4 flex flex-col flex-1 bg-white">
-        <div className="bg-green-50 text-[#00a859] text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded w-fit flex items-center gap-1 tracking-wider mb-2">
+        <div className="bg-green-50 text-green-600 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded w-fit flex items-center gap-1 tracking-wider mb-2">
           <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" /></svg>
           Great Summer Deal
         </div>
 
-        <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-1.5 leading-snug group-hover:text-[#00a859] transition-colors">
+        <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-1.5 leading-snug group-hover/card:text-brand-primary transition-colors">
           {translatedName}
         </h3>
 
@@ -197,7 +212,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white font-bold text-[11px] transition-colors shadow-sm ${
               isOutOfStock 
                 ? 'bg-gray-400 cursor-not-allowed opacity-70' 
-                : 'bg-[#00a859] hover:bg-[#008f4c] active:scale-95'
+                : 'bg-brand-primary hover:bg-brand-primaryHover active:scale-95'
             }`}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
