@@ -98,7 +98,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
         <h3 className="font-bold text-gray-800 text-base">Filters</h3>
         <button
           onClick={handleClear}
-          className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+          className="text-xs text-green-700 hover:text-green-800 font-medium transition-colors"
         >
           Clear All
         </button>
@@ -110,7 +110,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
         <select
           value={filters.sort_by ?? ''}
           onChange={e => onFilterChange({ sort_by: e.target.value || undefined })}
-          className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500"
         >
           {sortOptions.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -127,7 +127,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             placeholder="Min"
             value={minPrice}
             onChange={e => setMinPrice(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <span className="text-gray-400">—</span>
           <input
@@ -135,12 +135,12 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             placeholder="Max"
             value={maxPrice}
             onChange={e => setMaxPrice(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
         <button
           onClick={handlePriceApply}
-          className="mt-2 w-full py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+          className="mt-2 w-full py-1.5 bg-green-50 hover:bg-green-100 text-green-800 hover:text-green-950 text-sm font-semibold rounded-lg border border-green-200/50 transition-colors"
         >
           Apply Price
         </button>
@@ -156,10 +156,10 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
                 type="checkbox"
                 checked={selectedConditions.includes(c.value)}
                 onChange={() => handleConditionChange(c.value)}
-                className="w-4 h-4 rounded border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer"
+                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
               />
               <span className={`text-sm transition-colors ${
-                selectedConditions.includes(c.value) ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'
+                selectedConditions.includes(c.value) ? 'text-green-700 font-bold' : 'text-gray-700 group-hover:text-green-600'
               }`}>
                 {c.label}
               </span>
@@ -177,7 +177,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             placeholder="Search brand..."
             value={brand}
             onChange={e => setBrand(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 text-sm py-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-gray-300 text-sm py-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,7 +190,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
       {/* Electronics Specific Filters */}
       {isElectronics && (
         <div className="pt-4 border-t border-gray-100 space-y-6">
-          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-tighter text-[11px]">Electronic Specs</label>
+          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-wider text-[11px]">Electronic Specs</label>
           
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-2">RAM Capacity</label>
@@ -201,8 +201,8 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
                   onClick={() => handleAttributeChange('ram', size)}
                   className={`px-3 py-1 text-xs border rounded-md transition-all ${
                     filters.ram === size 
-                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
-                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                      ? 'border-green-600 bg-green-50 text-green-800 font-bold' 
+                      : 'border-gray-300 hover:border-green-600 hover:bg-green-50'
                   }`}
                 >
                   {size}
@@ -220,8 +220,8 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
                   onClick={() => handleAttributeChange('storage', size)}
                   className={`px-3 py-1 text-xs border rounded-md transition-all ${
                     filters.storage === size 
-                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
-                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                      ? 'border-green-600 bg-green-50 text-green-800 font-bold' 
+                      : 'border-gray-300 hover:border-green-600 hover:bg-green-50'
                   }`}
                 >
                   {size}
@@ -235,7 +235,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
       {/* Clothing Specific Filters */}
       {isClothing && (
         <div className="pt-4 border-t border-gray-100 space-y-6">
-          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-tighter text-[11px]">Clothing Specs</label>
+          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-wider text-[11px]">Clothing Specs</label>
           
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-2">Size</label>
@@ -246,8 +246,8 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
                   onClick={() => handleAttributeChange('size', s)}
                   className={`px-3 py-1 text-xs border rounded-md transition-all ${
                     filters.size === s 
-                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
-                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                      ? 'border-green-600 bg-green-50 text-green-800 font-bold' 
+                      : 'border-gray-300 hover:border-green-600 hover:bg-green-50'
                   }`}
                 >
                   {s}
@@ -265,8 +265,8 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
                   onClick={() => handleAttributeChange('color', c)}
                   className={`px-3 py-1 text-xs border rounded-md transition-all ${
                     filters.color === c 
-                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
-                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                      ? 'border-green-600 bg-green-50 text-green-800 font-bold' 
+                      : 'border-gray-300 hover:border-green-600 hover:bg-green-50'
                   }`}
                 >
                   {c}
@@ -280,7 +280,7 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
       {/* Footwear Specific Filters */}
       {isFootwear && (
         <div className="pt-4 border-t border-gray-100 space-y-6">
-          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-tighter text-[11px]">Footwear Specs</label>
+          <label className="block text-sm font-bold text-[#0f1111] mb-1 uppercase tracking-wider text-[11px]">Footwear Specs</label>
           
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-2">Shoe Size (UK/India)</label>
@@ -291,8 +291,8 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
                   onClick={() => handleAttributeChange('size', s)}
                   className={`px-3 py-1 text-xs border rounded-md transition-all ${
                     filters.size === s 
-                      ? 'border-[#e77600] bg-[#fff9f2] text-[#e77600] font-bold' 
-                      : 'border-gray-300 hover:border-[#e77600] hover:bg-[#fff9f2]'
+                      ? 'border-green-600 bg-green-50 text-green-800 font-bold' 
+                      : 'border-gray-300 hover:border-green-600 hover:bg-green-50'
                   }`}
                 >
                   {s}
@@ -311,14 +311,14 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             <button 
               key={stars} 
               onClick={() => onFilterChange({ rating: filters.rating === String(stars) ? undefined : String(stars) })}
-              className={`flex items-center gap-2 group w-full text-left p-1 rounded transition-colors ${filters.rating === String(stars) ? 'bg-[#fff9f2] border border-[#e77600]' : 'border border-transparent'}`}
+              className={`flex items-center gap-2 group w-full text-left p-1 rounded transition-colors ${filters.rating === String(stars) ? 'bg-green-50/50 border border-green-600/50' : 'border border-transparent'}`}
             >
-              <div className="flex text-[#febd69]">
+              <div className="flex text-amber-400">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <span key={i} className={i < stars ? 'fill-current' : 'text-gray-200'}>★</span>
                 ))}
               </div>
-              <span className={`text-xs ${filters.rating === String(stars) ? 'text-[#e77600] font-bold' : 'text-gray-600 group-hover:text-[#c45500]'}`}>& Up</span>
+              <span className={`text-xs ${filters.rating === String(stars) ? 'text-green-800 font-bold' : 'text-gray-600 group-hover:text-green-600'}`}>& Up</span>
             </button>
           ))}
         </div>
@@ -335,9 +335,9 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
                 checked={filters.discount === String(pct)}
                 onChange={() => onFilterChange({ discount: String(pct) })}
                 onClick={(e) => { if (filters.discount === String(pct)) { e.preventDefault(); onFilterChange({ discount: undefined }); } }}
-                className="w-4 h-4 rounded-full border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer"
+                className="w-4 h-4 rounded-full border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
               />
-              <span className={`text-sm transition-colors ${filters.discount === String(pct) ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'}`}>
+              <span className={`text-sm transition-colors ${filters.discount === String(pct) ? 'text-green-700 font-bold' : 'text-gray-700 group-hover:text-green-600'}`}>
                 {pct}% Off or more
               </span>
             </label>
@@ -352,9 +352,9 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             type="checkbox" 
             checked={filters.in_stock_only === true}
             onChange={(e) => onFilterChange({ in_stock_only: e.target.checked ? true : undefined })}
-            className="w-4 h-4 rounded border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer" 
+            className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" 
           />
-          <span className={`text-sm transition-colors ${filters.in_stock_only ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'}`}>In Stock Only</span>
+          <span className={`text-sm transition-colors ${filters.in_stock_only ? 'text-green-700 font-bold' : 'text-gray-700 group-hover:text-green-600'}`}>In Stock Only</span>
         </label>
         
         <label className="flex items-center gap-2 cursor-pointer group">
@@ -362,9 +362,9 @@ export default function FilterSidebar({ filters, onFilterChange, className = '' 
             type="checkbox" 
             checked={filters.b2b_only === true}
             onChange={(e) => onFilterChange({ b2b_only: e.target.checked ? true : undefined })}
-            className="w-4 h-4 rounded border-gray-300 text-[#e77600] focus:ring-[#e77600] cursor-pointer" 
+            className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" 
           />
-          <span className={`text-sm transition-colors ${filters.b2b_only ? 'text-[#e77600] font-bold' : 'text-gray-700 group-hover:text-[#c45500]'}`}>Available for B2B</span>
+          <span className={`text-sm transition-colors ${filters.b2b_only ? 'text-green-700 font-bold' : 'text-gray-700 group-hover:text-green-600'}`}>Available for B2B</span>
         </label>
       </div>
     </aside>

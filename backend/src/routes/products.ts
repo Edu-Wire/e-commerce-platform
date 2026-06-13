@@ -6,7 +6,9 @@ import {
   getProductBySlug,
   getSuggestedProducts,
   getProductReviews,
-  createProductReview
+  createProductReview,
+  updateProductReview,
+  deleteProductReview
 } from '../controllers/productController';
 
 const router = Router();
@@ -16,5 +18,7 @@ router.get('/suggestions', publicLimiter, getSuggestedProducts);
 router.get('/:slug', publicLimiter, getProductBySlug);
 router.get('/:id/reviews', publicLimiter, getProductReviews);
 router.post('/:id/reviews', authenticateCustomer, createProductReview);
+router.put('/:id/reviews', authenticateCustomer, updateProductReview);
+router.delete('/:id/reviews', authenticateCustomer, deleteProductReview);
 
 export default router;

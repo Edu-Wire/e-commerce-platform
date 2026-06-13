@@ -9,7 +9,7 @@ import { uploadToS3 } from '../../utils/s3';
 
 export async function getAll(req: Request, res: Response): Promise<void> {
   try {
-    const { category, condition, low_stock, is_b2b, is_b2c, is_active, search } = req.query;
+    const { category, category_id, condition, low_stock, is_b2b, is_b2c, is_active, search } = req.query;
     const { page, limit } = getPaginationParams(req.query as Record<string, unknown>);
     const offset = getOffset(page, limit);
 
@@ -20,6 +20,17 @@ export async function getAll(req: Request, res: Response): Promise<void> {
     if (category) {
       conditions.push(`c.slug = $${paramIdx++}`);
       params.push(category);
+    }
+    if (category_id) {
+      conditions.push(`p.category_id IN (
+        WITH RECURSIVE cat_tree AS (
+          SELECT id FROM categories WHERE id = $${paramIdx++}
+          UNION ALL
+          SELECT c.id FROM categories c JOIN cat_tree ct ON ct.id = c.parent_id
+        )
+        SELECT id FROM cat_tree
+      )`);
+      params.push(parseInt(String(category_id), 10));
     }
     if (condition) {
       conditions.push(`p.condition = $${paramIdx++}`);

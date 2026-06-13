@@ -59,85 +59,142 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start bg-white px-4 py-12">
-      <div className="w-full max-w-[350px]">
-        {/* Logo */}
-        <div className="text-center mb-6">
-          <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">S</span>
-            </div>
-            <span className="text-2xl font-bold text-gray-900">ShopNow</span>
-          </Link>
-        </div>
+    <div className="min-h-screen flex flex-col font-sans bg-gradient-to-br from-[#F0FDF4] via-[#F8FAFC] to-[#ECFDF5] text-gray-800 relative overflow-hidden">
+      
+      {/* Decorative Dotted Pattern */}
+      <div className="absolute top-20 left-20 opacity-20 pointer-events-none hidden md:block">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <pattern id="dots" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.5" fill="currentColor" className="text-brand-primary" />
+          </pattern>
+          <rect width="60" height="60" fill="url(#dots)" />
+        </svg>
+      </div>
+      <div className="absolute bottom-20 right-20 opacity-20 pointer-events-none hidden md:block">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <pattern id="dots2" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.5" fill="currentColor" className="text-brand-primary" />
+          </pattern>
+          <rect width="60" height="60" fill="url(#dots2)" />
+        </svg>
+      </div>
 
-        <div className="border border-gray-300 rounded-lg p-6 shadow-sm">
+      {/* Header */}
+      <div className="w-full flex flex-col items-center pt-6 md:pt-8 pb-4 z-10 px-4 text-center">
+        <Link to="/" className="inline-flex items-center gap-2 mb-4 hover:opacity-90 transition-opacity">
+          <div className="w-9 h-9 bg-brand-primary rounded-xl flex items-center justify-center shadow-md shadow-brand-primary/20">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+          </div>
+          <span className="text-2xl font-black text-[#0F172A] tracking-tight">ShopNow</span>
+        </Link>
+        <h1 className="text-3xl md:text-[34px] font-extrabold text-[#0F172A] mb-3 tracking-tight">Welcome back</h1>
+        <p className="text-[#64748B] text-sm md:text-base font-medium">Log in to your account and continue shopping</p>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 w-full max-w-[1100px] mx-auto flex items-center justify-center gap-12 lg:gap-24 px-4 z-10">
+        
+        {/* Center Column - Card */}
+        <div className="w-full max-w-[440px] bg-white rounded-[24px] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-gray-100 p-8 md:p-10">
+          
           {step === 'identifier' && (
             <>
-              <h1 className="text-2xl font-normal text-gray-900 mb-4">Sign in or create account</h1>
-              <form onSubmit={handleContinue} className="space-y-4">
+              {/* Icon Heading */}
+              <div className="flex flex-col items-center text-center mb-8">
+                <div className="w-14 h-14 bg-brand-primaryLight rounded-full flex items-center justify-center mb-5 ring-4 ring-brand-primaryLight/50">
+                  <svg className="w-6 h-6 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Log in with your email</h2>
+                <p className="text-xs font-medium text-gray-500">Enter your email address to access your account</p>
+              </div>
+
+              <form onSubmit={handleContinue} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1">Enter mobile number or email</label>
-                  <div className="relative">
+                  <label className="block text-[13px] font-bold text-gray-800 mb-1.5">Email address</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-primary transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                      </svg>
+                    </div>
                     <input
                       type="text"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder=""
-                      className="w-full rounded border border-gray-400 px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-black"
+                      placeholder="Enter your email address"
+                      className="w-full rounded-xl border border-gray-200 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary text-gray-900 transition-all shadow-sm"
                     />
-                    {identifier && (
-                      <button
-                        type="button"
-                        onClick={() => setIdentifier('')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer" defaultChecked />
+                    <span className="text-[13px] font-medium text-gray-600 group-hover:text-gray-900 transition-colors">Remember me</span>
+                  </label>
+                  <a href="#" className="text-[13px] font-semibold text-brand-primary hover:text-brand-primaryHover transition-colors">Forgot email?</a>
                 </div>
 
                 <button
                   type="submit"
                   disabled={checking}
-                  className="w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-normal rounded-md border border-yellow-500 transition-colors disabled:opacity-60 text-sm"
+                  className="w-full py-2.5 bg-brand-primary hover:bg-brand-primaryHover text-white font-bold rounded-xl transition-all disabled:opacity-70 text-[13px] shadow-md shadow-brand-primary/20 active:scale-[0.98] mt-2"
                 >
                   {checking ? 'Checking...' : 'Continue'}
                 </button>
               </form>
 
-              <p className="text-xs text-gray-600 mt-4">
-                By continuing, you agree to ShopNow's <a href="#" className="text-blue-700 hover:text-orange-600 hover:underline">Conditions of Use</a> and <a href="#" className="text-blue-700 hover:text-orange-600 hover:underline">Privacy Notice</a>.
-              </p>
+              <div className="relative flex items-center justify-center my-6">
+                <div className="w-full border-t border-gray-100"></div>
+                <span className="absolute bg-white px-3 text-[11px] font-semibold text-gray-400">or</span>
+              </div>
+
+              <div className="text-center">
+                <span className="text-[13px] font-medium text-gray-500">Don't have an account? </span>
+                <Link to={`/register?identifier=${encodeURIComponent(identifier)}`} className="text-[13px] font-bold text-brand-primary hover:text-brand-primaryHover transition-colors">
+                  Create account
+                </Link>
+              </div>
             </>
           )}
 
           {step === 'register_prompt' && (
             <>
-              <h1 className="text-2xl font-normal text-gray-900 mb-2">It looks like you are new to ShopNow</h1>
-              <p className="text-sm text-gray-900 mb-4">
-                {identifier} <button onClick={() => setStep('identifier')} className="text-blue-700 hover:text-orange-600 hover:underline text-sm ml-1">Change</button>
-              </p>
-              <p className="text-sm text-gray-900 mb-4">Let's create an account using your mobile number or email</p>
-              
-              <Link
-                to={`/register?identifier=${encodeURIComponent(identifier)}`}
-                className="block w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-black text-center font-normal rounded-md border border-yellow-500 transition-colors text-sm"
-              >
-                Proceed to create an account
-              </Link>
-
-              <div className="relative flex items-center py-4">
-                <div className="flex-grow border-t border-gray-200"></div>
+              <div className="flex flex-col items-center text-center mb-8">
+                <div className="w-14 h-14 bg-brand-primaryLight rounded-full flex items-center justify-center mb-5 ring-4 ring-brand-primaryLight/50">
+                  <svg className="w-6 h-6 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">New to ShopNow?</h2>
+                <p className="text-xs font-medium text-gray-500">Let's create an account with</p>
+                <div className="bg-gray-50 px-4 py-1.5 rounded-full mt-3 border border-gray-100 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-800">{identifier}</span>
+                  <button onClick={() => setStep('identifier')} className="text-xs font-bold text-brand-primary hover:text-brand-primaryHover transition-colors">Change</button>
+                </div>
               </div>
 
-              <div className="text-sm text-gray-900">
-                <p className="font-bold mb-2">Already a customer?</p>
-                <button onClick={() => setStep('identifier')} className="text-blue-700 hover:text-orange-600 hover:underline text-sm">
-                  Sign in with another email or mobile number
+              <Link
+                to={`/register?identifier=${encodeURIComponent(identifier)}`}
+                className="flex items-center justify-center w-full py-2.5 bg-brand-primary hover:bg-brand-primaryHover text-white font-bold rounded-xl transition-all text-[13px] shadow-md shadow-brand-primary/20 active:scale-[0.98]"
+              >
+                Proceed to create account
+              </Link>
+
+              <div className="relative flex items-center justify-center my-6">
+                <div className="w-full border-t border-gray-100"></div>
+              </div>
+
+              <div className="text-center">
+                <span className="text-[13px] font-medium text-gray-500">Already a customer? </span>
+                <button onClick={() => setStep('identifier')} className="text-[13px] font-bold text-brand-primary hover:text-brand-primaryHover transition-colors">
+                  Sign in instead
                 </button>
               </div>
             </>
@@ -145,50 +202,71 @@ export default function LoginPage() {
 
           {step === 'signin' && (
             <>
-              <h1 className="text-2xl font-normal text-gray-900 mb-2">Sign in</h1>
-              <p className="text-sm text-gray-900 mb-4">
-                {identifier} <button onClick={() => setStep('identifier')} className="text-blue-700 hover:text-orange-600 hover:underline text-sm ml-1">Change</button>
-              </p>
-              
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="flex flex-col items-center text-center mb-8">
+                <div className="w-14 h-14 bg-brand-primaryLight rounded-full flex items-center justify-center mb-5 ring-4 ring-brand-primaryLight/50">
+                  <svg className="w-6 h-6 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Welcome back</h2>
+                <div className="bg-gray-50 px-4 py-1.5 rounded-full mt-1 border border-gray-100 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-800">{identifier}</span>
+                  <button onClick={() => setStep('identifier')} className="text-xs font-bold text-brand-primary hover:text-brand-primaryHover transition-colors">Change</button>
+                </div>
+              </div>
+
+              <form onSubmit={handleSignIn} className="space-y-5">
                 <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="text-sm font-bold text-gray-900">Password</label>
-                    <a href="#" className="text-sm text-blue-700 hover:text-orange-600 hover:underline">Forgot password?</a>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-[13px] font-bold text-gray-800">Password</label>
+                    <a href="#" className="text-[12px] font-semibold text-brand-primary hover:text-brand-primaryHover transition-colors">Forgot password?</a>
                   </div>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder=""
-                    className="w-full rounded border border-gray-400 px-3 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-black"
-                  />
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-primary transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="w-full rounded-xl border border-gray-200 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary text-gray-900 transition-all shadow-sm"
+                    />
+                  </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-normal rounded-md border border-yellow-500 transition-colors disabled:opacity-60 text-sm"
+                  className="w-full py-2.5 bg-brand-primary hover:bg-brand-primaryHover text-white font-bold rounded-xl transition-all disabled:opacity-70 text-[13px] shadow-md shadow-brand-primary/20 active:scale-[0.98] mt-2"
                 >
                   {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>
               </form>
 
-              <div className="relative flex items-center py-4">
-                <div className="flex-grow border-t border-gray-200"></div>
-                <span className="flex-shrink mx-2 text-xs text-gray-500">or</span>
-                <div className="flex-grow border-t border-gray-200"></div>
+              <div className="relative flex items-center justify-center my-6">
+                <div className="w-full border-t border-gray-100"></div>
+                <span className="absolute bg-white px-3 text-[11px] font-semibold text-gray-400">or sign in with</span>
               </div>
 
-              <div className="space-y-2">
-                <button className="w-full py-2 border border-gray-400 rounded-md text-sm hover:bg-gray-50 text-black">Sign in with a passkey</button>
-                <button className="w-full py-2 border border-gray-400 rounded-md text-sm hover:bg-gray-50 text-black">Sign in with ShopNow app</button>
-                <button className="w-full py-2 border border-gray-400 rounded-md text-sm hover:bg-gray-50 text-black">Sign in with an OTP</button>
+              <div className="space-y-2.5">
+                <button className="w-full py-2.5 border border-gray-200 rounded-xl text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">Passkey</button>
+                <button className="w-full py-2.5 border border-gray-200 rounded-xl text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">OTP via Email</button>
               </div>
             </>
           )}
+
         </div>
+
       </div>
+
+      {/* Footer */}
+      <div className="w-full text-center pb-4 pt-4 z-10">
+        <p className="text-[12px] text-[#94A3B8] font-medium">© 2026 ShopNow. All rights reserved.</p>
+      </div>
+
     </div>
   );
 }

@@ -124,7 +124,7 @@ export default function ProductsPage() {
             className="px-3 py-2 border border-gray-300 rounded text-xs font-bold text-gray-600 focus:outline-none focus:border-amazon-blue transition-all cursor-pointer"
           >
             <option value="">All Categories</option>
-            {(categories ?? []).map((c) => (
+            {(categories ?? []).filter((c) => !c.parent_id).map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>

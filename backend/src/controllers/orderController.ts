@@ -15,6 +15,55 @@ interface OrderItemInput {
   auction_id?: number | null;
 }
 
+export async function enrichOrderForCustomer(order: any): Promise<any> {
+  const items = parseOrderItems(order.items);
+  const enrichedItems = [];
+  for (const item of items) {
+    const product = await queryOne<{ slug: string; images: string }>(
+      'SELECT slug, images FROM products WHERE id = $1',
+      [item.product_id]
+    );
+    let firstImage = null;
+    if (product?.images) {
+      const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+      if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+        const first = parsedImages[0];
+        if (first && typeof first === 'object' && 'url' in first) {
+          firstImage = (first as any).url;
+        } else if (typeof first === 'string') {
+          firstImage = first;
+        }
+      } else if (typeof parsedImages === 'string') {
+        firstImage = parsedImages;
+      }
+    }
+    enrichedItems.push({
+      id: item.product_id,
+      product_id: item.product_id,
+      sku: item.sku || '',
+      product_name: item.name || 'Product',
+      product_slug: product?.slug || '',
+      product_image: firstImage,
+      quantity: item.quantity ?? 1,
+      unit_price: parseFloat(String(item.selling_price || 0)),
+      mrp: parseFloat(String(item.mrp || 0)),
+    });
+  }
+
+  return {
+    ...order,
+    order_number: String(order.id),
+    total_amount: parseFloat(String(order.total_selling_price ?? 0)),
+    subtotal_mrp: parseFloat(String(order.total_mrp ?? 0)),
+    subtotal_price: parseFloat(String(order.total_selling_price ?? 0)),
+    discount_amount: parseFloat(String(order.total_savings ?? 0)),
+    shipping_charge: 0,
+    payment_status: order.status === 'pending' ? 'pending' : 'paid',
+    items: enrichedItems,
+    shipping_address: typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address || {},
+  };
+}
+
 export async function createOrder(req: Request, res: Response): Promise<void> {
   try {
     const customer = req.customer!;
@@ -130,7 +179,7 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       return result.rows[0];
     });
 
-    res.status(201).json(success(order));
+    res.status(201).json(success(await enrichOrderForCustomer(order)));
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal server error';
     if (message.includes('Insufficient stock') || message.includes('not found') || message.includes('not available')) {
@@ -271,7 +320,7 @@ export async function payAuctionOrder(req: Request, res: Response): Promise<void
       const updated = await client.query<Order>('SELECT * FROM orders WHERE id = $1', [orderId]);
 
       return {
-        order: mapOrderForCustomer(updated.rows[0] as unknown as Record<string, unknown>),
+        order: await enrichOrderForCustomer(updated.rows[0]),
         gateway_ref: gatewayRef,
         paid_via: source,
         amount,
@@ -325,7 +374,7 @@ export async function getOrder(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    res.json(success(mapOrderForCustomer(order as unknown as Record<string, unknown>)));
+    res.json(success(await enrichOrderForCustomer(order)));
   } catch (err) {
     console.error('getOrder error:', err);
     res.status(500).json(error('Internal server error'));
@@ -349,8 +398,8 @@ export async function getMyOrders(req: Request, res: Response): Promise<void> {
       [customer.id, limit, offset]
     );
 
-    const mapped = orders.map((o) =>
-      mapOrderForCustomer(o as unknown as Record<string, unknown>)
+    const mapped = await Promise.all(
+      orders.map((o) => enrichOrderForCustomer(o))
     );
 
     const meta = getPaginationMeta(total, page, limit);

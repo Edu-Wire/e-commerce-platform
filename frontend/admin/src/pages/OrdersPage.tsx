@@ -360,8 +360,8 @@ export default function OrdersPage() {
                                   {item.quantity}x
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="font-medium text-gray-900 truncate max-w-[240px]" title={item.product_name || item.sku}>
-                                    {item.product_name || 'Product'}
+                                  <p className="font-medium text-gray-900 truncate max-w-[240px]" title={item.name || item.product_name || item.sku}>
+                                    {item.name || item.product_name || 'Product'}
                                   </p>
                                   <p className="text-[10px] text-gray-500 font-mono">
                                     SKU: {item.sku} | ₹{parseFloat(String(item.selling_price || 0)).toLocaleString('en-IN')}
@@ -455,7 +455,7 @@ export default function OrdersPage() {
                       <div className="bg-gray-50 p-2 rounded border border-gray-100 my-1 space-y-1">
                         {order.items.slice(0, 2).map((item: any, idx: number) => (
                           <div key={idx} className="flex justify-between items-center text-[10px] text-gray-600">
-                            <span className="truncate max-w-[180px] font-medium">{item.product_name || 'Product'}</span>
+                            <span className="truncate max-w-[180px] font-medium">{item.name || item.product_name || 'Product'}</span>
                             <span>{item.quantity}x</span>
                           </div>
                         ))}

@@ -20,6 +20,16 @@ export default function AccountPage() {
       )
     },
     {
+      title: 'Your Wishlist',
+      description: 'View and manage your saved items',
+      link: '/wishlist',
+      icon: (
+        <svg className="w-12 h-12 text-[#232f3e]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      )
+    },
+    {
       title: 'Login & Security',
       description: 'Edit login, name, and mobile number',
       link: '#',

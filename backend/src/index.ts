@@ -16,7 +16,7 @@ import { authenticateAdmin, authenticateCustomer } from './middleware/auth';
 import { requireMinRole } from './middleware/rbac';
 import { getMyBids, getWinningDashboard, getWonAuctions, getQueuedAuctions } from './controllers/auctionController';
 
-const app = express();
+const app = express(); // trigger tsx reload
  
 // Security & utility middleware
 app.use(helmet({
@@ -107,7 +107,7 @@ app.use((_req: Request, res: Response) => {
 // Global error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ success: false, error: 'Internal server error' });
+  res.status(500).json({ success: false, error: err.message || 'Internal server error', stack: err.stack });
 });
 
 // Start server

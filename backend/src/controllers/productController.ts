@@ -335,7 +335,7 @@ export async function createProductReview(req: Request, res: Response): Promise<
       return;
     }
 
-    const { rating, title, content } = req.body;
+    const { rating, title, content, image_url } = req.body;
     const ratingNum = parseInt(rating);
     if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
       res.status(400).json(error('Rating must be an integer between 1 and 5'));
@@ -355,14 +355,12 @@ export async function createProductReview(req: Request, res: Response): Promise<
       return;
     }
 
-    // Insert or update review
+    // Insert review
     const result = await queryOne(
-      `INSERT INTO product_reviews (product_id, customer_id, rating, title, content)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (product_id, customer_id)
-       DO UPDATE SET rating = EXCLUDED.rating, title = EXCLUDED.title, content = EXCLUDED.content, created_at = NOW()
+      `INSERT INTO product_reviews (product_id, customer_id, rating, title, content, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [productId, customerId, ratingNum, title || '', content || '']
+      [productId, customerId, ratingNum, title || '', content || '', image_url || null]
     );
 
     // Clear product cache
@@ -372,7 +370,124 @@ export async function createProductReview(req: Request, res: Response): Promise<
     res.json(success(result));
   } catch (err) {
     console.error('createProductReview error:', err);
-    res.status(500).json(error('Internal server error'));
+    res.status(500).json(error(err instanceof Error ? err.message : String(err)));
+  }
+}
+
+export async function updateProductReview(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const productId = parseInt(id as string);
+    if (isNaN(productId)) {
+      res.status(400).json(error('Invalid product ID'));
+      return;
+    }
+
+    const { rating, title, content, image_url, reviewId } = req.body;
+    const ratingNum = parseInt(rating);
+    if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      res.status(400).json(error('Rating must be an integer between 1 and 5'));
+      return;
+    }
+
+    const customerId = req.customer?.id;
+    if (!customerId) {
+      res.status(401).json(error('Unauthorized'));
+      return;
+    }
+
+    // Verify product exists and get its slug
+    const product = await queryOne<{ slug: string }>('SELECT slug FROM products WHERE id = $1', [productId]);
+    if (!product) {
+      res.status(404).json(error('Product not found'));
+      return;
+    }
+
+    // Update review (by reviewId if provided, else fallback to product_id & customer_id combination)
+    const result = (reviewId && !isNaN(parseInt(reviewId)))
+      ? await queryOne(
+          `UPDATE product_reviews
+           SET rating = $1, title = $2, content = $3, image_url = $4
+           WHERE id = $5 AND customer_id = $6
+           RETURNING *`,
+          [ratingNum, title || '', content || '', image_url || null, parseInt(reviewId), customerId]
+        )
+      : await queryOne(
+          `UPDATE product_reviews
+           SET rating = $1, title = $2, content = $3, image_url = $4
+           WHERE product_id = $5 AND customer_id = $6
+           RETURNING *`,
+          [ratingNum, title || '', content || '', image_url || null, productId, customerId]
+        );
+
+    if (!result) {
+      res.status(404).json(error('Review not found or you are not authorized to edit this review'));
+      return;
+    }
+
+    // Clear product cache
+    await delCache(`products:slug:${product.slug}`);
+    await delCachePattern('products:list:*');
+
+    res.json(success(result));
+  } catch (err) {
+    console.error('updateProductReview error:', err);
+    res.status(500).json(error(err instanceof Error ? err.message : String(err)));
+  }
+}
+
+export async function deleteProductReview(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const productId = parseInt(id as string);
+    if (isNaN(productId)) {
+      res.status(400).json(error('Invalid product ID'));
+      return;
+    }
+
+    const customerId = req.customer?.id;
+    if (!customerId) {
+      res.status(401).json(error('Unauthorized'));
+      return;
+    }
+
+    // Verify product exists and get its slug
+    const product = await queryOne<{ slug: string }>('SELECT slug FROM products WHERE id = $1', [productId]);
+    if (!product) {
+      res.status(404).json(error('Product not found'));
+      return;
+    }
+
+    const reviewId = req.query.reviewId ? parseInt(req.query.reviewId as string) : undefined;
+
+    // Delete review (by reviewId if provided, else fallback to product_id & customer_id combination)
+    const result = (reviewId && !isNaN(reviewId))
+      ? await queryOne(
+          `DELETE FROM product_reviews
+           WHERE id = $1 AND customer_id = $2
+           RETURNING *`,
+          [reviewId, customerId]
+        )
+      : await queryOne(
+          `DELETE FROM product_reviews
+           WHERE product_id = $1 AND customer_id = $2
+           RETURNING *`,
+          [productId, customerId]
+        );
+
+    if (!result) {
+      res.status(404).json(error('Review not found or you are not authorized to delete this review'));
+      return;
+    }
+
+    // Clear product cache
+    await delCache(`products:slug:${product.slug}`);
+    await delCachePattern('products:list:*');
+
+    res.json(success({ message: 'Review deleted successfully' }));
+  } catch (err) {
+    console.error('deleteProductReview error:', err);
+    res.status(500).json(error(err instanceof Error ? err.message : String(err)));
   }
 }
 

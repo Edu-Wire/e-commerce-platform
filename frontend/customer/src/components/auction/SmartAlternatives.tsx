@@ -46,11 +46,11 @@ const SmartAlternatives: React.FC<SmartAlternativesProps> = ({ auction, onClose 
           Original catalog price: <span className="font-medium">₹{auction.catalogPrice.toLocaleString('en-IN')}</span>
         </p>
         <p className="mb-4">
-          Suggested buy‑now price with {markUp}% markup: <span className="font-medium text-orange-600">₹{suggestedPrice.toLocaleString('en-IN')}</span>
+          Suggested buy‑now price with {markUp}% markup: <span className="font-medium text-green-700">₹{suggestedPrice.toLocaleString('en-IN')}</span>
         </p>
         <a
           href={`/live-auction/${auction.currentAuctionId}`}
-          className="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white py-2 rounded"
+          className="block w-full text-center bg-green-700 hover:bg-green-800 text-white py-2 rounded"
         >
           View Similar Auctions
         </a>

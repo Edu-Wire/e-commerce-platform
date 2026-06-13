@@ -77,7 +77,7 @@ export default function CategoryPage() {
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const isDeals = slug === 'deals' || slug === 'todays-deals';
-  const isFashion = slug === 'clothing' || slug === 'footwear' || slug?.includes('wear');
+  const isFashion = false;
   const isHomeKitchen = false;
   const isBooks = slug === 'books';
 
@@ -102,9 +102,20 @@ export default function CategoryPage() {
     setFilters(prev => ({
       ...prev,
       category: (slug !== 'all' && !isDeals) ? slug : undefined,
-      page: 1
+      search: searchParams.get('search') ?? undefined,
+      condition: searchParams.get('condition') ?? undefined,
+      brand: searchParams.get('brand') ?? undefined,
+      min_price: searchParams.get('min_price') ? Number(searchParams.get('min_price')) : undefined,
+      max_price: searchParams.get('max_price') ? Number(searchParams.get('max_price')) : undefined,
+      sort: isDeals ? 'discount_desc' : (searchParams.get('sort') ?? undefined),
+      sort_by: searchParams.get('sort_by') ?? undefined,
+      rating: searchParams.get('rating') ?? undefined,
+      discount: searchParams.get('discount') ?? undefined,
+      in_stock_only: searchParams.get('in_stock_only') === 'true' ? true : undefined,
+      b2b_only: searchParams.get('b2b_only') === 'true' ? true : undefined,
+      page: searchParams.get('page') ? Number(searchParams.get('page')) : 1
     }));
-  }, [slug, isDeals]);
+  }, [slug, isDeals, searchParams]);
 
   const { data, isLoading, error } = useProducts(filters);
 
@@ -148,48 +159,48 @@ export default function CategoryPage() {
 
   if (isDeals && !searchParams.toString()) {
     return (
-      <div className="bg-[#EAEDED] min-h-screen pb-20">
+      <div className="bg-[#F4F9F1] min-h-screen pb-20">
         {/* Main Summer Sale Banner */}
-        <div className="relative overflow-hidden bg-[#ff4d00] min-h-[300px] flex items-center justify-center text-white px-4">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#1B3B2B] to-[#132a1d] min-h-[300px] flex items-center justify-center text-white px-4">
           {/* Tropical Background Elements */}
           <div className="absolute inset-0 opacity-40">
-            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-orange-400 to-transparent"></div>
-            <div className="absolute -top-10 -right-10 w-64 h-64 bg-green-400/20 rounded-full blur-[80px]"></div>
-            <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-yellow-400/20 rounded-full blur-[80px]"></div>
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-green-800 to-transparent"></div>
+            <div className="absolute -top-10 -right-10 w-64 h-64 bg-green-600/20 rounded-full blur-[80px]"></div>
+            <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-emerald-600/20 rounded-full blur-[80px]"></div>
             {/* Palm Leaf Decorators (Abstracted) */}
-            <div className="absolute top-10 right-10 w-24 h-48 bg-green-800/20 rotate-45 rounded-full blur-xl"></div>
-            <div className="absolute bottom-10 left-10 w-24 h-48 bg-green-800/20 -rotate-45 rounded-full blur-xl"></div>
+            <div className="absolute top-10 right-10 w-24 h-48 bg-green-900/20 rotate-45 rounded-full blur-xl"></div>
+            <div className="absolute bottom-10 left-10 w-24 h-48 bg-green-900/20 -rotate-45 rounded-full blur-xl"></div>
           </div>
 
           <div className="max-w-[1500px] w-full relative z-10 py-6 flex flex-col items-center text-center">
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-6 w-full">
               <h2 className="text-3xl sm:text-5xl font-black italic tracking-tighter uppercase leading-[0.9] drop-shadow-lg">
-                Great Summer Sale <br /> <span className="text-white">is live</span>
+                Great Summer Sale <br /> <span className="text-[#E2F0D9]">is live</span>
               </h2>
 
               <div className="flex flex-col items-center md:items-end gap-3 md:ml-auto">
                 <div className="flex gap-4">
                   <div className="text-right">
-                    <p className="text-[10px] font-bold opacity-80 uppercase leading-none">Powered by</p>
-                    <p className="text-xl font-black italic tracking-tighter leading-none">SAMSUNG Galaxy</p>
+                    <p className="text-[10px] font-bold opacity-80 uppercase leading-none text-[#E2F0D9]">Powered by</p>
+                    <p className="text-xl font-black italic tracking-tighter leading-none text-white">SAMSUNG Galaxy</p>
                   </div>
                   <div className="w-px h-8 bg-white/30" />
                   <div className="text-left">
-                    <p className="text-[10px] font-bold opacity-80 uppercase leading-none">Co-Powered by</p>
-                    <p className="text-xl font-black italic tracking-tighter leading-none">intel <span className="font-normal not-italic">CORE</span></p>
+                    <p className="text-[10px] font-bold opacity-80 uppercase leading-none text-[#E2F0D9]">Co-Powered by</p>
+                    <p className="text-xl font-black italic tracking-tighter leading-none text-white">intel <span className="font-normal not-italic">CORE</span></p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col items-center gap-6 w-full">
-              <div className="bg-[#ccff00] text-[#0f1111] px-8 py-2 rounded-sm font-black italic text-lg shadow-md border-b-4 border-black/10 inline-block">
+              <div className="bg-[#E2F0D9] text-[#1B3B2B] px-8 py-2 rounded-sm font-black italic text-lg shadow-md border-b-4 border-black/10 inline-block">
                 Get ₹150 cashback* on orders above ₹2500
               </div>
 
               <div className="bg-white rounded-sm p-4 border border-gray-200 flex flex-col md:flex-row items-center gap-4 w-full max-w-[600px] shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-transform">
-                <div className="absolute top-0 left-0 w-2 h-full bg-[#004c8f]"></div>
-                <div className="w-24 h-10 bg-[#004c8f] text-white flex items-center justify-center font-bold text-[10px] rounded-sm">HDFC BANK</div>
+                <div className="absolute top-0 left-0 w-2 h-full bg-[#1B3B2B]"></div>
+                <div className="w-24 h-10 bg-[#1B3B2B] text-white flex items-center justify-center font-bold text-[10px] rounded-sm">HDFC BANK</div>
                 <div className="h-px w-full md:h-8 md:w-px bg-gray-100" />
                 <div className="flex-1 text-center md:text-left">
                   <p className="text-[#0f1111] text-[18px] font-black italic tracking-tighter">10% Instant Discount* <span className="font-normal not-italic text-sm">up to</span> ₹9,500 off</p>
@@ -201,10 +212,10 @@ export default function CategoryPage() {
         </div>
 
         {/* Prime Banner Strip */}
-        <div className="bg-[#007185] pt-10 pb-32">
+        <div className="bg-[#1B3B2B] pt-10 pb-32">
           <div className="max-w-[1500px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-6">
             <p className="text-3xl font-black italic tracking-tight text-white">Only for Prime Members</p>
-            <button className="bg-[#FFD814] hover:bg-[#F7CA00] text-[#0f1111] px-12 py-3 rounded-full font-black italic text-xl shadow-lg transition-transform hover:scale-105 active:scale-95 border-b-4 border-[#F2C200]">
+            <button className="bg-green-600 hover:bg-green-700 text-white px-12 py-3 rounded-full font-black italic text-xl shadow-lg transition-transform hover:scale-105 active:scale-95 border-b-4 border-green-800">
               Join Prime ▶
             </button>
           </div>
@@ -220,11 +231,11 @@ export default function CategoryPage() {
           ].map((tile, i) => (
             <div key={i} className="bg-white p-8 rounded-sm shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group flex flex-col items-center text-center min-h-[160px] justify-center">
               {tile.brand && (
-                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm mb-3 italic ${tile.brand.includes('pay') ? 'bg-[#232f3e] text-white' : 'bg-[#FFD814] text-gray-900'}`}>
+                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm mb-3 italic ${tile.brand.includes('pay') ? 'bg-green-900 text-white' : 'bg-green-100 text-green-900'}`}>
                   {tile.brand}
                 </span>
               )}
-              <h3 className="text-xl font-black italic tracking-tighter text-[#0f1111] mb-1 group-hover:text-orange-600 transition-colors leading-tight">{tile.title}</h3>
+              <h3 className="text-xl font-black italic tracking-tighter text-[#0f1111] mb-1 group-hover:text-green-600 transition-colors leading-tight">{tile.title}</h3>
               <p className="text-sm font-bold text-gray-500">{tile.sub}</p>
             </div>
           ))}
@@ -262,16 +273,16 @@ export default function CategoryPage() {
                     );
                   })()}
                   {(p.discount_percentage > 40 || i % 3 === 0) && (
-                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-[8px] font-black px-2 py-1 rounded-sm rotate-[-15deg] shadow-lg z-20">
+                    <div className="absolute top-2 left-2 bg-green-600 text-white text-[8px] font-black px-2 py-1 rounded-sm rotate-[-15deg] shadow-lg z-20">
                       {p.discount_percentage > 60 ? 'TOP DEAL' : 'NEW LAUNCH'}
                     </div>
                   )}
                 </div>
                 <div className="px-1">
-                  <h3 className="text-sm font-bold text-gray-900 group-hover:text-orange-700 transition-colors line-clamp-1 mb-0.5">{p.name}</h3>
+                  <h3 className="text-sm font-bold text-gray-900 group-hover:text-green-700 transition-colors line-clamp-1 mb-0.5">{p.name}</h3>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-black text-red-700">₹{p.selling_price.toLocaleString('en-IN')}</p>
-                    <p className="text-[11px] font-bold text-orange-600">({Math.round(p.discount_percentage)}% off)</p>
+                    <p className="text-sm font-black text-green-800">₹{p.selling_price.toLocaleString('en-IN')}</p>
+                    <p className="text-[11px] font-bold text-green-600">({Math.round(p.discount_percentage)}% off)</p>
                   </div>
                 </div>
               </Link>
@@ -304,7 +315,7 @@ export default function CategoryPage() {
             <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
               {TOP_CATEGORIES.map((cat, i) => (
                 <div key={i} className="flex-shrink-0 w-[120px] flex flex-col items-center text-center cursor-pointer group">
-                  <div className="w-[110px] h-[110px] rounded-2xl bg-orange-50 border-4 border-orange-100 overflow-hidden mb-3 group-hover:scale-105 transition-transform">
+                  <div className="w-[110px] h-[110px] rounded-2xl bg-green-50 border-4 border-green-100 overflow-hidden mb-3 group-hover:scale-105 transition-transform">
                     <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
                   </div>
                   <span className="text-xs font-bold text-gray-700 leading-tight">{cat.name}</span>
@@ -321,7 +332,7 @@ export default function CategoryPage() {
             {DEALS_TABS.map((tab, i) => (
               <button
                 key={tab}
-                className={`px-5 py-2.5 rounded-sm border text-sm font-medium whitespace-nowrap transition-all ${i === 3 ? 'border-orange-500 bg-orange-50 text-gray-900 shadow-sm' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'}`}
+                className={`px-5 py-2.5 rounded-sm border text-sm font-medium whitespace-nowrap transition-all ${i === 3 ? 'border-green-600 bg-green-50 text-green-900 shadow-sm' : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'}`}
               >
                 {tab}
               </button>
@@ -362,21 +373,21 @@ export default function CategoryPage() {
                             </div>
                           );
                         })()}
-                        <button className="absolute bottom-2 right-2 w-8 h-8 bg-[#FFD814] hover:bg-[#F7CA00] rounded-full shadow-sm flex items-center justify-center text-gray-900 border border-[#F2C200] z-10">
+                        <button className="absolute bottom-2 right-2 w-8 h-8 bg-green-600 hover:bg-green-700 rounded-full shadow-sm flex items-center justify-center text-white border border-green-700 z-10 transition-colors">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                         </button>
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                        <span className="bg-red-700 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm whitespace-nowrap">{Math.round(((p.mrp - p.selling_price) / p.mrp) * 100)}% off</span>
-                        <span className="text-red-700 text-[11px] font-bold uppercase tracking-tight truncate">Great Summer Deal</span>
+                        <span className="bg-green-800 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm whitespace-nowrap">{Math.round(((p.mrp - p.selling_price) / p.mrp) * 100)}% off</span>
+                        <span className="text-green-800 text-[11px] font-bold uppercase tracking-tight truncate">Great Summer Deal</span>
                       </div>
                       <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-[13px] font-bold text-gray-900 leading-none">₹{p.selling_price.toLocaleString('en-IN')}</span>
                         <span className="text-[11px] text-gray-500">M.R.P.: <span className="line-through">₹{p.mrp.toLocaleString('en-IN')}</span></span>
                       </div>
-                      <h3 className="text-sm text-gray-800 line-clamp-2 mb-2 group-hover:text-orange-700">{p.name}</h3>
+                      <h3 className="text-sm text-gray-800 line-clamp-2 mb-2 group-hover:text-green-700">{p.name}</h3>
                       <div className="mt-auto">
-                        <Link to="#" className="text-xs text-blue-700 hover:text-orange-700 hover:underline">Shop {p.brand} deals</Link>
+                        <Link to="#" className="text-xs text-green-700 hover:text-green-800 hover:underline">Shop {p.brand} deals</Link>
                       </div>
                     </div>
                   ))}
@@ -514,23 +525,7 @@ export default function CategoryPage() {
                   </div>
                 </div>
 
-                {/* Footwear Brand Infinite Scroll */}
-                <div className="mb-10 bg-white py-4 border-y border-gray-100 overflow-hidden relative">
-                  <div className="flex animate-scroll whitespace-nowrap w-max">
-                    {/* First set of brands */}
-                    <div className="flex items-center flex-shrink-0">
-                      {['PUMA', 'ADIDAS', 'SKECHERS', 'CROCS', 'HUSH PUPPIES', 'U.S. POLO ASSN.', 'WOODLAND', 'CAMPUS', 'NEW BALANCE', 'ASIAN', 'ASICS', 'SYMBOL', 'BATA', 'SPARX', 'LIBERTY', 'NIKE', 'REEBOK', 'FILA', 'CONVERSE', 'VANS'].map((brand, idx) => (
-                        <span key={`${brand}-${idx}`} className="text-xl font-black text-gray-900 mx-10 tracking-tighter italic">{brand}</span>
-                      ))}
-                    </div>
-                    {/* Second identical set for seamless loop */}
-                    <div className="flex items-center flex-shrink-0">
-                      {['PUMA', 'ADIDAS', 'SKECHERS', 'CROCS', 'HUSH PUPPIES', 'U.S. POLO ASSN.', 'WOODLAND', 'CAMPUS', 'NEW BALANCE', 'ASIAN', 'ASICS', 'SYMBOL', 'BATA', 'SPARX', 'LIBERTY', 'NIKE', 'REEBOK', 'FILA', 'CONVERSE', 'VANS'].map((brand, idx) => (
-                        <span key={`${brand}-second-${idx}`} className="text-xl font-black text-gray-900 mx-10 tracking-tighter italic">{brand}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+
 
                 {/* Steal Deals Slider Section */}
                 <div className="mb-12 relative group">
@@ -675,27 +670,7 @@ export default function CategoryPage() {
                   </div>
                 </div>
 
-                {/* Top brands on offer */}
-                <div className="mb-12 bg-[#A0E7E5] p-8 rounded-sm border border-gray-100 shadow-sm overflow-hidden">
-                  <h2 className="text-5xl md:text-6xl font-black text-center mb-10 tracking-tighter text-[#0f1111] uppercase italic">Top brands on offer</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 px-2">
-                    {[
-                      { img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400', deal: 'Min. 50% off' },
-                      { img: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400', deal: 'Min. 45% off' },
-                      { img: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400', deal: 'Min. 55% off' },
-                      { img: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400', deal: 'Min. 45% off' },
-                      { img: 'https://images.unsplash.com/photo-1512374382149-4332c6c02151?w=400', deal: 'Min. 55% off' },
-                      { img: 'https://images.unsplash.com/photo-1539185441755-769473a23570?w=400', deal: 'Min. 55% off' },
-                    ].map((item, idx) => (
-                      <div key={idx} className="relative aspect-[3/4] bg-white rounded-sm overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all border border-white/20">
-                        <img src={item.img} alt="Brand Deal" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md py-3 px-3 flex flex-col items-center border-t border-gray-100">
-                          <p className="text-[18px] font-black italic tracking-tighter text-[#0f1111] leading-none">{item.deal}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
               </>
             )}
 
@@ -836,7 +811,7 @@ export default function CategoryPage() {
               <h3 className="text-[14px] font-bold text-[#0f1111] mb-2 uppercase tracking-tighter">Browse by Category</h3>
               <div className="space-y-1">
                 {['Action & Adventure', 'Biographies & Autobiographies', 'Business & Economics', 'Comics & Mangas', 'Crime, Thriller & Mystery', 'Fiction', 'Health, Family & Personal Development', 'History', 'Religion & Spirituality', 'Romance', 'Sci-Fi & Fantasy'].map(cat => (
-                  <Link key={cat} to="#" className="block text-[13px] text-gray-600 hover:text-[#c45500] hover:underline">{cat}</Link>
+                  <Link key={cat} to="#" className="block text-[13px] text-gray-600 hover:text-green-700 hover:underline">{cat}</Link>
                 ))}
               </div>
             </div>
@@ -881,7 +856,7 @@ export default function CategoryPage() {
             <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
               <h1 className="text-[14px] font-bold text-[#0f1111] whitespace-nowrap">Amazon Home</h1>
               {['Kitchen & Home Appliances', 'Large Appliances', 'Kitchen & Dining', 'Furniture', 'Home Furnishing', 'Home Decor', 'Home Improvement', 'Garden & Outdoor', 'Storage & Organisation', 'Lighting'].map(link => (
-                <Link key={link} to="#" className="text-[12px] text-gray-700 hover:text-[#c45500] hover:underline whitespace-nowrap">{link}</Link>
+                <Link key={link} to="#" className="text-[12px] text-gray-700 hover:text-green-700 hover:underline whitespace-nowrap">{link}</Link>
               ))}
             </div>
           </div>
@@ -896,7 +871,7 @@ export default function CategoryPage() {
               <div className="pl-4 space-y-1">
                 <p className="text-[13px] font-bold text-[#0f1111]">Kitchen & Dining</p>
                 {['Bakeware', 'Bar Accessories', 'Cookware', 'Gas Stoves', 'Kitchen Storage & Containers', 'Kitchen Tools', 'Tableware'].map(cat => (
-                  <Link key={cat} to="#" className="block text-[13px] text-gray-600 hover:text-[#c45500] hover:underline">{cat}</Link>
+                  <Link key={cat} to="#" className="block text-[13px] text-gray-600 hover:text-green-700 hover:underline">{cat}</Link>
                 ))}
               </div>
             </div>
@@ -904,8 +879,8 @@ export default function CategoryPage() {
             <div className="mb-6">
               <h3 className="text-[14px] font-bold text-[#0f1111] mb-2">Amazon Prime</h3>
               <label className="flex items-center gap-2 cursor-pointer group">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
-                <span className="text-[13px] text-blue-600 group-hover:text-orange-700 font-bold">✓prime</span>
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                <span className="text-[13px] text-green-700 group-hover:text-green-800 font-bold">✓prime</span>
               </label>
             </div>
 
@@ -915,9 +890,9 @@ export default function CategoryPage() {
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             <div className="mb-4">
-              <h1 className="text-3xl font-bold text-[#c45500] mb-2">Cookware & Dining</h1>
+              <h1 className="text-3xl font-bold text-green-800 mb-2">Cookware & Dining</h1>
               <p className="text-[13px] text-gray-600 leading-snug">
-                Browse through the wide range of kitchen products online at ShopNow India. Buy kitchenware products like <span className="text-blue-600 hover:underline cursor-pointer">Cookware</span>, <span className="text-blue-600 hover:underline cursor-pointer">Gas stoves</span>, <span className="text-blue-600 hover:underline cursor-pointer">Pressure cookers</span>, <span className="text-blue-600 hover:underline cursor-pointer">Kitchen Storage</span>, <span className="text-blue-600 hover:underline cursor-pointer">Cooking Tools</span>, <span className="text-blue-600 hover:underline cursor-pointer">Tableware</span>, <span className="text-blue-600 hover:underline cursor-pointer">Bakeware</span> and much more at affordable prices online at ShopNow.in.
+                Browse through the wide range of kitchen products online at ShopNow India. Buy kitchenware products like <span className="text-green-700 hover:underline cursor-pointer">Cookware</span>, <span className="text-green-700 hover:underline cursor-pointer">Gas stoves</span>, <span className="text-green-700 hover:underline cursor-pointer">Pressure cookers</span>, <span className="text-green-700 hover:underline cursor-pointer">Kitchen Storage</span>, <span className="text-green-700 hover:underline cursor-pointer">Cooking Tools</span>, <span className="text-green-700 hover:underline cursor-pointer">Tableware</span>, <span className="text-green-700 hover:underline cursor-pointer">Bakeware</span> and much more at affordable prices online at ShopNow.in.
               </p>
             </div>
 
@@ -931,15 +906,15 @@ export default function CategoryPage() {
                   <h3 className="text-2xl font-black text-gray-900 tracking-tight">Kitchen & dining</h3>
                 </div>
               </div>
-              <div className="relative bg-[#FF9900] h-[350px] flex items-center justify-between p-12 overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-orange-400/20 rounded-full blur-[80px]"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-400/20 rounded-full blur-[80px]"></div>
+              <div className="relative bg-[#1B3B2B] h-[350px] flex items-center justify-between p-12 overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-green-600/20 rounded-full blur-[80px]"></div>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-600/20 rounded-full blur-[80px]"></div>
 
                 <div className="relative z-10 flex-1">
                   <h2 className="text-white text-[80px] font-black italic tracking-tighter leading-[0.8] mb-4">
                     Great <br /> Summer Sale
                   </h2>
-                  <div className="bg-[#ccff00] text-gray-900 px-8 py-2 rounded-sm font-black italic text-2xl inline-block shadow-lg">
+                  <div className="bg-[#E2F0D9] text-[#1B3B2B] px-8 py-2 rounded-sm font-black italic text-2xl inline-block shadow-lg">
                     Live Now
                   </div>
                 </div>
@@ -960,7 +935,7 @@ export default function CategoryPage() {
 
             {/* Shop by Category Section */}
             <div className="mb-12">
-              <h2 className="text-xl font-bold text-[#c45500] mb-6">Shop by category</h2>
+              <h2 className="text-xl font-bold text-green-800 mb-6">Shop by category</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {[
                   { name: 'Lunch boxes', img: 'https://m.media-amazon.com/images/I/71u9G0YnF1L._AC_SY200_.jpg' },
@@ -1022,7 +997,7 @@ export default function CategoryPage() {
         <div className="max-w-[1500px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="text-[14px] text-[#0f1111]">
             <span className="font-bold">1-{data?.data.length || 0}</span> of over <span className="font-bold">{data?.meta?.total || 0}</span> results for
-            <span className="text-[#c45500] font-bold ml-1">"{slug === 'all' ? 'All Products' : (currentCategory?.name || slug)}"</span>
+            <span className="text-green-700 font-bold ml-1">"{slug === 'all' ? 'All Products' : (currentCategory?.name || slug)}"</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -1031,7 +1006,7 @@ export default function CategoryPage() {
               <select
                 value={filters.sort ?? ''}
                 onChange={e => updateFilters({ sort: e.target.value || undefined })}
-                className="text-[13px] rounded border border-gray-300 py-1 pl-2 pr-8 bg-[#f0f2f2] hover:bg-[#e3e6e6] focus:outline-none focus:ring-1 focus:ring-[#007185] cursor-pointer shadow-sm"
+                className="text-[13px] rounded border border-gray-300 py-1 pl-2 pr-8 bg-[#f0f2f2] hover:bg-[#e3e6e6] focus:outline-none focus:ring-1 focus:ring-green-500 cursor-pointer shadow-sm"
               >
                 {sortOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1045,11 +1020,11 @@ export default function CategoryPage() {
       <div className="max-w-[1500px] mx-auto px-4 py-4">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-[12px] text-gray-500 mb-6">
-          <Link to="/" className="hover:text-[#c45500] hover:underline">Home</Link>
+          <Link to="/" className="hover:text-green-700 hover:underline">Home</Link>
           <span>/</span>
           {breadcrumbCat && (
             <>
-              <Link to={`/category/${breadcrumbCat.slug}`} className="hover:text-[#c45500] hover:underline">{breadcrumbCat.name}</Link>
+              <Link to={`/category/${breadcrumbCat.slug}`} className="hover:text-green-700 hover:underline">{breadcrumbCat.name}</Link>
               <span>/</span>
             </>
           )}
@@ -1058,36 +1033,6 @@ export default function CategoryPage() {
           </span>
         </nav>
 
-        {/* Category Banner for Electronics - Summer Sale */}
-        {slug === 'electronics' && (
-          <div className="mb-8">
-            <div className="mb-8 relative rounded-lg overflow-hidden group shadow-lg">
-              <img
-                src="/summer_sale_banner.png"
-                alt="Great Summer Sale"
-                className="w-full h-[250px] md:h-[400px] object-cover"
-              />
-            </div>
-
-            {/* Scrolling Brands Carousel - Full Width Text Based */}
-            <div className="mb-12 bg-white py-8 border-y border-gray-200 overflow-hidden relative">
-              <div className="flex animate-scroll whitespace-nowrap w-max">
-                {/* First set of brands */}
-                <div className="flex items-center flex-shrink-0">
-                  {['SAMSUNG', 'APPLE', 'LG', 'SONY', 'XIAOMI', 'HP', 'DELL', 'ACER', 'ASUS', 'BOSE', 'LOGITECH', 'LENOVO', 'NOKIA', 'PANASONIC'].map(brand => (
-                    <span key={brand} className="text-2xl font-black text-[#0f1111] mx-10 tracking-tighter">{brand}</span>
-                  ))}
-                </div>
-                {/* Second identical set for seamless loop */}
-                <div className="flex items-center flex-shrink-0">
-                  {['SAMSUNG', 'APPLE', 'LG', 'SONY', 'XIAOMI', 'HP', 'DELL', 'ACER', 'ASUS', 'BOSE', 'LOGITECH', 'LENOVO', 'NOKIA', 'PANASONIC'].map(brand => (
-                    <span key={brand + '_2'} className="text-2xl font-black text-[#0f1111] mx-10 tracking-tighter">{brand}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="flex gap-8">
           <div className="hidden lg:block w-64 flex-shrink-0">
