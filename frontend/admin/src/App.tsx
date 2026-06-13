@@ -16,6 +16,7 @@ import SettingsPage from './pages/SettingsPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
 import QueuePage from './pages/QueuePage';
 import ClosedAuctionsPage from './pages/ClosedAuctionsPage';
+import ReportsPage from './pages/ReportsPage';
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/users" element={<UsersPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
+        <Route path="/reports/:type" element={<ReportsPage />} />
       </Route>
     </Routes>
   );

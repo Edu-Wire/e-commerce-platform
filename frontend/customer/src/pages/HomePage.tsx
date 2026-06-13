@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ui/ProductCard';
+import ProductCardSkeleton from '../components/ui/ProductCardSkeleton';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { api } from '../lib/api';
 import { useCartStore } from '../store/cartStore';
@@ -768,9 +769,13 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {dealsData?.data.slice(0, 5).map((product: any) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {dealsLoading ? (
+              [...Array(5)].map((_, i) => <ProductCardSkeleton key={i} />)
+            ) : (
+              dealsData?.data.slice(0, 5).map((product: any) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -847,11 +852,19 @@ export default function HomePage() {
               ref={historyRef}
               className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth"
             >
-              {newArrivalsData?.data.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-[240px]">
-                  <ProductCard product={product} />
-                </div>
-              ))}
+              {newLoading ? (
+                [...Array(6)].map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[240px]">
+                    <ProductCardSkeleton />
+                  </div>
+                ))
+              ) : (
+                newArrivalsData?.data.map((product: any) => (
+                  <div key={product.id} className="flex-shrink-0 w-[240px]">
+                    <ProductCard product={product} />
+                  </div>
+                ))
+              )}
             </div>
 
             <button
@@ -879,7 +892,20 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {dealsData?.data?.slice(2, 4).map((product, idx) => {
+            {dealsLoading ? (
+              [...Array(2)].map((_, i) => (
+                <div key={i} className="bg-white rounded-[1rem] border border-gray-200 overflow-hidden flex h-48 w-full animate-pulse">
+                  <div className="w-[45%] bg-gray-100 h-full"></div>
+                  <div className="w-[55%] p-5 flex flex-col justify-center border-l border-gray-50">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/4 mb-3"></div>
+                    <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+                    <div className="h-1.5 bg-gray-200 rounded-full w-full mt-auto"></div>
+                  </div>
+                </div>
+              ))
+            ) : dealsData?.data?.slice(2, 4).map((product: any, idx: number) => {
               const discount = Math.round(product.discount_percentage) || 15;
               const available = product.stock_quantity || 20;
               const sold = (product.id * 7) % 50 + 10; // Pseudo-random deterministic sold count

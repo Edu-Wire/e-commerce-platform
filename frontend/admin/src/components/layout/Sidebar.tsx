@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import useAdminAuthStore from '../../store/adminAuthStore';
 
 import {
@@ -14,7 +15,9 @@ import {
   HelpCircle,
   Megaphone,
   ListOrdered,
-  History
+  History,
+  ChevronDown,
+  BarChart3
 } from 'lucide-react';
 
 interface NavItem {
@@ -38,12 +41,30 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Settings', icon: Settings, to: '/settings' },
 ];
 
+const REPORT_SUB_ITEMS = [
+  { label: 'User Reports', to: '/reports/user' },
+  { label: 'Product Reports', to: '/reports/product' },
+  { label: 'Category Reports', to: '/reports/category' },
+  { label: 'Order Reports', to: '/reports/order' },
+  { label: 'Auction Reports', to: '/reports/auction' },
+  { label: 'Bid Reports', to: '/reports/bid' },
+  { label: 'Seller Reports', to: '/reports/seller' },
+  { label: 'Buyer Reports', to: '/reports/buyer' },
+  { label: 'Payment Reports', to: '/reports/payment' },
+  { label: 'Transaction Reports', to: '/reports/transaction' },
+  { label: 'Inventory Reports', to: '/reports/inventory' },
+  { label: 'Revenue Reports', to: '/reports/revenue' },
+  { label: 'Notification Reports', to: '/reports/notification' }
+];
+
 interface SidebarProps {
   onClose: () => void;
 }
 
 export default function Sidebar({ onClose }: SidebarProps) {
   const { admin } = useAdminAuthStore();
+  const location = useLocation();
+  const [reportsOpen, setReportsOpen] = useState(location.pathname.startsWith('/reports'));
 
   const visibleItems = NAV_ITEMS.filter(
     (item) => !item.ownerOnly || admin?.role === 'owner'
@@ -100,6 +121,46 @@ export default function Sidebar({ onClose }: SidebarProps) {
                 </NavLink>
               </li>
             ))}
+
+            {/* Reports Dropdown Module */}
+            <li>
+              <button
+                onClick={() => setReportsOpen(!reportsOpen)}
+                className={`w-full group flex items-center justify-between px-3 py-2.5 rounded text-sm font-semibold transition-all ${
+                  location.pathname.startsWith('/reports')
+                    ? 'bg-[#334155] text-white'
+                    : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <BarChart3 className={`w-5 h-5 ${location.pathname.startsWith('/reports') ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} strokeWidth={2} />
+                  <span>Reports</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${reportsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {reportsOpen && (
+                <ul className="mt-1 ml-4 pl-3 border-l border-gray-600 space-y-1">
+                  {REPORT_SUB_ITEMS.map((subItem) => (
+                    <li key={subItem.to}>
+                      <NavLink
+                        to={subItem.to}
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `block px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+                            isActive
+                              ? 'bg-[#f0c14b] text-[#111827]'
+                              : 'text-gray-400 hover:bg-[#334155] hover:text-white'
+                          }`
+                        }
+                      >
+                        {subItem.label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
           </ul>
         </div>
 
