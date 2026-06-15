@@ -638,8 +638,74 @@ export default function LiveAuctionPage() {
   const isLiveAuctionHome = activeTab === 'Live Auctions' && !auctionIdFromPath;
   if (loading && isLiveAuctionHome) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-700"></div>
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+        {/* Navbar Skeleton */}
+        <div className="h-16 bg-white border-b border-gray-100 flex items-center px-4 animate-pulse">
+          <div className="w-32 h-6 bg-gray-200 rounded"></div>
+        </div>
+
+        <div className="flex-1 max-w-[1500px] w-full mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
+          {/* Sidebar Skeleton */}
+          <div className="w-full lg:w-64 bg-white border border-slate-100 rounded-2xl p-5 flex flex-col flex-shrink-0 shadow-sm animate-pulse">
+            <div className="w-20 h-3 bg-gray-200 rounded mb-6"></div>
+            <div className="space-y-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-6 h-6 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1 h-4 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 h-32 bg-gray-100 rounded-2xl w-full"></div>
+          </div>
+
+          {/* Main Content Skeleton */}
+          <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="animate-pulse">
+                <div className="w-40 h-8 bg-gray-200 rounded mb-2"></div>
+                <div className="w-64 h-3 bg-gray-200 rounded"></div>
+              </div>
+              <div className="w-32 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+
+            {/* Stats Cards Row Skeleton */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 min-h-[120px] shadow-sm animate-pulse flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-24 h-3 bg-gray-200 rounded"></div>
+                    <div className="w-8 h-8 bg-gray-200 rounded-xl"></div>
+                  </div>
+                  <div>
+                    <div className="w-20 h-8 bg-gray-200 rounded mb-2"></div>
+                    <div className="w-16 h-3 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Content List Skeleton */}
+            <div className="space-y-4">
+              <div className="w-full h-14 bg-white rounded-2xl border border-slate-100 animate-pulse"></div>
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm animate-pulse flex flex-col sm:flex-row gap-4">
+                  <div className="w-24 h-20 sm:w-36 sm:h-28 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1 flex flex-col">
+                    <div className="w-3/4 h-6 bg-gray-200 rounded mb-3"></div>
+                    <div className="w-1/2 h-3 bg-gray-200 rounded mb-6"></div>
+                    <div className="grid grid-cols-4 gap-4 mt-auto">
+                      <div className="w-full h-10 bg-gray-200 rounded"></div>
+                      <div className="w-full h-10 bg-gray-200 rounded"></div>
+                      <div className="w-full h-10 bg-gray-200 rounded"></div>
+                      <div className="w-full h-10 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

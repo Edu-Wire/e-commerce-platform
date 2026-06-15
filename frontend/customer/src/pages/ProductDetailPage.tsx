@@ -98,7 +98,48 @@ export default function ProductDetailPage() {
   }, [product?.id]);
 
 
-  if (isLoading) return <LoadingSpinner size="lg" className="py-32" />;
+  if (isLoading) {
+    return (
+      <div className="bg-[#fafafa] min-h-screen font-sans overflow-x-hidden pb-10">
+        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center gap-2">
+          <div className="h-4 w-12 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr_350px] gap-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <div className="flex gap-4">
+              <div className="flex flex-col gap-3 w-16 hidden md:flex">
+                {[1, 2, 3, 4].map(i => <div key={i} className="w-16 h-16 bg-gray-200 rounded-xl animate-pulse"></div>)}
+              </div>
+              <div className="flex-1 bg-gray-100 rounded-2xl min-h-[400px] animate-pulse"></div>
+            </div>
+            <div className="flex flex-col space-y-5">
+              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-8 w-3/4 bg-gray-200 rounded animate-pulse mb-3"></div>
+              <div className="flex items-center gap-3">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mt-4"></div>
+              <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-24 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col h-full">
+              <div className="h-10 w-32 bg-gray-200 rounded animate-pulse mb-4"></div>
+              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse mb-6"></div>
+              <div className="h-16 w-full bg-gray-100 rounded animate-pulse mb-6"></div>
+              <div className="h-12 w-full bg-gray-200 rounded-full animate-pulse mt-auto mb-3"></div>
+              <div className="h-12 w-full bg-gray-200 rounded-full animate-pulse mb-3"></div>
+              <div className="h-12 w-full bg-gray-200 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (error || !product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">

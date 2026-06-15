@@ -256,8 +256,8 @@ export default function Navbar() {
             className="flex items-center p-1 sm:p-2 rounded-md hover:bg-gray-50 transition-all flex-shrink-0"
           >
             <svg className="w-8 h-8 text-brand-primary mr-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M16 6V5a4 4 0 0 0-8 0v1H4v13a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V6h-4zM9 5a3 3 0 0 1 6 0v1H9V5zm9 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8h12v11z"/>
-              <path d="M9 10a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm4 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0z"/>
+              <path d="M16 6V5a4 4 0 0 0-8 0v1H4v13a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V6h-4zM9 5a3 3 0 0 1 6 0v1H9V5zm9 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V8h12v11z" />
+              <path d="M9 10a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm4 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" />
             </svg>
             <div className="flex items-start text-gray-800">
               <span className="text-xl sm:text-2xl font-black tracking-tight leading-none text-[#222]">ShopNow</span>
@@ -290,8 +290,8 @@ export default function Navbar() {
           <form onSubmit={handleSearch} className="w-full flex h-full group">
             <div ref={searchRef} className="relative flex w-full h-full bg-white rounded-full border border-gray-300 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary">
               {/* Category Dropdown - Hidden on very small screens */}
-              <div 
-                ref={categoryDropdownRef} 
+              <div
+                ref={categoryDropdownRef}
                 className="relative hidden sm:block h-full flex-shrink-0"
               >
                 <button
@@ -444,8 +444,8 @@ export default function Navbar() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-1 sm:gap-2 order-3 lg:order-4">
           {/* Language Selector - Desktop Only */}
-          <div 
-            className="relative hidden lg:block" 
+          <div
+            className="relative hidden lg:block"
             ref={langDropdownRef}
           >
             <div
@@ -514,8 +514,8 @@ export default function Navbar() {
 
           {/* Notifications Bell */}
           {customer && (
-            <div 
-              className="relative" 
+            <div
+              className="relative"
               ref={notificationDropdownRef}
             >
               <button
@@ -617,8 +617,8 @@ export default function Navbar() {
           )}
 
           {/* Account & Lists */}
-          <div 
-            className="relative" 
+          <div
+            className="relative"
             ref={userDropdownRef}
           >
             <button
