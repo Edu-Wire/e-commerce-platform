@@ -358,6 +358,132 @@ export default function AIChatbot() {
           </button>
         </form>
       </div>
+
+      {/* Floating Peaking Cartoon Robot */}
+      {!isOpen && (
+        <div
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-10 right-0 z-[997] flex items-center cursor-pointer select-none group transition-all duration-300 transform translate-x-4 hover:translate-x-0"
+        >
+          {/* Style injection for animations */}
+          <style>{`
+            @keyframes robot-wave {
+              0%, 100% { transform: rotate(0deg); }
+              50% { transform: rotate(-15deg); }
+            }
+            .robot-waving {
+              animation: robot-wave 1.5s ease-in-out infinite;
+              transform-origin: 48px 90px;
+            }
+            @keyframes robot-float {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-4px); }
+            }
+            .robot-floating {
+              animation: robot-float 3s ease-in-out infinite;
+            }
+          `}</style>
+
+          {/* Prompt Bubble that slides in */}
+          <div className="bg-white text-slate-800 text-xs font-black px-3 py-2 rounded-2xl shadow-xl border border-slate-100 mr-[-12px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1.5 z-10 font-sans">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            Ask AI Assistant
+          </div>
+
+          {/* SVG Robot Mascot */}
+          <div className="robot-floating w-24 h-28 relative">
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 120 150"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="drop-shadow-lg"
+            >
+              {/* Body */}
+              <path
+                d="M40 105 C 40 85, 100 85, 100 105 L 100 150 L 40 150 Z"
+                fill="#F1F5F9"
+                stroke="#E2E8F0"
+                strokeWidth="3"
+              />
+              <path
+                d="M50 110 C 50 100, 90 100, 90 110 L 90 150 L 50 150 Z"
+                fill="#FFFFFF"
+              />
+
+              {/* Left Waving Arm */}
+              <g className="robot-waving">
+                <path
+                  d="M42 98 C 25 85, 18 68, 24 62 C 30 56, 38 72, 48 85 Z"
+                  fill="#F1F5F9"
+                  stroke="#E2E8F0"
+                  strokeWidth="2.5"
+                />
+                <path
+                  d="M40 95 C 28 85, 22 72, 26 68 C 30 64, 37 76, 45 85 Z"
+                  fill="#FFFFFF"
+                />
+              </g>
+
+              {/* Right Arm (resting/peaking edge) */}
+              <path
+                d="M98 100 C 105 105, 112 115, 109 122 C 106 128, 98 120, 95 112 Z"
+                fill="#F1F5F9"
+                stroke="#E2E8F0"
+                strokeWidth="2"
+              />
+
+              {/* Head */}
+              <rect
+                x="35"
+                y="38"
+                width="75"
+                height="65"
+                rx="32.5"
+                fill="#FFFFFF"
+                stroke="#E2E8F0"
+                strokeWidth="3.5"
+              />
+
+              {/* Face Screen */}
+              <rect
+                x="45"
+                y="50"
+                width="55"
+                height="40"
+                rx="18"
+                fill="#1E3A8A"
+              />
+
+              {/* Eyes */}
+              <ellipse cx="60" cy="70" rx="5" ry="8" fill="#60A5FA" />
+              <ellipse cx="85" cy="70" rx="5" ry="8" fill="#60A5FA" />
+              {/* Eye sparkle */}
+              <circle cx="59" cy="68" r="1.5" fill="#FFFFFF" />
+              <circle cx="84" cy="68" r="1.5" fill="#FFFFFF" />
+
+              {/* Antenna */}
+              <path
+                d="M72.5 38 L 72.5 24"
+                stroke="#E2E8F0"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+              {/* Glowing Green Sprout/Bolt */}
+              <path
+                d="M72.5 24 L 67 17 L 74 17 L 70 8 L 80 15 L 73 15 Z"
+                fill="#22C55E"
+                stroke="#16A34A"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </div>
+        </div>
+      )}
     </>
   );
 }

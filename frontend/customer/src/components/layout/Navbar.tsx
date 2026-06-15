@@ -19,6 +19,28 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [hasLiveAuctions, setHasLiveAuctions] = useState(false);
+
+  useEffect(() => {
+    const checkLiveAuctions = async () => {
+      try {
+        const res = await api.get('/auctions/active');
+        if (res.data.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          setHasLiveAuctions(true);
+        } else {
+          setHasLiveAuctions(false);
+        }
+      } catch (err) {
+        console.error('Failed to check live auctions:', err);
+      }
+    };
+
+    checkLiveAuctions();
+    const interval = setInterval(checkLiveAuctions, 20000); // Check every 20 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -730,20 +752,27 @@ export default function Navbar() {
           <Link to="/category/todays-deals" className="hover:text-brand-primary uppercase flex-shrink-0 transition-colors duration-150">OFFERS</Link>
         </div>
 
-        <button
-          onClick={() => window.dispatchEvent(new Event('toggle-ai-chat'))}
-          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-full text-xs font-bold text-orange-700 hover:bg-orange-200 transition-all cursor-pointer"
-        >
-          ✨ AI Assistant 
-        </button>
-
         <Link
           to="/live-auction"
-          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#E2F0D9] border border-[#D5E6CD] rounded-full text-xs font-bold text-[#1B3B2B] hover:bg-[#D5E6CD] transition-all"
+          className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+            hasLiveAuctions 
+              ? 'bg-red-50 border border-red-200 text-red-700 animate-pulse-fast shadow-md' 
+              : 'bg-[#E2F0D9] border border-[#D5E6CD] text-[#1B3B2B] hover:bg-[#D5E6CD]'
+          }`}
         >
+          {/* Style injection for faster pulse */}
+          <style>{`
+            @keyframes pulse-fast {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.8; transform: scale(1.03); }
+            }
+            .animate-pulse-fast {
+              animation: pulse-fast 1s ease-in-out infinite;
+            }
+          `}</style>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
+            <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${hasLiveAuctions ? 'animate-ping bg-red-400' : 'animate-ping bg-green-400'}`}></span>
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${hasLiveAuctions ? 'bg-red-600' : 'bg-green-600'}`}></span>
           </span>
           Live Auctions
         </Link>
@@ -843,10 +872,18 @@ export default function Navbar() {
                 <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Help & Settings</h3>
                 <div className="space-y-1">
                   <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
-                  <Link to="/live-auction" onClick={() => setMobileMenuOpen(false)} className="text-sm text-orange-600 font-bold hover:bg-gray-100 -mx-4 px-4 py-3 flex items-center gap-1.5">
+                  <Link 
+                    to="/live-auction" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className={`text-sm font-bold hover:bg-gray-100 -mx-4 px-4 py-3 flex items-center gap-1.5 transition-all duration-300 ${
+                      hasLiveAuctions 
+                        ? 'text-red-600 animate-pulse-fast' 
+                        : 'text-orange-600'
+                    }`}
+                  >
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${hasLiveAuctions ? 'bg-red-400' : 'bg-orange-400'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${hasLiveAuctions ? 'bg-red-600' : 'bg-orange-600'}`}></span>
                     </span>
                     Live Auctions
                   </Link>

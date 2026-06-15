@@ -63,7 +63,7 @@ export default function OrderDetailPage() {
   return (
     <div className="bg-[#f8fafc] min-h-screen py-6 md:py-10 font-sans text-[#0f1111]">
       <div className="max-w-[1200px] mx-auto px-4">
-        
+
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-[13px] text-gray-500 mb-4">
           <Link to="/" className="hover:text-green-700 hover:underline">Home</Link>
@@ -88,7 +88,7 @@ export default function OrderDetailPage() {
               Placed on {formattedDate} | {formattedTime}
             </p>
           </div>
-          
+
           <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-[13px] font-bold rounded-xl shadow-sm transition-all text-gray-700">
             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -146,10 +146,10 @@ export default function OrderDetailPage() {
 
         {/* Main 2-Column Details Dashboard Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
-          
+
           {/* Left Column: Items and Payment Details */}
           <div className="space-y-6">
-            
+
             {/* Items Container */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center gap-2">
@@ -166,15 +166,15 @@ export default function OrderDetailPage() {
                         <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs font-black italic">ShopNow</div>
                       )}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
-                      <Link 
+                      <Link
                         to={`/product/${item.product_slug}`}
                         className="text-[15px] md:text-[16px] font-bold text-gray-900 hover:text-green-700 transition-colors leading-tight line-clamp-2"
                       >
                         {item.product_name}
                       </Link>
-                      
+
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <ConditionBadge condition={item.condition} className="scale-90 origin-left" />
                         <span className="text-[12px] bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-100 font-bold">
@@ -192,20 +192,20 @@ export default function OrderDetailPage() {
                       <div className="mt-1 flex items-center gap-1.5 text-[12px] text-gray-500 font-medium">
                         <span>Sold by:</span>
                         <span className="font-bold text-green-700 hover:underline cursor-pointer flex items-center gap-0.5">
-                          ShopNow 
+                          ShopNow
                           <svg className="w-3.5 h-3.5 text-green-600 fill-current" viewBox="0 0 20 20"><path d="M6.267 3.455a.75.75 0 00-.75-.75h-.007a.75.75 0 00-.75.75v.006c0 .414-.336.75-.75.75H4a.75.75 0 00-.75.75v.007c0 .414-.336.75-.75.75h-.006a.75.75 0 00-.75.75v.006c0 .414-.336.75-.75.75H.75A.75.75 0 000 7.75v.007c0 .414.336.75.75.75h.006a.75.75 0 00.75.75v.006c0 .414.336.75.75.75H3a.75.75 0 00.75-.75v-.007c0-.414.336-.75.75-.75h.007a.75.75 0 00.75-.75v-.006c0-.414.336-.75.75-.75h1.25a.75.75 0 00.75-.75v-.007c0-.414.336-.75.75-.75z" /><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" /></svg>
                         </span>
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Link 
+                        <Link
                           to={`/product/${item.product_slug}`}
                           className="bg-[#FFD814] hover:bg-[#F7CA00] text-[12px] font-bold px-4 py-2 rounded-xl border border-[#FCD200] shadow-sm text-center transition-colors inline-block"
                         >
                           Buy it again
                         </Link>
                         {item.product_slug && (
-                          <Link 
+                          <Link
                             to={`/product/${item.product_slug}#reviews`}
                             className="bg-white hover:bg-gray-50 text-[12px] font-bold px-4 py-2 rounded-xl border border-gray-300 shadow-sm text-center transition-colors inline-block text-gray-700"
                           >
@@ -269,24 +269,23 @@ export default function OrderDetailPage() {
 
           {/* Right Column: Order Status Timeline, Shipping Address, Help */}
           <div className="space-y-6">
-            
+
             {/* Order Status Stepper Card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
               <h3 className="text-[16px] font-bold text-gray-900 mb-6">Order Status</h3>
-              
+
               <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
                 {trackingSteps.map((step, idx) => {
                   const stepNum = idx + 1;
                   const isCompleted = currentStep >= stepNum;
                   const isCurrent = currentStep === stepNum;
-                  
+
                   return (
                     <div key={step.label} className="flex gap-4 relative z-10">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
-                        isCompleted 
-                          ? 'bg-green-600 border-green-600 text-white' 
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${isCompleted
+                          ? 'bg-green-600 border-green-600 text-white'
                           : 'bg-white border-gray-300 text-gray-300'
-                      }`}>
+                        }`}>
                         {isCompleted ? '✓' : stepNum}
                       </div>
                       <div>
@@ -319,7 +318,7 @@ export default function OrderDetailPage() {
                   Edit
                 </button>
               </div>
-              
+
               <div className="text-[14px] text-gray-700 space-y-1">
                 <p className="font-bold text-gray-900">{order.shipping_address.name}</p>
                 <p>{order.shipping_address.address_line1}</p>
@@ -339,7 +338,7 @@ export default function OrderDetailPage() {
               <p className="text-[13px] text-gray-500 mb-4">
                 We are here to help you with your order.
               </p>
-              <button 
+              <button
                 onClick={() => navigate('/customer-service')}
                 className="w-full py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-[13px] font-bold rounded-xl shadow-sm text-gray-700 transition-all"
               >
@@ -361,7 +360,7 @@ export default function OrderDetailPage() {
                 View more ›
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {recommendations.map((p: any) => {
                 let pImage = null;
@@ -372,9 +371,9 @@ export default function OrderDetailPage() {
                     pImage = (first && typeof first === 'object' && first.url) ? first.url : first;
                   }
                 }
-                
+
                 return (
-                  <Link 
+                  <Link
                     key={p.id}
                     to={`/product/${p.slug}`}
                     className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm hover:shadow-md hover:border-gray-300 transition-all flex flex-col group"
