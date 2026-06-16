@@ -514,13 +514,17 @@ export default function HomePage() {
   const { data: newArrivalsData, isLoading: newLoading } = useProducts({ sort: 'newest', limit: 8 });
   const { data: dealsData, isLoading: dealsLoading } = useProducts({ sort: 'discount_desc', limit: 8 });
 
-  const heroImages = (featuredData?.slice(0, 4) || []).map(p => {
+  const rawFeaturedProducts = rawFeaturedData?.data || [];
+  const heroProducts = rawFeaturedProducts.length > 0 
+    ? rawFeaturedProducts.slice(0, 4) 
+    : (newArrivalsData?.data || dealsData?.data || []).slice(0, 4);
+
+  const heroImages = heroProducts.map(p => {
     let url = typeof p.images?.[0] === 'string' ? p.images[0] : (p.images?.[0]?.url || '/placeholder.png');
     if (url.startsWith('/')) url = `${(import.meta as any).env.VITE_API_URL || "http://localhost:4000"}${url}`;
     return url;
   }).filter(url => url !== '/placeholder.png');
 
-  if (heroImages.length === 0) heroImages.push('/summer_essentials_hero.png');
 
   const [processedHeroImages, setProcessedHeroImages] = useState<string[]>([]);
 
@@ -614,42 +618,44 @@ export default function HomePage() {
                       </svg>
                     </Link>
                   </div>
-                  <div className="w-full md:w-[40%] flex-shrink-0 flex items-center justify-center relative min-h-[160px] sm:min-h-[180px] group/slider">
-                    {displayHeroImages.map((imgSrc, idx) => (
-                      <img
-                        key={idx}
-                        src={imgSrc}
-                        alt="Summer Essentials"
-                        className={`absolute inset-0 m-auto max-h-[170px] sm:max-h-[190px] w-auto object-contain transform hover:scale-105 transition-all duration-700 ease-in-out mix-blend-multiply ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                      />
-                    ))}
-                    {displayHeroImages.length > 1 && (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setHeroImageIndex((prev) => (prev - 1 + displayHeroImages.length) % displayHeroImages.length);
-                          }}
-                          className="absolute left-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
-                        >
-                          <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setHeroImageIndex((prev) => (prev + 1) % displayHeroImages.length);
-                          }}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
-                        >
-                          <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                          </svg>
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  {displayHeroImages.length > 0 && (
+                    <div className="w-full md:w-[40%] flex-shrink-0 flex items-center justify-center relative min-h-[160px] sm:min-h-[180px] group/slider">
+                      {displayHeroImages.map((imgSrc, idx) => (
+                        <img
+                          key={idx}
+                          src={imgSrc}
+                          alt="Featured Product"
+                          className={`absolute inset-0 m-auto max-h-[170px] sm:max-h-[190px] w-auto object-contain transform hover:scale-105 transition-all duration-700 ease-in-out mix-blend-multiply ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                        />
+                      ))}
+                      {displayHeroImages.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setHeroImageIndex((prev) => (prev - 1 + displayHeroImages.length) % displayHeroImages.length);
+                            }}
+                            className="absolute left-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
+                          >
+                            <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setHeroImageIndex((prev) => (prev + 1) % displayHeroImages.length);
+                            }}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
+                          >
+                            <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
