@@ -555,6 +555,42 @@ export default function ReportsPage() {
           { id: 'NTF-11005', user: 'Sneha Reddy', desc: 'OTP Verification Code', channel: 'SMS', status: 'Delivered', time: '12:00:54', retries: 1 },
         ]
       })
+    },
+    growth: {
+      title: 'Website Growth & Performance Report',
+      subtitle: 'Analyze Month-over-Month growth trends for users, orders, and platform revenue.',
+      icon: TrendingUp,
+      stats: [
+        { label: 'User Growth Rate', value: '+14.5%', change: '+2.1% MoM', isPositive: true },
+        { label: 'Order Growth Rate', value: '+18.2%', change: '+3.5% MoM', isPositive: true },
+        { label: 'Revenue Growth Rate', value: '+22.4%', change: '+4.8% MoM', isPositive: true },
+        { label: 'Overall Platform Growth', value: '+18.3%', change: '+3.4% MoM', isPositive: true },
+      ],
+      filters: [
+        { id: 'status', label: 'Status', type: 'select', options: ['Active', 'Completed'] }
+      ],
+      chartType: 'line',
+      chartKeys: ['UserGrowth', 'OrderGrowth', 'RevenueGrowth'],
+      tableColumns: ['Billing Month', 'New Users Added', 'Orders Fulfilled', 'Monthly GMV', 'Growth Rate', 'Status'],
+      tableKeys: ['month', 'users', 'orders', 'revenue', 'growth', 'status'],
+      mockDataGenerator: () => ({
+        chartData: [
+          { date: 'Jan 2026', UserGrowth: 8.5, OrderGrowth: 9.2, RevenueGrowth: 11.4 },
+          { date: 'Feb 2026', UserGrowth: 10.2, OrderGrowth: 11.5, RevenueGrowth: 13.8 },
+          { date: 'Mar 2026', UserGrowth: 11.8, OrderGrowth: 12.4, RevenueGrowth: 15.2 },
+          { date: 'Apr 2026', UserGrowth: 12.5, OrderGrowth: 14.8, RevenueGrowth: 17.5 },
+          { date: 'May 2026', UserGrowth: 13.9, OrderGrowth: 16.2, RevenueGrowth: 20.1 },
+          { date: 'Jun 2026 (MTD)', UserGrowth: 14.5, OrderGrowth: 18.2, RevenueGrowth: 22.4 },
+        ],
+        tableData: [
+          { month: 'June 2026 (MTD)', users: 480, orders: 1240, revenue: fmt(4820000), growth: '+22.4%', status: 'Active' },
+          { month: 'May 2026', users: 420, orders: 1050, revenue: fmt(4500000), growth: '+20.1%', status: 'Active' },
+          { month: 'April 2026', users: 380, orders: 920, revenue: fmt(4100000), growth: '+17.5%', status: 'Active' },
+          { month: 'March 2026', users: 310, orders: 810, revenue: fmt(3800000), growth: '+15.2%', status: 'Active' },
+          { month: 'February 2026', users: 280, orders: 740, revenue: fmt(3400000), growth: '+13.8%', status: 'Active' },
+          { month: 'January 2026', users: 240, orders: 620, revenue: fmt(3100000), growth: '+11.4%', status: 'Active' },
+        ]
+      })
     }
   }), []);
 
@@ -568,7 +604,9 @@ export default function ReportsPage() {
     if (fetchedData?.stats && fetchedData.stats.length === activeReport.stats.length) {
       return activeReport.stats.map((stat, idx) => ({
         ...stat,
-        value: fetchedData.stats[idx].value
+        value: fetchedData.stats[idx].value,
+        change: fetchedData.stats[idx].change !== undefined ? fetchedData.stats[idx].change : stat.change,
+        isPositive: fetchedData.stats[idx].isPositive !== undefined ? fetchedData.stats[idx].isPositive : stat.isPositive
       }));
     }
     return activeReport.stats;
@@ -593,11 +631,11 @@ export default function ReportsPage() {
       if (searchQuery && !rowString.includes(searchQuery.toLowerCase())) {
         return false;
       }
-      
+
       // Check dynamic active filters
       for (const [filterId, filterVal] of Object.entries(filters)) {
         if (!filterVal) continue;
-        
+
         // Find row value: check if the row has a direct value matching filterId
         const rowVal = row[filterId];
         if (rowVal !== undefined) {
@@ -627,7 +665,7 @@ export default function ReportsPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${type}_report_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `${type}_report_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -709,11 +747,10 @@ export default function ReportsPage() {
                 )}
               </div>
               {stat.change && (
-                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${
-                  stat.isPositive
+                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${stat.isPositive
                     ? 'bg-green-50 border-green-200 text-green-700'
                     : 'bg-red-50 border-red-200 text-red-700'
-                }`}>
+                  }`}>
                   {stat.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   <span>{stat.change}</span>
                 </div>
@@ -898,15 +935,14 @@ export default function ReportsPage() {
                             <td key={key} className="px-5 py-3 border-r border-gray-200 last:border-r-0 font-medium text-gray-800">
                               {/* Custom status badge layout */}
                               {key === 'status' ? (
-                                <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold border ${
-                                  ['active', 'success', 'won', 'delivered', 'verified', 'healthy', 'settled', 'resolved', 'completed'].includes(String(val).toLowerCase())
+                                <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold border ${['active', 'success', 'won', 'delivered', 'verified', 'healthy', 'settled', 'resolved', 'completed'].includes(String(val).toLowerCase())
                                     ? 'bg-green-50 border-green-200 text-green-700'
                                     : ['pending', 'shipped', 'winning', 'processing', 'confirmed'].includes(String(val).toLowerCase())
-                                    ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                    : ['inactive', 'outbid', 'suspended', 'failed', 'refunded', 'cancelled', 'out of stock', 'lost', 'blocked'].includes(String(val).toLowerCase())
-                                    ? 'bg-red-50 border-red-200 text-red-700'
-                                    : 'bg-gray-50 border-gray-200 text-gray-700'
-                                }`}>
+                                      ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                      : ['inactive', 'outbid', 'suspended', 'failed', 'refunded', 'cancelled', 'out of stock', 'lost', 'blocked'].includes(String(val).toLowerCase())
+                                        ? 'bg-red-50 border-red-200 text-red-700'
+                                        : 'bg-gray-50 border-gray-200 text-gray-700'
+                                  }`}>
                                   {val}
                                 </span>
                               ) : (
