@@ -13,6 +13,10 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      // @imgly/background-removal pulls in onnxruntime-web/* subpaths that
+      // aren't installed; it loads its runtime from the imgly CDN (publicPath)
+      // at runtime, so the bundler can safely treat these as external.
+      external: [/^onnxruntime-web/],
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
