@@ -264,141 +264,162 @@ export default function AuctionsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Auction Management</h1>
-          <p className="text-sm text-gray-500">Queue products or start auctions immediately.</p>
-        </div>
-        <Link to="/auctions/running" className="w-full sm:w-auto text-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-          View Running Auctions
-        </Link>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center gap-3">
-                  <img src={getProductImage(product)} alt={product.name || product.product_name} className="w-10 h-10 object-contain rounded" />
-                  <span>{product.name || product.product_name}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.sku || product.product_sku}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock_quantity}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.is_auction_ready ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                    {product.is_auction_ready ? 'Queued' : 'Not Queued'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="number"
-                    value={product.auction_priority}
-                    onChange={(e) => handlePriorityChange(product, parseInt(e.target.value, 10))}
-                    className="w-20 px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={updating === product.id}
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3">
-                  <button
-                    onClick={() => handleToggleAuction(product)}
-                    disabled={updating === product.id || (product.stock_quantity <= 0 && !product.is_auction_ready)}
-                    className={`text-sm font-medium ${product.is_auction_ready
-                      ? 'text-red-600 hover:text-red-900'
-                      : 'text-blue-600 hover:text-blue-900'
-                      } disabled:opacity-50`}
-                  >
-                    {updating === product.id ? 'Updating...' : product.is_auction_ready ? 'Remove' : 'Queue'}
-                  </button>
-
-                  <button
-                    onClick={() => handleOpenStartModal(product)}
-                    disabled={updating === product.id || product.stock_quantity <= 0}
-                    className="text-sm font-medium text-orange-600 hover:text-orange-900 disabled:opacity-50"
-                  >
-                    Start Now
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="bg-white px-6 py-4 flex items-center justify-between border-t border-gray-200 select-none">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={page === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={page === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
+    <div className="min-h-full bg-[#F4F9F4] -m-6 p-4 sm:p-6 text-gray-700 font-sans antialiased">
+      <div className="max-w-[1600px] mx-auto space-y-4">
+        
+        {/* Brand Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white px-6 py-6 border border-gray-100 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider">
+              <span>Admin</span>
+              <span>&gt;</span>
+              <span className="text-[#0FA86E]">Auction Management</span>
             </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{(page - 1) * 20 + 1}</span> to{' '}
-                  <span className="font-semibold">{Math.min(page * 20, totalItems)}</span> of{' '}
-                  <span className="font-semibold">{totalItems}</span> products
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-xs -space-x-px" aria-label="Pagination">
-                  <button
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                    className="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-xs font-semibold text-gray-500 hover:bg-gray-55 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    &larr; Prev
-                  </button>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`relative inline-flex items-center px-3 py-2 border text-xs font-semibold ${
-                        p === page
-                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                          : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={page === totalPages}
-                    className="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-xs font-semibold text-gray-500 hover:bg-gray-55 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next &rarr;
-                  </button>
-                </nav>
-              </div>
-            </div>
+            <h1 className="text-xl font-black text-gray-900 mt-1 tracking-tight">Auction Management</h1>
+            <p className="text-xs text-gray-400 font-medium mt-0.5">Queue products or start auctions immediately.</p>
           </div>
-        )}
+          <Link 
+            to="/auctions/running" 
+            className="w-full sm:w-auto text-center px-4 py-2.5 bg-[#0FA86E] hover:bg-[#0d9561] text-white rounded-md text-xs font-bold shadow-xs transition-colors"
+          >
+            View Running Auctions
+          </Link>
+        </div>
+
+        {/* Table Container */}
+        <div className="bg-white border border-gray-100 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-100 text-xs text-left">
+              <thead>
+                <tr className="bg-[#F4F9F4]/50 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4">Product</th>
+                  <th className="px-6 py-4 w-44">SKU</th>
+                  <th className="px-6 py-4 w-32">Stock</th>
+                  <th className="px-6 py-4 w-36">Status</th>
+                  <th className="px-6 py-4 w-36">Priority</th>
+                  <th className="px-6 py-4 text-right w-48">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {products.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-900 flex items-center gap-3">
+                      <div className="h-10 w-10 flex-shrink-0 bg-white rounded-md border border-gray-100 overflow-hidden flex items-center justify-center shadow-xs">
+                        <img src={getProductImage(product)} alt={product.name || product.product_name} className="h-full w-full object-contain" />
+                      </div>
+                      <span className="truncate max-w-[280px]">{product.name || product.product_name}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-400 font-bold font-sans uppercase tracking-wider">{product.sku || product.product_sku}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600 font-bold">{product.stock_quantity}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-[9px] font-black border uppercase tracking-wider ${product.is_auction_ready 
+                        ? 'bg-emerald-50 border-emerald-100 text-emerald-700' 
+                        : 'bg-gray-50 border-gray-100 text-gray-400'
+                        }`}>
+                        {product.is_auction_ready ? 'Queued' : 'Not Queued'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="number"
+                        value={product.auction_priority}
+                        onChange={(e) => handlePriorityChange(product, parseInt(e.target.value, 10))}
+                        className="w-20 px-2.5 py-1.5 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none"
+                        disabled={updating === product.id}
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-right">
+                      <div className="flex items-center justify-end gap-3.5">
+                        <button
+                          onClick={() => handleToggleAuction(product)}
+                          disabled={updating === product.id || (product.stock_quantity <= 0 && !product.is_auction_ready)}
+                          className={`font-bold transition-colors ${product.is_auction_ready
+                            ? 'text-red-600 hover:text-red-800'
+                            : 'text-[#0FA86E] hover:text-[#0d9561]'
+                            } disabled:opacity-50`}
+                        >
+                          {updating === product.id ? 'Updating...' : product.is_auction_ready ? 'Remove' : 'Queue'}
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenStartModal(product)}
+                          disabled={updating === product.id || product.stock_quantity <= 0}
+                          className="px-3 py-1.5 border border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md font-bold text-[11px] shadow-xs transition-colors disabled:opacity-50"
+                        >
+                          Start Now
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          {totalPages > 1 && (
+            <div className="bg-white px-6 py-4.5 flex items-center justify-between border-t border-gray-100 select-none">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-200 text-xs font-bold rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={page === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-200 text-xs font-bold rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs text-gray-400 font-medium">
+                    Showing <span className="font-bold text-gray-900">{(page - 1) * 20 + 1}</span> to{' '}
+                    <span className="font-bold text-gray-900">{Math.min(page * 20, totalItems)}</span> of{' '}
+                    <span className="font-bold text-gray-900">{totalItems}</span> products
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-xs -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                      className="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-200 bg-white text-xs font-bold text-gray-400 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      &larr; Prev
+                    </button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`relative inline-flex items-center px-3 py-2 border text-xs font-bold transition-all ${
+                          p === page
+                            ? 'z-10 bg-emerald-50 border-[#0FA86E] text-[#0FA86E]'
+                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={page === totalPages}
+                      className="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-200 bg-white text-xs font-bold text-gray-400 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next &rarr;
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Start Auction Modal */}
@@ -408,14 +429,14 @@ export default function AuctionsPage() {
         onClose={() => setIsModalOpen(false)}
         size="md"
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Starting auction for: <span className="font-semibold">{selectedProduct?.name || selectedProduct?.product_name}</span>
+        <div className="space-y-4 text-xs font-medium">
+          <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+            Starting auction for: <span className="text-gray-900 font-black normal-case">{selectedProduct?.name || selectedProduct?.product_name}</span>
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
                 Ask Price (Seller Price)
               </label>
               <div className="relative">
@@ -424,14 +445,14 @@ export default function AuctionsPage() {
                   type="number"
                   value={reservePrice}
                   onChange={(e) => setReservePrice(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none"
                   placeholder="0.00"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
                 Initial Bid Price (Starting Bid)
               </label>
               <div className="relative">
@@ -440,7 +461,7 @@ export default function AuctionsPage() {
                   type="number"
                   value={bidPrice}
                   onChange={(e) => setBidPrice(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none"
                   placeholder="0.00"
                 />
               </div>
@@ -449,7 +470,7 @@ export default function AuctionsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
                 Bid Increment (Fixed Amount)
               </label>
               <div className="relative">
@@ -458,14 +479,14 @@ export default function AuctionsPage() {
                   type="number"
                   value={minimumSpread}
                   onChange={(e) => setMinimumSpread(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none"
                   placeholder="1.00"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
                 Spread Price
               </label>
               <div className="relative">
@@ -474,7 +495,7 @@ export default function AuctionsPage() {
                   type="number"
                   value={spread}
                   onChange={(e) => setSpread(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none"
                   placeholder="0.00"
                 />
               </div>
@@ -483,44 +504,44 @@ export default function AuctionsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
                 Units per Auction
               </label>
               <input
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none bg-white"
                 placeholder="1"
                 min="1"
                 max={selectedProduct?.stock_quantity || 0}
               />
-              <p className="text-xs text-gray-500 mt-1">Available: {selectedProduct?.stock_quantity}</p>
+              <p className="text-[10px] text-gray-400 font-bold mt-1">Available: {selectedProduct?.stock_quantity}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
                 Outbid Offer Price Markup %
               </label>
               <input
                 type="number"
                 value={outbidPurchaseMarkupPercent}
                 onChange={(e) => setOutbidPurchaseMarkupPercent(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none bg-white"
                 placeholder="e.g. 50"
                 min="0"
               />
-              <p className="text-xs text-gray-500 mt-1">Leave empty to disable outbid purchase offers.</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-1">Leave empty to disable outbid purchase offers.</p>
             </div>
           </div>
 
-          <div className="bg-slate-50 p-4.5 rounded-xl border border-slate-200/80 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Schedule Auction Time</span>
+          <div className="bg-[#F4F9F4]/40 p-4.5 rounded-lg border border-[#0FA86E]/10 space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Schedule Auction Time</span>
               <button
                 type="button"
                 onClick={handleResetStartToNow}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                className="text-[11px] font-bold text-[#0FA86E] hover:text-[#0d9561] transition-colors"
               >
                 Reset Start to NOW
               </button>
@@ -528,33 +549,33 @@ export default function AuctionsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
                   Start Time
                 </label>
                 <input
                   type="datetime-local"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
                   End Time
                 </label>
                 <input
                   type="datetime-local"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none bg-white"
                 />
               </div>
             </div>
 
             {/* Quick Duration presets */}
             <div>
-              <span className="block text-[11px] font-bold text-gray-500 mb-1.5">Quick Duration Presets</span>
+              <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Quick Duration Presets</span>
               <div className="flex flex-wrap gap-1.5">
                 {[1, 15, 30, 40, 60, 120, 1440].map((mins) => {
                   const label = mins >= 60 ? `${mins / 60} ${mins === 60 ? 'Hour' : 'Hours'}` : `${mins} ${mins === 1 ? 'Min' : 'Mins'}`;
@@ -563,7 +584,7 @@ export default function AuctionsPage() {
                       key={mins}
                       type="button"
                       onClick={() => handleSetDuration(mins)}
-                      className="px-2 py-1 text-[11px] bg-white hover:bg-orange-50 hover:text-orange-600 border border-gray-200 hover:border-orange-300 rounded font-semibold transition-all shadow-sm"
+                      className="px-2.5 py-1 text-[10px] bg-white hover:bg-emerald-50 hover:text-[#0FA86E] border border-gray-200 hover:border-[#0FA86E] rounded-md font-bold transition-colors shadow-xs"
                     >
                       {label}
                     </button>
@@ -574,7 +595,7 @@ export default function AuctionsPage() {
 
             {/* Helper Duration Calculation Text */}
             {getDurationText() && (
-              <div className="text-[11px] font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg p-2 text-center shadow-sm">
+              <div className="text-[10px] font-bold text-gray-500 bg-white border border-gray-100 rounded-md p-2 text-center shadow-xs">
                 🕒 {getDurationText()}
               </div>
             )}
@@ -583,13 +604,13 @@ export default function AuctionsPage() {
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-xs font-bold text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleStartAuction}
-              className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              className="px-4 py-2 text-xs font-bold bg-[#0FA86E] text-white rounded-md hover:bg-[#0d9561] transition-colors shadow-xs"
             >
               Start Auction
             </button>
