@@ -54,7 +54,8 @@ const REPORT_SUB_ITEMS = [
   { label: 'Transaction Reports', to: '/reports/transaction' },
   { label: 'Inventory Reports', to: '/reports/inventory' },
   { label: 'Revenue Reports', to: '/reports/revenue' },
-  { label: 'Notification Reports', to: '/reports/notification' }
+  { label: 'Notification Reports', to: '/reports/notification' },
+  { label: 'Growth Reports', to: '/reports/growth' }
 ];
 
 interface SidebarProps {
@@ -105,10 +106,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
                   end
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `group flex items-center gap-3 px-3 py-2.5 rounded text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-[#f0c14b] text-[#111827]'
-                        : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                    `group flex items-center gap-3 px-3 py-2.5 rounded text-sm font-semibold transition-all ${isActive
+                      ? 'bg-[#f0c14b] text-[#111827]'
+                      : 'text-gray-300 hover:bg-[#334155] hover:text-white'
                     }`
                   }
                 >
@@ -126,11 +126,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
             <li>
               <button
                 onClick={() => setReportsOpen(!reportsOpen)}
-                className={`w-full group flex items-center justify-between px-3 py-2.5 rounded text-sm font-semibold transition-all ${
-                  location.pathname.startsWith('/reports')
+                className={`w-full group flex items-center justify-between px-3 py-2.5 rounded text-sm font-semibold transition-all ${location.pathname.startsWith('/reports')
                     ? 'bg-[#334155] text-white'
                     : 'text-gray-300 hover:bg-[#334155] hover:text-white'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <BarChart3 className={`w-5 h-5 ${location.pathname.startsWith('/reports') ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} strokeWidth={2} />
@@ -147,10 +146,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
                         to={subItem.to}
                         onClick={onClose}
                         className={({ isActive }) =>
-                          `block px-3 py-1.5 rounded text-xs font-semibold transition-all ${
-                            isActive
-                              ? 'bg-[#f0c14b] text-[#111827]'
-                              : 'text-gray-400 hover:bg-[#334155] hover:text-white'
+                          `block px-3 py-1.5 rounded text-xs font-semibold transition-all ${isActive
+                            ? 'bg-[#f0c14b] text-[#111827]'
+                            : 'text-gray-400 hover:bg-[#334155] hover:text-white'
                           }`
                         }
                       >
@@ -175,14 +173,13 @@ export default function Sidebar({ onClose }: SidebarProps) {
               </button>
             </li>
             <li>
-              <NavLink 
-                to="/announcements" 
+              <NavLink
+                to="/announcements"
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded transition-all group ${
-                    isActive 
-                      ? 'bg-[#f0c14b] text-[#111827]' 
-                      : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                  `w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded transition-all group ${isActive
+                    ? 'bg-[#f0c14b] text-[#111827]'
+                    : 'text-gray-300 hover:bg-[#334155] hover:text-white'
                   }`
                 }
               >

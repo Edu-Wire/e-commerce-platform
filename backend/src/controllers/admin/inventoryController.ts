@@ -141,6 +141,44 @@ export async function updateStock(req: Request, res: Response): Promise<void> {
 
 export async function exportCSV(req: Request, res: Response): Promise<void> {
   try {
+    const { low_stock, category, category_id, search, columns } = req.query;
+    try {
+      require('fs').appendFileSync(
+        'c:\\Workspace\\Projects\\ECOM\\e-commerce-platform\\query_debug.log',
+        `[${new Date().toISOString()}] REQ.QUERY: ${JSON.stringify(req.query)}\n`
+      );
+    } catch (e) {}
+
+    const conditions: string[] = ['p.is_active = true'];
+    const params: unknown[] = [];
+    let paramIdx = 1;
+
+    if (category) {
+      conditions.push(`c.slug = $${paramIdx++}`);
+      params.push(category);
+    }
+    if (category_id) {
+      conditions.push(`p.category_id IN (
+        WITH RECURSIVE cat_tree AS (
+          SELECT id FROM categories WHERE id = $${paramIdx++}
+          UNION ALL
+          SELECT c.id FROM categories c JOIN cat_tree ct ON ct.id = c.parent_id
+        )
+        SELECT id FROM cat_tree
+      )`);
+      params.push(parseInt(String(category_id), 10));
+    }
+    if (low_stock === 'true') {
+      conditions.push('p.stock_quantity <= p.minimum_stock_alert');
+    }
+    if (search) {
+      conditions.push(`(p.name ILIKE $${paramIdx} OR p.sku ILIKE $${paramIdx})`);
+      params.push(`%${search}%`);
+      paramIdx++;
+    }
+
+    const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
     const products = await query<{
       name: string;
       sku: string;
@@ -152,6 +190,7 @@ export async function exportCSV(req: Request, res: Response): Promise<void> {
       mrp: number;
       condition: string;
       is_active: boolean;
+      specifications: Record<string, any> | null;
     }>(
       `SELECT
          p.name,
@@ -163,28 +202,41 @@ export async function exportCSV(req: Request, res: Response): Promise<void> {
          p.selling_price,
          p.mrp,
          p.condition,
-         p.is_active
+         p.is_active,
+         p.specifications
        FROM products p
        JOIN categories c ON c.id = p.category_id
-       ORDER BY p.name ASC`
+       ${whereClause}
+       ORDER BY p.name ASC`,
+      params
     );
 
-    const headers = ['name', 'sku', 'category', 'stock_quantity', 'minimum_stock_alert', 'buying_price', 'selling_price', 'mrp', 'condition', 'is_active'];
+    const defaultHeaders = ['name', 'sku', 'category', 'stock_quantity', 'minimum_stock_alert', 'buying_price', 'selling_price', 'mrp', 'condition', 'is_active'];
+    const columnsParam = columns ? String(columns).split(',') : null;
+    const headers = columnsParam ? columnsParam : defaultHeaders;
 
     const csvRows = [
       headers.join(','),
-      ...products.map((p) => [
-        `"${p.name.replace(/"/g, '""')}"`,
-        p.sku,
-        `"${p.category_name.replace(/"/g, '""')}"`,
-        p.stock_quantity,
-        p.minimum_stock_alert,
-        p.buying_price,
-        p.selling_price,
-        p.mrp,
-        p.condition,
-        p.is_active,
-      ].join(','))
+      ...products.map((p) => {
+        const rowData: string[] = [];
+        headers.forEach((h) => {
+          if (h === 'name') rowData.push(`"${(p.name || '').replace(/"/g, '""')}"`);
+          else if (h === 'sku') rowData.push(p.sku || '');
+          else if (h === 'category') rowData.push(`"${(p.category_name || '').replace(/"/g, '""')}"`);
+          else if (h === 'stock_quantity') rowData.push(String(p.stock_quantity ?? 0));
+          else if (h === 'minimum_stock_alert') rowData.push(String(p.minimum_stock_alert ?? 0));
+          else if (h === 'buying_price') rowData.push(String(p.buying_price ?? 0));
+          else if (h === 'selling_price') rowData.push(String(p.selling_price ?? 0));
+          else if (h === 'mrp') rowData.push(String(p.mrp ?? 0));
+          else if (h === 'condition') rowData.push(p.condition || '');
+          else if (h === 'is_active') rowData.push(String(!!p.is_active));
+          else {
+            const specVal = p.specifications && p.specifications[h] !== undefined ? String(p.specifications[h]) : '';
+            rowData.push(`"${specVal.replace(/"/g, '""')}"`);
+          }
+        });
+        return rowData.join(',');
+      })
     ];
 
     const csvContent = csvRows.join('\n');

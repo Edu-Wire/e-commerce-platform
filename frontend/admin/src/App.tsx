@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
+import ProductViewPage from './pages/ProductViewPage';
 import CategoriesPage from './pages/CategoriesPage';
 import InventoryPage from './pages/InventoryPage';
 import AuctionsPage from './pages/AuctionsPage';
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/new" element={<ProductFormPage />} />
+        <Route path="/products/:id" element={<ProductViewPage />} />
         <Route path="/products/:id/edit" element={<ProductFormPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
