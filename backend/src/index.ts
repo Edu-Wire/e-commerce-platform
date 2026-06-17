@@ -26,17 +26,17 @@ app.use(helmet({
 const allowedOrigins = env.nodeEnv === 'development'
   ? true
   : [
-      env.frontendCustomerUrl,
-      env.frontendAdminUrl,
-      // EC2 direct IP access
-      'http://43.204.158.70',
-      'http://43.204.158.70:3001',
-      // Production domains
-      'http://shopnow.digi-wire.com',
-      'https://shopnow.digi-wire.com',
-      'http://admin.shopnow.digi-wire.com',
-      'https://admin.shopnow.digi-wire.com',
-    ].filter(Boolean);
+    env.frontendCustomerUrl,
+    env.frontendAdminUrl,
+    // EC2 direct IP access
+    'http://43.204.158.70',
+    'http://43.204.158.70:3001',
+    // Production domains
+    'http://shopnow.digi-wire.com',
+    'https://shopnow.digi-wire.com',
+    'http://admin.shopnow.digi-wire.com',
+    'https://admin.shopnow.digi-wire.com',
+  ].filter(Boolean);
 
 app.use(cors({
   origin: allowedOrigins,
@@ -128,106 +128,106 @@ async function bootstrap() {
     console.warn('Starting server without confirmed DB connection...');
   }
 
-    const https = require('https');
-    const fs = require('fs');
-    const keyPath = '/etc/letsencrypt/live/e-commec2.duckdns.org/privkey.pem';
-    const certPath = '/etc/letsencrypt/live/e-commec2.duckdns.org/fullchain.pem';
+  const https = require('https');
+  const fs = require('fs');
+  const keyPath = '/etc/letsencrypt/live/e-commec2.duckdns.org/privkey.pem';
+  const certPath = '/etc/letsencrypt/live/e-commec2.duckdns.org/fullchain.pem';
 
-    let server;
+  let server;
 
-    if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
-      const certOptions = {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath)
-      };
-      server = https.createServer(certOptions, app).listen(env.port, () => {
-        console.log(`Server running on https://e-commec2.duckdns.org:${env.port} in ${env.nodeEnv} mode`);
-        console.log(`API docs: https://e-commec2.duckdns.org:${env.port}/api/docs`);
-        console.log(`Health check: https://e-commec2.duckdns.org:${env.port}/health`);
-      });
-    } else {
-      console.warn('SSL certificates not found. Starting HTTP server instead (Local Dev).');
-      server = app.listen(env.port, () => {
-        console.log(`Server running on http://localhost:${env.port} in ${env.nodeEnv} mode`);
-        console.log(`API docs: http://localhost:${env.port}/api/docs`);
-        console.log(`Health check: http://localhost:${env.port}/health`);
-      });
+  if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    const certOptions = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath)
+    };
+    server = https.createServer(certOptions, app).listen(env.port, () => {
+      console.log(`Server running on https://e-commec2.duckdns.org:${env.port} in ${env.nodeEnv} mode`);
+      console.log(`API docs: https://e-commec2.duckdns.org:${env.port}/api/docs`);
+      console.log(`Health check: https://e-commec2.duckdns.org:${env.port}/health`);
+    });
+  } else {
+    console.warn('SSL certificates not found. Starting HTTP server instead (Local Dev).');
+    server = app.listen(env.port, () => {
+      console.log(`Server running on http://localhost:${env.port} in ${env.nodeEnv} mode`);
+      console.log(`API docs: http://localhost:${env.port}/api/docs`);
+      console.log(`Health check: http://localhost:${env.port}/health`);
+    });
+  }
+
+  // Attach Socket.io
+  const { Server } = require('socket.io');
+  const io = new Server(server, {
+    cors: {
+      origin: '*',
+      methods: ["GET", "POST"]
     }
+  });
 
-    // Attach Socket.io
-    const { Server } = require('socket.io');
-    const io = new Server(server, {
-      cors: {
-        origin: '*',
-        methods: ["GET", "POST"]
+  io.on('connection', (socket: import('socket.io').Socket) => {
+    console.log('a user connected:', socket.id);
+
+    socket.join('live_auctions');
+
+    socket.on('join_live_auctions', () => {
+      socket.join('live_auctions');
+    });
+
+    socket.on('join_auction', (auction_id: string) => {
+      socket.join(`auction:${auction_id}`);
+    });
+
+    socket.on('place_bid', async (data: { auction_id: string; bid_amount: string | number; token: string }) => {
+      const { auction_id, bid_amount, token } = data;
+      const jwt = require('jsonwebtoken');
+      const { env } = require('./config/env');
+      const { processPlaceBid, BidError } = require('./services/auctionBidService');
+
+      try {
+        if (!token) {
+          socket.emit('bid_error', { error: 'Unauthorized' });
+          return;
+        }
+        const payload = jwt.verify(token, env.jwtSecret);
+        const customer_id = payload.id;
+
+        await processPlaceBid(
+          Number(auction_id),
+          customer_id,
+          Number(bid_amount),
+          io
+        );
+
+        socket.emit('bid_success', { message: 'Bid placed successfully' });
+      } catch (err) {
+        if (err instanceof BidError || (err as { name?: string })?.name === 'BidError') {
+          socket.emit('bid_error', { error: (err as Error).message });
+          return;
+        }
+        console.error('Socket place_bid error:', err);
+        socket.emit('bid_error', { error: 'Failed to place bid' });
       }
     });
 
-    io.on('connection', (socket: import('socket.io').Socket) => {
-      console.log('a user connected:', socket.id);
-
-      socket.join('live_auctions');
-
-      socket.on('join_live_auctions', () => {
-        socket.join('live_auctions');
-      });
-
-      socket.on('join_auction', (auction_id: string) => {
-        socket.join(`auction:${auction_id}`);
-      });
-
-      socket.on('place_bid', async (data: { auction_id: string; bid_amount: string | number; token: string }) => {
-        const { auction_id, bid_amount, token } = data;
-        const jwt = require('jsonwebtoken');
-        const { env } = require('./config/env');
-        const { processPlaceBid, BidError } = require('./services/auctionBidService');
-
-        try {
-          if (!token) {
-            socket.emit('bid_error', { error: 'Unauthorized' });
-            return;
-          }
-          const payload = jwt.verify(token, env.jwtSecret);
-          const customer_id = payload.id;
-
-          await processPlaceBid(
-            Number(auction_id),
-            customer_id,
-            Number(bid_amount),
-            io
-          );
-
-          socket.emit('bid_success', { message: 'Bid placed successfully' });
-        } catch (err) {
-          if (err instanceof BidError || (err as { name?: string })?.name === 'BidError') {
-            socket.emit('bid_error', { error: (err as Error).message });
-            return;
-          }
-          console.error('Socket place_bid error:', err);
-          socket.emit('bid_error', { error: 'Failed to place bid' });
-        }
-      });
-      
-      socket.on('disconnect', () => {
-        console.log('user disconnected:', socket.id);
-      });
+    socket.on('disconnect', () => {
+      console.log('user disconnected:', socket.id);
     });
+  });
 
-    app.set('io', io);
+  app.set('io', io);
 
-    process.on('SIGINT', () => {
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
+  process.on('SIGINT', () => {
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
     });
+  });
 
-    process.on('SIGTERM', () => {
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
+  process.on('SIGTERM', () => {
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
     });
+  });
 }
 
 bootstrap();
