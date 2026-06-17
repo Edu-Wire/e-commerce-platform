@@ -79,14 +79,63 @@ function StatusBadge({ stock, min }: { stock: number; min: number }) {
   );
 }
 
+const DEFAULT_COLUMNS = [
+  { id: 'name', label: 'Product Name' },
+  { id: 'sku', label: 'SKU' },
+  { id: 'category', label: 'Category' },
+  { id: 'stock_quantity', label: 'Available Stock' },
+  { id: 'minimum_stock_alert', label: 'Minimum Stock Alert' },
+  { id: 'buying_price', label: 'Buying Price' },
+  { id: 'selling_price', label: 'Selling Price' },
+  { id: 'mrp', label: 'MRP' },
+  { id: 'condition', label: 'Condition' },
+  { id: 'is_active', label: 'Active Status' },
+];
+
 export default function InventoryPage() {
   const [filters, setFilters] = useState<InventoryFilters>({ page: 1, limit: 12 });
   const { data, isLoading } = useAdminInventory(filters);
   const { data: categories } = useAdminCategories();
   const updateMutation = useUpdateStock();
 
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportMode, setExportMode] = useState<'default' | 'customize'>('default');
+  const [customColumns, setCustomColumns] = useState<{ id: string; label: string }[]>(DEFAULT_COLUMNS);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(DEFAULT_COLUMNS.map(c => c.id));
+  const [newColKey, setNewColKey] = useState('');
+  const [newColLabel, setNewColLabel] = useState('');
+
   const items = data?.data?.items ?? [];
   const meta = data?.data?.meta;
+
+  const toggleColumn = (id: string) => {
+    setSelectedColumns(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
+  };
+
+  const handleAddCustomColumn = () => {
+    const key = newColKey.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    if (!key) {
+      toast.error('Column key is required');
+      return;
+    }
+    const label = newColLabel.trim() || newColKey.trim();
+    if (customColumns.some((col) => col.id === key)) {
+      toast.error('Column key already exists');
+      return;
+    }
+    setCustomColumns((prev) => [...prev, { id: key, label }]);
+    setSelectedColumns((prev) => [...prev, key]);
+    setNewColKey('');
+    setNewColLabel('');
+    toast.success(`Column "${label}" added to list`);
+  };
+
+  const handleRemoveCustomColumn = (id: string) => {
+    setCustomColumns((prev) => prev.filter((col) => col.id !== id));
+    setSelectedColumns((prev) => prev.filter((c) => c !== id));
+  };
 
   const handleStockSave = async (productId: string, stock_quantity: number) => {
     try {
@@ -100,7 +149,17 @@ export default function InventoryPage() {
   const handleExport = async () => {
     const toastId = toast.loading('Generating export...');
     try {
-      const res = await api.get('/admin/inventory/export', { responseType: 'blob' });
+      const queryParams = new URLSearchParams();
+      if (filters.search) queryParams.set('search', filters.search);
+      if (filters.category_id) queryParams.set('category_id', filters.category_id);
+      if (filters.low_stock) queryParams.set('low_stock', 'true');
+      if (exportMode === 'customize') {
+        queryParams.set('columns', selectedColumns.join(','));
+      }
+
+      const res = await api.get(`/admin/inventory/export?${queryParams}`, {
+        responseType: 'blob',
+      });
       const url = window.URL.createObjectURL(new Blob([res.data as BlobPart]));
       const link = document.createElement('a');
       link.href = url;
@@ -110,8 +169,26 @@ export default function InventoryPage() {
       link.remove();
       window.URL.revokeObjectURL(url);
       toast.success('Inventory exported', { id: toastId });
-    } catch {
-      toast.error('Export failed', { id: toastId });
+      setShowExportModal(false);
+    } catch (err: any) {
+      console.error('Export error details:', err);
+      let errMsg = 'Export failed';
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const parsed = JSON.parse(text);
+          if (parsed.error) {
+            errMsg = parsed.error;
+          }
+        } catch (e) {
+          console.error('Failed to parse error blob:', e);
+        }
+      } else if (err.response?.data?.error) {
+        errMsg = err.response.data.error;
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      toast.error(errMsg, { id: toastId });
     }
   };
 
@@ -421,6 +498,145 @@ export default function InventoryPage() {
         )}
 
       </div>
+
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/55 flex items-center justify-center z-50 p-4 font-sans animate-fade-in backdrop-blur-[2px]">
+          <div className="bg-white rounded-lg border border-gray-300 shadow-2xl max-w-md w-full overflow-hidden">
+            {/* Header */}
+            <div className="bg-gray-50 px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="font-bold text-gray-900 text-sm">Export Inventory CSV</h3>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-lg font-black"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-4">
+              <div className="flex gap-2 p-1 bg-gray-100 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => setExportMode('default')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${
+                    exportMode === 'default'
+                      ? 'bg-white text-gray-950 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  Quick Download
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExportMode('customize')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${
+                    exportMode === 'customize'
+                      ? 'bg-white text-gray-950 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  Customize Template
+                </button>
+              </div>
+
+              {exportMode === 'default' ? (
+                <div className="text-xs text-gray-600 space-y-2 py-2">
+                  <p>Downloads the standard inventory template containing all columns:</p>
+                  <div className="bg-gray-50 p-2.5 rounded border border-gray-200 font-mono text-[10px] text-gray-500 break-all leading-normal">
+                    name, sku, category, stock_quantity, minimum_stock_alert, buying_price, selling_price, mrp, condition, is_active
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select columns to export:</p>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                    {customColumns.map((col) => {
+                      const isDefault = DEFAULT_COLUMNS.some((d) => d.id === col.id);
+                      return (
+                        <div
+                          key={col.id}
+                          className="flex items-center justify-between px-2.5 py-1.5 rounded border border-gray-200 hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors"
+                        >
+                          <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={selectedColumns.includes(col.id)}
+                              onChange={() => toggleColumn(col.id)}
+                              className="rounded text-[#e47911] focus:ring-[#e47911] border-gray-300 w-3.5 h-3.5 animate-pulse-once"
+                            />
+                            <span className="truncate" title={col.label}>{col.label}</span>
+                          </label>
+                          {!isDefault && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCustomColumn(col.id)}
+                              className="text-gray-400 hover:text-red-600 font-bold ml-1 text-xs transition-colors"
+                              title="Delete column"
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Add Custom Column Section */}
+                  <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Add Custom Specification Column</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Key (e.g. material)"
+                        value={newColKey}
+                        onChange={(e) => setNewColKey(e.target.value)}
+                        className="flex-1 min-w-0 px-2.5 py-1.5 text-xs border border-gray-300 rounded focus:border-[#e47911] focus:ring-1 focus:ring-[#e47911] outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Label (e.g. Material)"
+                        value={newColLabel}
+                        onChange={(e) => setNewColLabel(e.target.value)}
+                        className="flex-1 min-w-0 px-2.5 py-1.5 text-xs border border-gray-300 rounded focus:border-[#e47911] focus:ring-1 focus:ring-[#e47911] outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomColumn}
+                        className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded text-xs font-semibold shadow transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-gray-400 leading-normal">
+                      Spec keys must match the attributes inside your product specifications (e.g. <i>blade_material</i>, <i>dishwasher_safe</i>).
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 px-5 py-3 border-t border-gray-200 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowExportModal(false)}
+                className="px-4 py-1.5 border border-gray-300 rounded hover:bg-gray-100 text-xs font-semibold text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={exportMode === 'customize' && selectedColumns.length === 0}
+                onClick={() => void handleExport()}
+                className="px-4 py-1.5 bg-[#f0c14b] hover:bg-[#edd8a4] border border-[#a88734] rounded text-xs font-bold text-[#111] shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Download CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

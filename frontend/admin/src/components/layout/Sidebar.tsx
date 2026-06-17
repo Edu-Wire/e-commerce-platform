@@ -54,7 +54,8 @@ const REPORT_SUB_ITEMS = [
   { label: 'Transaction Reports', to: '/reports/transaction' },
   { label: 'Inventory Reports', to: '/reports/inventory' },
   { label: 'Revenue Reports', to: '/reports/revenue' },
-  { label: 'Notification Reports', to: '/reports/notification' }
+  { label: 'Notification Reports', to: '/reports/notification' },
+  { label: 'Growth Reports', to: '/reports/growth' }
 ];
 
 interface SidebarProps {

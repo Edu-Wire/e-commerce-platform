@@ -238,7 +238,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
     if (address !== undefined) {
       console.log('Address received:', address);
       let finalAddress = { ...address };
-      
+
       const cityStr = String(finalAddress.city || '').trim();
       if (/^\d{6}$/.test(cityStr)) {
         const pincode = cityStr;

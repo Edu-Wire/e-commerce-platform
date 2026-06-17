@@ -236,12 +236,12 @@ export default function ProductsPage() {
                           <div className="flex flex-col">
                             <span
                               onClick={() => navigate(`/products/${p.id}`)}
-                              className="font-bold text-[#0FA86E] hover:text-[#0d9561] hover:underline cursor-pointer transition-colors text-sm line-clamp-1"
+                              className="font-bold text-amazon-blue hover:underline cursor-pointer transition-all line-clamp-1"
                             >
                               {p.name}
                             </span>
-                            <span className="text-[10px] font-bold text-gray-400 mt-1">SKU: {p.sku}</span>
-                            <span className="text-[9px] font-bold text-gray-400 mt-0.5 uppercase tracking-wider">{p.category_name}</span>
+                            <span className="text-[11px] font-bold text-gray-400 font-mono mt-0.5">SKU: {p.sku}</span>
+                            <span className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-tight">{p.category_name}</span>
                           </div>
                         </td>
                         <td className="px-5 py-4.5">
@@ -281,6 +281,16 @@ export default function ProductsPage() {
                         </td>
                         <td className="px-5 py-4.5">
                           <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => navigate(`/products/${p.id}`)}
+                              className="p-2 text-gray-400 hover:text-amazon-blue hover:bg-white rounded border border-transparent hover:border-gray-200 transition-all shadow-sm"
+                              title="View Product"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </button>
                             <button
                               onClick={() => navigate(`/products/${p.id}/edit`)}
                               className="p-1.5 text-gray-400 hover:text-[#0FA86E] hover:bg-gray-50 rounded border border-gray-200 hover:border-gray-300 transition-colors shadow-xs"

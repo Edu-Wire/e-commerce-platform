@@ -1,3 +1,4 @@
+// Force reload trigger for production cleanup change
 import express, { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -16,8 +17,8 @@ import { authenticateAdmin, authenticateCustomer } from './middleware/auth';
 import { requireMinRole } from './middleware/rbac';
 import { getMyBids, getWinningDashboard, getWonAuctions, getQueuedAuctions } from './controllers/auctionController';
 
-const app = express(); // trigger tsx reload
-
+const app = express(); // trigger tsx reload - support ticket and activity logs removed, growth reports strict database months, accurate inventory and product report queries added
+ 
 // Security & utility middleware
 app.use(helmet({
   crossOriginResourcePolicy: false,

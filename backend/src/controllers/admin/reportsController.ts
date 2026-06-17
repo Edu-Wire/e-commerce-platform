@@ -23,8 +23,8 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
     let tableData: any[] = [];
 
     // Date filters for SQL query where applicable
-    const dateFilterSql = startDate && endDate 
-      ? `AND created_at BETWEEN '${startDate}' AND '${endDate}'` 
+    const dateFilterSql = startDate && endDate
+      ? `AND created_at BETWEEN '${startDate}' AND '${endDate}'`
       : '';
 
     switch (type) {
@@ -88,39 +88,49 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
           email: u.email,
           role: u.role.charAt(0).toUpperCase() + u.role.slice(1),
           status: u.status ? 'Active' : 'Inactive',
-          regDate: formatDate(u.regDate),
-          lastLogin: formatTime(u.lastLogin || u.regDate),
+          regDate: formatDate(u.regdate),
+          lastLogin: formatTime(u.lastlogin || u.regdate),
         }));
         break;
       }
 
       case 'product': {
-        const totalProdRes = await query<{ count: string }>('SELECT COUNT(*) as count FROM products');
+        const totalProdRes = await query<{ count: string }>('SELECT COUNT(*) as count FROM products WHERE is_active = true');
         const activeProdRes = await query<{ count: string }>('SELECT COUNT(*) as count FROM products WHERE is_active = true');
-        const outOfStockRes = await query<{ count: string }>('SELECT COUNT(*) as count FROM products WHERE stock_quantity = 0');
-        
+        const outOfStockRes = await query<{ count: string }>('SELECT COUNT(*) as count FROM products WHERE stock_quantity = 0 AND is_active = true');
+        const avgRatingRes = await query<{ avg: string }>('SELECT AVG(rating) as avg FROM product_reviews');
+
         const totalProducts = parseInt(totalProdRes[0]?.count || '0');
         const activeListings = parseInt(activeProdRes[0]?.count || '0');
         const outOfStock = parseInt(outOfStockRes[0]?.count || '0');
+        const avgRating = parseFloat(avgRatingRes[0]?.avg || '4.4');
 
         stats = [
           { label: 'Total Products', value: totalProducts, change: '+4.5%', isPositive: true },
           { label: 'Active Listings', value: activeListings, change: '+5.1%', isPositive: true },
           { label: 'Out of Stock', value: outOfStock, change: '-12.5%', isPositive: true },
-          { label: 'Avg Product Rating', value: '4.4 / 5.0', change: '+2.1%', isPositive: true },
+          { label: 'Avg Product Rating', value: `${avgRating.toFixed(1)} / 5.0`, change: '+2.1%', isPositive: true },
         ];
 
         // Chart: products by category
-        const catCounts = await query<{ category: string; count: string }>(
-          `SELECT c.name as category, COUNT(p.id) as count 
-           FROM categories c 
-           LEFT JOIN products p ON p.category_id = c.id 
+        const catSales = await query<{ category: string; sales_count: string; prod_count: string }>(
+          `SELECT 
+             c.name as category, 
+             COUNT(p.id) as prod_count,
+             COALESCE(SUM(s.sales_qty), 0)::int as sales_count
+           FROM categories c
+           LEFT JOIN products p ON p.category_id = c.id AND p.is_active = true
+           LEFT JOIN (
+             SELECT (item->>'product_id')::int as product_id, SUM((item->>'quantity')::int) as sales_qty
+             FROM orders, jsonb_array_elements(items) as item
+             GROUP BY product_id
+           ) s ON p.id = s.product_id
            GROUP BY c.name`
         );
-        chartData = catCounts.map(c => ({
+        chartData = catSales.map(c => ({
           date: c.category,
-          SalesCount: Math.round(parseInt(c.count) * 1.5),
-          Views: parseInt(c.count) * 12
+          SalesCount: parseInt(c.sales_count || '0'),
+          Views: parseInt(c.sales_count || '0') * 8 + parseInt(c.prod_count || '0') * 15
         }));
 
         if (!chartData.length) {
@@ -133,9 +143,25 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
         }
 
         const products = await query<any>(
-          `SELECT p.sku, p.name, c.name as category, p.selling_price as price, p.stock_quantity as stock, p.condition, p.is_active as status 
+          `SELECT 
+             p.id,
+             p.sku, 
+             p.name, 
+             c.name as category, 
+             p.selling_price as price, 
+             p.stock_quantity as stock, 
+             p.minimum_stock_alert as reorder,
+             p.condition, 
+             p.is_active as status,
+             COALESCE(s.sales_qty, 0)::int as sales_qty
            FROM products p 
-           LEFT JOIN categories c ON p.category_id = c.id`
+           LEFT JOIN categories c ON p.category_id = c.id
+           LEFT JOIN (
+             SELECT (item->>'product_id')::int as product_id, SUM((item->>'quantity')::int) as sales_qty
+             FROM orders, jsonb_array_elements(items) as item
+             GROUP BY product_id
+           ) s ON p.id = s.product_id
+           WHERE p.is_active = true`
         );
 
         tableData = products.map(p => ({
@@ -144,8 +170,8 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
           category: p.category || 'Uncategorized',
           price: `₹${parseFloat(p.price || '0').toLocaleString('en-IN')}`,
           stock: p.stock,
-          salesQty: Math.round(p.stock * 0.8) + 5, // Simulated sales quantity
-          status: p.stock > 10 ? 'In Stock' : p.stock > 0 ? 'Low Stock' : 'Out of Stock',
+          salesQty: p.sales_qty,
+          status: p.stock === 0 ? 'Out of Stock' : p.stock <= (p.reorder ?? 0) ? 'Low Stock' : 'In Stock',
           condition: p.condition === 'new' ? 'New' : 'Refurbished'
         }));
         break;
@@ -154,7 +180,7 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
       case 'category': {
         const catCountRes = await query<{ count: string }>('SELECT COUNT(*) as count FROM categories');
         const activeCatRes = await query<{ count: string }>('SELECT COUNT(*) as count FROM categories WHERE is_active = true');
-        
+
         stats = [
           { label: 'Total Categories', value: parseInt(catCountRes[0]?.count || '0'), change: '0.0%', isPositive: true },
           { label: 'Top Category', value: 'Electronics', change: 'Sales Lead', isPositive: true },
@@ -183,15 +209,16 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
         }
 
         const categories = await query<any>(
-          `SELECT c.id, c.name, COUNT(p.id) as product_count, c.is_active as status 
+          `SELECT c.id, c.name, c.parent_id, COUNT(p.id) as product_count, c.is_active as status 
            FROM categories c 
            LEFT JOIN products p ON p.category_id = c.id 
-           GROUP BY c.id, c.name, c.is_active`
+           GROUP BY c.id, c.name, c.parent_id, c.is_active`
         );
 
         tableData = categories.map(c => ({
           id: `CAT-${c.id}`,
           name: c.name,
+          type: c.parent_id ? 'Sub-category' : 'Main Category',
           productCount: parseInt(c.product_count),
           salesVolume: Math.round(parseInt(c.product_count) * 4.2),
           revenue: `₹${(parseInt(c.product_count) * 12500).toLocaleString('en-IN')}`,
@@ -460,31 +487,39 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
 
       case 'inventory': {
         const products = await query<any>(
-          `SELECT sku, name as description, stock_quantity as qty, minimum_stock_alert as reorder, buying_price as price, is_active as status 
-           FROM products`
+          `SELECT p.sku, p.name as description, c.name as category, p.stock_quantity as qty, p.minimum_stock_alert as reorder, p.buying_price as price 
+           FROM products p
+           LEFT JOIN categories c ON c.id = p.category_id
+           WHERE p.is_active = true
+           ORDER BY p.stock_quantity ASC, p.name ASC`
         );
 
+        const totalQty = products.reduce((acc: number, p: any) => acc + (p.qty || 0), 0);
+        const totalAssetVal = Math.round(products.reduce((acc: number, p: any) => acc + ((p.qty || 0) * parseFloat(p.price || '0')), 0));
+        const lowStockCount = products.filter((p: any) => (p.qty || 0) <= (p.reorder ?? 0)).length;
+        const outOfStockCount = products.filter((p: any) => (p.qty || 0) === 0).length;
+
         stats = [
-          { label: 'Total Items Stocked', value: products.reduce((acc, p) => acc + p.qty, 0), change: '+2.4%', isPositive: true },
-          { label: 'Stock Asset Value', value: `₹${Math.round(products.reduce((acc, p) => acc + (p.qty * parseFloat(p.price || '0')), 0)).toLocaleString('en-IN')}`, change: '+8.4%', isPositive: true },
-          { label: 'Low Stock Alerts', value: products.filter(p => p.qty <= p.reorder).length, change: '-4', isPositive: true },
-          { label: 'Out of Stock Items', value: products.filter(p => p.qty === 0).length, change: '-1', isPositive: true },
+          { label: 'Total Items Stocked', value: totalQty.toLocaleString('en-IN'), change: '+2.4%', isPositive: true },
+          { label: 'Stock Asset Value', value: `₹${totalAssetVal.toLocaleString('en-IN')}`, change: '+8.4%', isPositive: true },
+          { label: 'Low Stock Alerts', value: lowStockCount.toLocaleString('en-IN'), change: '-4', isPositive: true },
+          { label: 'Out of Stock Items', value: outOfStockCount.toLocaleString('en-IN'), change: '-1', isPositive: true },
         ];
 
-        chartData = products.slice(0, 5).map(p => ({
+        chartData = products.slice(0, 5).map((p: any) => ({
           date: p.description.slice(0, 15),
-          StockLevel: p.qty,
-          ReorderPoint: p.reorder
+          StockLevel: p.qty || 0,
+          ReorderPoint: p.reorder || 0
         }));
 
-        tableData = products.map(p => ({
+        tableData = products.map((p: any) => ({
           sku: p.sku || 'N/A',
           description: p.description,
-          category: 'Retail',
-          qty: p.qty,
-          reorder: p.reorder,
-          value: `₹${(p.qty * parseFloat(p.price || '0')).toLocaleString('en-IN')}`,
-          status: p.qty > 10 ? 'Healthy' : p.qty > 0 ? 'Low Stock' : 'Out of Stock'
+          category: p.category || 'Retail',
+          qty: p.qty || 0,
+          reorder: p.reorder || 0,
+          value: `₹${((p.qty || 0) * parseFloat(p.price || '0')).toLocaleString('en-IN')}`,
+          status: (p.qty || 0) === 0 ? 'Out of Stock' : (p.qty || 0) <= (p.reorder ?? 0) ? 'Low Stock' : 'Healthy'
         }));
         break;
       }
@@ -553,6 +588,166 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
         break;
       }
 
+      case 'growth': {
+        const usersRes = await query<any>(
+          `SELECT TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*)::int as count 
+           FROM customers 
+           GROUP BY month`
+        );
+        const ordersRes = await query<any>(
+          `SELECT TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*)::int as count, COALESCE(SUM(total_selling_price), 0)::float as revenue 
+           FROM orders 
+           GROUP BY month`
+        );
+
+        // Find all unique months present in the database records
+        const activeMonthsSet = new Set<string>();
+        usersRes.forEach((r: any) => {
+          if (r.month) activeMonthsSet.add(r.month);
+        });
+        ordersRes.forEach((r: any) => {
+          if (r.month) activeMonthsSet.add(r.month);
+        });
+
+        const activeMonths = Array.from(activeMonthsSet).sort(); // Chronological order (e.g. ['2026-05', '2026-06'])
+
+        // Fallback: If no database data is found, show the current month as the sole entry
+        if (activeMonths.length === 0) {
+          activeMonths.push(new Date().toISOString().slice(0, 7));
+        }
+
+        const finalUsers: Record<string, number> = {};
+        const finalOrders: Record<string, number> = {};
+        const finalRevenue: Record<string, number> = {};
+
+        activeMonths.forEach(m => {
+          finalUsers[m] = 0;
+          finalOrders[m] = 0;
+          finalRevenue[m] = 0;
+        });
+
+        usersRes.forEach((r: any) => {
+          if (r.month && finalUsers[r.month] !== undefined) {
+            finalUsers[r.month] = Number(r.count);
+          }
+        });
+        ordersRes.forEach((r: any) => {
+          if (r.month && finalOrders[r.month] !== undefined) {
+            finalOrders[r.month] = Number(r.count);
+            finalRevenue[r.month] = Number(r.revenue);
+          }
+        });
+
+        // Format month labels helper
+        const formatMonthLabel = (ym: string) => {
+          const [year, month] = ym.split('-');
+          const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+          ];
+          const mIdx = parseInt(month) - 1;
+          const currentYearMonth = new Date().toISOString().slice(0, 7);
+          const isMTD = ym === currentYearMonth;
+          return `${monthNames[mIdx]} ${year}${isMTD ? ' (MTD)' : ''}`;
+        };
+
+        // Calculate MoM growth rates
+        const finalData = activeMonths.map((m, idx) => {
+          const u = finalUsers[m];
+          const o = finalOrders[m];
+          const r = finalRevenue[m];
+
+          let uGrowth = 0;
+          let oGrowth = 0;
+          let rGrowth = 0;
+
+          if (idx > 0) {
+            const prevMonth = activeMonths[idx - 1];
+            const prevU = finalUsers[prevMonth];
+            const prevO = finalOrders[prevMonth];
+            const prevR = finalRevenue[prevMonth];
+
+            uGrowth = prevU > 0 ? ((u - prevU) / prevU) * 100 : 0;
+            oGrowth = prevO > 0 ? ((o - prevO) / prevO) * 100 : 0;
+            rGrowth = prevR > 0 ? ((r - prevR) / prevR) * 100 : 0;
+          } else {
+            // First active month acts as the baseline (0% MoM growth)
+            uGrowth = 0;
+            oGrowth = 0;
+            rGrowth = 0;
+          }
+
+          return {
+            month: m,
+            users: u,
+            orders: o,
+            revenue: r,
+            userGrowth: parseFloat(uGrowth.toFixed(1)),
+            orderGrowth: parseFloat(oGrowth.toFixed(1)),
+            revenueGrowth: parseFloat(rGrowth.toFixed(1))
+          };
+        });
+
+        // Extract latest values for stats cards
+        const latest = finalData[finalData.length - 1];
+        const prev = finalData.length > 1 ? finalData[finalData.length - 2] : null;
+
+        const latestUserGrowth = latest?.userGrowth || 0;
+        const latestOrderGrowth = latest?.orderGrowth || 0;
+        const latestRevenueGrowth = latest?.revenueGrowth || 0;
+
+        const userChange = prev ? (latestUserGrowth - prev.userGrowth).toFixed(1) : '0.0';
+        const orderChange = prev ? (latestOrderGrowth - prev.orderGrowth).toFixed(1) : '0.0';
+        const revenueChange = prev ? (latestRevenueGrowth - prev.revenueGrowth).toFixed(1) : '0.0';
+
+        const overallGrowth = parseFloat(((latestUserGrowth + latestOrderGrowth + latestRevenueGrowth) / 3).toFixed(1));
+        const overallChange = prev ? (overallGrowth - ((prev.userGrowth + prev.orderGrowth + prev.revenueGrowth) / 3)).toFixed(1) : '0.0';
+
+        stats = [
+          { 
+            label: 'User Growth Rate', 
+            value: `${latestUserGrowth >= 0 ? '+' : ''}${latestUserGrowth}%`, 
+            change: `${parseFloat(userChange) >= 0 ? '+' : ''}${userChange}% MoM`, 
+            isPositive: parseFloat(userChange) >= 0 
+          },
+          { 
+            label: 'Order Growth Rate', 
+            value: `${latestOrderGrowth >= 0 ? '+' : ''}${latestOrderGrowth}%`, 
+            change: `${parseFloat(orderChange) >= 0 ? '+' : ''}${orderChange}% MoM`, 
+            isPositive: parseFloat(orderChange) >= 0 
+          },
+          { 
+            label: 'Revenue Growth Rate', 
+            value: `${latestRevenueGrowth >= 0 ? '+' : ''}${latestRevenueGrowth}%`, 
+            change: `${parseFloat(revenueChange) >= 0 ? '+' : ''}${revenueChange}% MoM`, 
+            isPositive: parseFloat(revenueChange) >= 0 
+          },
+          { 
+            label: 'Overall Platform Growth', 
+            value: `${overallGrowth >= 0 ? '+' : ''}${overallGrowth}%`, 
+            change: `${parseFloat(overallChange) >= 0 ? '+' : ''}${overallChange}% MoM`, 
+            isPositive: parseFloat(overallChange) >= 0 
+          }
+        ];
+
+        chartData = finalData.map(d => ({
+          date: formatMonthLabel(d.month).replace(' 2026', ''),
+          UserGrowth: d.userGrowth,
+          OrderGrowth: d.orderGrowth,
+          RevenueGrowth: d.revenueGrowth
+        }));
+
+        tableData = [...finalData].reverse().map(d => ({
+          month: formatMonthLabel(d.month),
+          users: d.users,
+          orders: d.orders,
+          revenue: `₹${d.revenue.toLocaleString('en-IN')}`,
+          growth: `${d.revenueGrowth >= 0 ? '+' : ''}${d.revenueGrowth}%`,
+          status: 'Active'
+        }));
+
+        break;
+      }
 
       default:
         res.status(400).json(error('Invalid report type'));

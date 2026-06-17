@@ -21,6 +21,31 @@ function parseCSVPreview(text: string, maxRows = 10): { headers: string[]; rows:
   return { headers, rows };
 }
 
+const DEFAULT_TEMPLATE_COLUMNS = [
+  { id: 'name', label: 'Product Name' },
+  { id: 'sku', label: 'SKU' },
+  { id: 'category_slug', label: 'Category Slug' },
+  { id: 'brand', label: 'Brand' },
+  { id: 'description', label: 'Description' },
+  { id: 'mrp', label: 'MRP' },
+  { id: 'buying_price', label: 'Buying Price' },
+  { id: 'selling_price', label: 'Selling Price' },
+  { id: 'condition', label: 'Condition' },
+  { id: 'damage_description', label: 'Damage Description' },
+  { id: 'defect_description', label: 'Defect Description' },
+  { id: 'stock_quantity', label: 'Available Stock' },
+  { id: 'minimum_stock_alert', label: 'Minimum Stock Alert' },
+  { id: 'is_b2b_available', label: 'B2B Available' },
+  { id: 'b2b_price', label: 'B2B Price' },
+  { id: 'b2b_minimum_quantity', label: 'B2B Min Quantity' },
+  { id: 'weight_grams', label: 'Weight (Grams)' },
+  { id: 'tags', label: 'Tags' },
+  { id: 'image_urls', label: 'Image URLs' },
+  { id: 'specifications', label: 'Specifications (JSON)' },
+];
+
+const REQUIRED_TEMPLATE_COLUMNS: string[] = [];
+
 export default function BulkUploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -28,6 +53,16 @@ export default function BulkUploadPage() {
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<UploadResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Template Customization state
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [templateMode, setTemplateMode] = useState<'default' | 'customize'>('default');
+  const [customColumns, setCustomColumns] = useState<{ id: string; label: string }[]>(DEFAULT_TEMPLATE_COLUMNS);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(
+    DEFAULT_TEMPLATE_COLUMNS.map((c) => c.id)
+  );
+  const [newColKey, setNewColKey] = useState('');
+  const [newColLabel, setNewColLabel] = useState('');
 
   const { data: history, isLoading: historyLoading } = useQuery({
     queryKey: ['admin', 'bulk-upload', 'history'],
@@ -54,9 +89,47 @@ export default function BulkUploadPage() {
     }
   };
 
+  const toggleColumn = (id: string) => {
+    setSelectedColumns((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  };
+
+  const handleAddCustomColumn = () => {
+    const key = newColKey.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    if (!key) {
+      toast.error('Column key is required');
+      return;
+    }
+    const label = newColLabel.trim() || newColKey.trim();
+    if (customColumns.some((col) => col.id === key)) {
+      toast.error('Column key already exists');
+      return;
+    }
+    setCustomColumns((prev) => [...prev, { id: key, label }]);
+    setSelectedColumns((prev) => [...prev, key]);
+    setNewColKey('');
+    setNewColLabel('');
+    toast.success(`Column "${label}" added to list`);
+  };
+
+  const handleRemoveCustomColumn = (id: string) => {
+    if (REQUIRED_TEMPLATE_COLUMNS.includes(id)) return;
+    setCustomColumns((prev) => prev.filter((col) => col.id !== id));
+    setSelectedColumns((prev) => prev.filter((c) => c !== id));
+  };
+
   const handleDownloadTemplate = async () => {
+    const toastId = toast.loading('Generating template...');
     try {
-      const res = await api.get('/admin/products/bulk-upload/template', { responseType: 'blob' });
+      const queryParams = new URLSearchParams();
+      if (templateMode === 'customize') {
+        queryParams.set('columns', selectedColumns.join(','));
+      }
+
+      const res = await api.get(`/admin/products/bulk-upload/template?${queryParams}`, {
+        responseType: 'blob',
+      });
       const url = window.URL.createObjectURL(new Blob([res.data as BlobPart]));
       const link = document.createElement('a');
       link.href = url;
@@ -65,8 +138,25 @@ export default function BulkUploadPage() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch {
-      toast.error('Failed to download template');
+      toast.success('Template downloaded', { id: toastId });
+      setShowTemplateModal(false);
+    } catch (err: any) {
+      console.error('Template download error:', err);
+      let errMsg = 'Failed to download template';
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const parsed = JSON.parse(text);
+          if (parsed.error) {
+            errMsg = parsed.error;
+          }
+        } catch {}
+      } else if (err.response?.data?.error) {
+        errMsg = err.response.data.error;
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      toast.error(errMsg, { id: toastId });
     }
   };
 
@@ -101,7 +191,7 @@ export default function BulkUploadPage() {
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
-            onClick={() => void handleDownloadTemplate()}
+            onClick={() => setShowTemplateModal(true)}
             className="flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold text-[#0f1111] bg-white border border-[#d5d9d9] rounded-md hover:bg-[#f7fafa] shadow-sm transition-colors text-center"
           >
             Download Template
@@ -324,6 +414,151 @@ export default function BulkUploadPage() {
           )}
         </div>
       </div>
+
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black/55 flex items-center justify-center z-50 p-4 font-sans animate-fade-in backdrop-blur-[2px]">
+          <div className="bg-white rounded-lg border border-gray-300 shadow-2xl max-w-md w-full overflow-hidden text-left">
+            {/* Header */}
+            <div className="bg-gray-50 px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="font-bold text-gray-900 text-sm">Download Product Template</h3>
+              <button
+                onClick={() => setShowTemplateModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-lg font-black"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-4">
+              <div className="flex gap-2 p-1 bg-gray-100 rounded-md">
+                <button
+                  type="button"
+                  onClick={() => setTemplateMode('default')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${
+                    templateMode === 'default'
+                      ? 'bg-white text-gray-950 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  Quick Download
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTemplateMode('customize')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${
+                    templateMode === 'customize'
+                      ? 'bg-white text-gray-950 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  Customize Template
+                </button>
+              </div>
+
+              {templateMode === 'default' ? (
+                <div className="text-xs text-gray-600 space-y-2 py-2">
+                  <p>Downloads the standard bulk upload template containing all columns and sample products:</p>
+                  <div className="bg-gray-50 p-2.5 rounded border border-gray-200 font-mono text-[10px] text-gray-500 break-all leading-normal">
+                    name, sku, category_slug, brand, description, mrp, buying_price, selling_price, condition, damage_description, defect_description, stock_quantity, minimum_stock_alert, is_b2b_available, b2b_price, b2b_minimum_quantity, weight_grams, tags, image_urls, specifications
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select columns to include in CSV:</p>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                    {customColumns.map((col) => {
+                      const isRequired = REQUIRED_TEMPLATE_COLUMNS.includes(col.id);
+                      const isDefault = DEFAULT_TEMPLATE_COLUMNS.some((d) => d.id === col.id);
+                      return (
+                        <div
+                          key={col.id}
+                          className="flex items-center justify-between px-2.5 py-1.5 rounded border border-gray-200 hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors"
+                        >
+                          <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={selectedColumns.includes(col.id)}
+                              onChange={() => toggleColumn(col.id)}
+                              className="rounded text-[#e47911] focus:ring-[#e47911] border-gray-300 w-3.5 h-3.5"
+                            />
+                            <span className="truncate" title={col.label}>
+                              {col.label} {isRequired && <span className="text-[10px] text-orange-600 font-bold" title="Required field">*</span>}
+                            </span>
+                          </label>
+                          {!isDefault && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCustomColumn(col.id)}
+                              className="text-gray-400 hover:text-red-600 font-bold ml-1 text-xs transition-colors"
+                              title="Delete column"
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-[10px] text-orange-600 font-medium bg-orange-50 border border-orange-100 p-2 rounded leading-relaxed">
+                    ⚠️ * Asterisk indicates columns required to successfully upload products. Unselecting them may cause imports to fail.
+                  </p>
+
+                  {/* Add custom specs */}
+                  <div className="border-t border-gray-150 pt-3 mt-3">
+                    <p className="text-xs font-bold text-gray-600 mb-1.5">Add Custom Specification Column</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Key (e.g. material)"
+                        value={newColKey}
+                        onChange={(e) => setNewColKey(e.target.value)}
+                        className="flex-1 min-w-0 text-xs px-2.5 py-1 border border-gray-300 rounded focus:border-[#e47911] focus:ring-1 focus:ring-[#e47911] outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Label (e.g. Material)"
+                        value={newColLabel}
+                        onChange={(e) => setNewColLabel(e.target.value)}
+                        className="flex-1 min-w-0 text-xs px-2.5 py-1 border border-gray-300 rounded focus:border-[#e47911] focus:ring-1 focus:ring-[#e47911] outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomColumn}
+                        className="px-3 py-1 bg-amazon-blue hover:bg-amazon-blue-light text-white text-xs font-bold rounded shadow-sm transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      Spec keys must match attributes inside your products specifications.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 px-5 py-3.5 border-t border-gray-200 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowTemplateModal(false)}
+                className="px-4 py-1.5 border border-gray-300 rounded text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDownloadTemplate()}
+                className="px-4 py-1.5 bg-[#F3A847] hover:bg-[#e39a37] border border-[#a88734] rounded text-xs font-bold text-gray-900 shadow-sm transition-colors"
+              >
+                Download CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

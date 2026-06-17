@@ -25,7 +25,7 @@ const INPUT_CLS = 'w-full px-3 py-2 border border-gray-200 rounded-md text-xs fo
 export default function UsersPage() {
   const { admin: currentAdmin } = useAdminAuthStore();
   const navigate = useNavigate();
-
+// 
   useEffect(() => {
     if (currentAdmin && currentAdmin.role !== 'owner') {
       navigate('/dashboard', { replace: true });
