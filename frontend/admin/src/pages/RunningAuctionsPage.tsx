@@ -84,67 +84,83 @@ export default function RunningAuctionsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Running Auctions</h1>
-          <p className="text-sm text-gray-500">View and manage currently active auctions.</p>
+    <div className="min-h-full bg-[#F4F9F4] -m-6 p-4 sm:p-6 text-gray-700 font-sans antialiased">
+      <div className="max-w-[1600px] mx-auto space-y-4">
+        
+        {/* Brand Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white px-6 py-6 border border-gray-100 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider">
+              <span>Admin</span>
+              <span>&gt;</span>
+              <span>Auction Management</span>
+              <span>&gt;</span>
+              <span className="text-[#0FA86E]">Running Auctions</span>
+            </div>
+            <h1 className="text-xl font-black text-gray-900 mt-1 tracking-tight">Running Auctions</h1>
+            <p className="text-xs text-gray-400 font-medium mt-0.5">View and manage currently active auctions.</p>
+          </div>
+          <Link to="/auctions" className="text-xs text-[#0FA86E] hover:underline font-bold">
+            &larr; Back to Auction Management
+          </Link>
         </div>
-        <Link to="/auctions" className="text-sm text-blue-600 hover:underline">
-          &larr; Back to Auction Management
-        </Link>
-      </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Bid</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {auctions.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
-                  No running auctions found.
-                </td>
-              </tr>
-            ) : (
-              auctions.map((auction) => (
-                <tr key={auction.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{auction.product_name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{auction.product_sku}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ₹{parseFloat(auction.current_highest_bid || auction.reserve_price).toLocaleString('en-IN')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(auction.end_time).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3">
-                    <button
-                      onClick={() => handleEndAuction(auction.id)}
-                      disabled={ending === auction.id || deleting === auction.id}
-                      className="text-orange-600 hover:text-orange-950 disabled:opacity-50"
-                    >
-                      {ending === auction.id ? 'Ending...' : 'End Auction'}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteAuction(auction.id)}
-                      disabled={deleting === auction.id || ending === auction.id}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                    >
-                      {deleting === auction.id ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </td>
+        {/* Table Container */}
+        <div className="bg-white border border-gray-100 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-100 text-xs text-left">
+              <thead>
+                <tr className="bg-[#F4F9F4]/50 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4">Product</th>
+                  <th className="px-6 py-4 w-44">SKU</th>
+                  <th className="px-6 py-4 w-32">Current Bid</th>
+                  <th className="px-6 py-4 w-48">End Time</th>
+                  <th className="px-6 py-4 text-right w-44">Actions</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {auctions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-16 text-center text-xs text-gray-400 font-medium">
+                      No running auctions found.
+                    </td>
+                  </tr>
+                ) : (
+                  auctions.map((auction) => (
+                    <tr key={auction.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-900">{auction.product_name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-400 font-bold font-sans uppercase tracking-wider">{auction.product_sku}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-900 font-black">
+                        ₹{parseFloat(auction.current_highest_bid || auction.reserve_price).toLocaleString('en-IN')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-400 font-bold">
+                        {new Date(auction.end_time).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs text-right">
+                        <div className="flex items-center justify-end gap-3.5">
+                          <button
+                            onClick={() => handleEndAuction(auction.id)}
+                            disabled={ending === auction.id || deleting === auction.id}
+                            className="text-red-600 hover:text-red-800 font-bold disabled:opacity-50"
+                          >
+                            {ending === auction.id ? 'Ending...' : 'End Auction'}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAuction(auction.id)}
+                            disabled={deleting === auction.id || ending === auction.id}
+                            className="text-gray-400 hover:text-gray-600 font-bold disabled:opacity-50"
+                          >
+                            {deleting === auction.id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

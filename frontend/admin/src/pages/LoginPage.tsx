@@ -69,9 +69,8 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 {...register('email')}
-                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                  errors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'
+                  }`}
                 placeholder="admin@example.com"
               />
               {errors.email && (
@@ -86,9 +85,8 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 {...register('password')}
-                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                  errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'
+                  }`}
                 placeholder="••••••••"
               />
               {errors.password && (

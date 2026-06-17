@@ -34,7 +34,7 @@ function InlinePriority({ item, onSave }: { item: any; onSave: (val: number) => 
           if (e.key === 'Escape') { setValue(String(item.auction_priority)); setEditing(false); }
         }}
         autoFocus
-        className="w-16 px-1.5 py-1 text-center border border-[#e47911] rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#e47911] shadow-sm bg-white"
+        className="w-16 px-1.5 py-1 text-center border border-[#0FA86E] rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] outline-none shadow-xs bg-white font-bold"
       />
     );
   }
@@ -42,7 +42,7 @@ function InlinePriority({ item, onSave }: { item: any; onSave: (val: number) => 
   return (
     <button
       onClick={() => { setValue(String(item.auction_priority)); setEditing(true); }}
-      className="text-xs font-semibold px-2.5 py-1 rounded border border-gray-300 hover:border-[#e47911] hover:bg-gray-50 transition-colors text-gray-900 flex items-center gap-1 group w-16 justify-center mx-auto"
+      className="text-xs font-bold px-2.5 py-1.5 rounded-md border border-gray-200 hover:border-[#0FA86E] hover:bg-emerald-50/30 transition-colors text-gray-900 flex items-center gap-1.5 group w-16 justify-center mx-auto shadow-xs"
       title="Click to edit priority"
     >
       {item.auction_priority}
@@ -123,54 +123,51 @@ export default function QueuePage() {
   };
 
   return (
-    <div className="min-h-full bg-[#eaeded] -m-6 p-4 sm:p-6 text-[#111] font-sans antialiased">
+    <div className="min-h-full bg-[#F4F9F4] -m-6 p-4 sm:p-6 text-gray-700 font-sans antialiased">
       <div className="max-w-[1600px] mx-auto space-y-4">
         
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white px-5 py-4 border border-gray-300 rounded shadow-sm gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white px-6 py-6 border border-gray-100 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <Link to="/auctions" className="hover:text-[#c45500] hover:underline">Auctions</Link>
+            <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider">
+              <Link to="/auctions" className="hover:text-[#0FA86E]">Auctions</Link>
               <span>&gt;</span>
-              <span className="font-semibold text-gray-700">Upcoming Queue</span>
+              <span className="text-[#0FA86E]">Upcoming Queue</span>
             </div>
-            <h1 className="text-2xl font-medium text-gray-900 mt-1 flex items-center gap-2">
-              <ListOrdered className="w-6 h-6 text-amazon-orange" />
-              <span>Upcoming Auction Queue</span>
-            </h1>
-            <p className="text-xs text-gray-500 mt-0.5">
-              These products are queued to start automatically when the current active auction ends. Drag & drop or update priorities inline to reorder the upcoming auction stack.
+            <h1 className="text-xl font-black text-gray-900 mt-1 tracking-tight">Upcoming Auction Queue</h1>
+            <p className="text-xs text-gray-400 font-medium mt-0.5">
+              These products are queued to start automatically when the current active auction ends. Update priorities inline to reorder.
             </p>
           </div>
           <div>
             <Link
               to="/inventory"
-              className="px-4 py-1.5 bg-[#f0c14b] hover:bg-[#edd8a4] border border-[#a88734] hover:border-[#846a29] text-xs font-semibold rounded text-[#111] shadow-sm transition-all inline-flex items-center gap-1.5"
+              className="px-4 py-2.5 bg-[#0FA86E] hover:bg-[#0d9561] text-white rounded-md text-xs font-bold shadow-xs transition-colors inline-flex items-center gap-1.5"
             >
-              <span>Add Items to Queue</span>
+              Add Items to Queue
             </Link>
           </div>
         </div>
 
         {/* Content Table */}
-        <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-100 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-[#f6f6f6] border-b border-gray-300 text-xs font-semibold text-gray-600">
-                  <th className="px-5 py-3 w-20 text-center">Position</th>
-                  <th className="px-5 py-3">Product Description</th>
-                  <th className="px-5 py-3 w-40 text-right">Retail Price (M.R.P)</th>
-                  <th className="px-5 py-3 w-36 text-center">Queue Priority</th>
-                  <th className="px-5 py-3 text-right w-28">Actions</th>
+                <tr className="bg-[#F4F9F4]/50 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 w-20 text-center">Position</th>
+                  <th className="px-6 py-4">Product Description</th>
+                  <th className="px-6 py-4 w-40 text-right">Retail Price (M.R.P)</th>
+                  <th className="px-6 py-4 w-36 text-center">Queue Priority</th>
+                  <th className="px-6 py-4 text-right w-28">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-100 bg-white">
                 {loading ? (
                   Array.from({ length: 3 }).map((_, i) => (
-                    <tr key={i} className="animate-pulse border-b border-gray-200">
+                    <tr key={i} className="animate-pulse border-b border-gray-100">
                       {Array.from({ length: 5 }).map((__, j) => (
-                        <td key={j} className="px-5 py-6"><div className="h-4 bg-gray-100 rounded w-full" /></td>
+                        <td key={j} className="px-6 py-6"><div className="h-4 bg-gray-50 rounded w-full" /></td>
                       ))}
                     </tr>
                   ))
@@ -178,11 +175,11 @@ export default function QueuePage() {
                   <tr>
                     <td colSpan={5} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center justify-center max-w-md mx-auto">
-                        <div className="w-12 h-12 bg-gray-50 rounded flex items-center justify-center text-gray-400 mb-3 border border-gray-200">
+                        <div className="w-12 h-12 bg-[#F4F9F4] rounded-md flex items-center justify-center text-[#0FA86E] mb-3 border border-gray-100 shadow-xs">
                           <ListOrdered className="w-6 h-6" />
                         </div>
-                        <h3 className="text-sm font-semibold text-gray-900">Upcoming Auction Queue is Empty</h3>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Upcoming Auction Queue is Empty</h3>
+                        <p className="text-[11px] text-gray-400 font-medium mt-1">
                           There are no products ready to go next. Go to the Inventory page and flag products as "is_auction_ready" to populate this queue.
                         </p>
                       </div>
@@ -193,42 +190,42 @@ export default function QueuePage() {
                     return (
                       <tr 
                         key={product.product_id} 
-                        className="hover:bg-[#fcfcfc] transition-colors border-b border-gray-200 text-xs"
+                        className="hover:bg-gray-50/50 transition-colors border-b border-gray-100 text-xs"
                       >
-                        <td className="px-5 py-4 align-middle text-center">
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 font-extrabold text-slate-800 text-[11px]">
+                        <td className="px-6 py-4 align-middle text-center">
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-emerald-50 text-[#0FA86E] font-black text-[10px] border border-emerald-100">
                             #{index + 1}
                           </span>
                         </td>
-                        <td className="px-5 py-4 align-middle">
+                        <td className="px-6 py-4 align-middle">
                           <div className="flex items-center gap-3.5">
-                            <div className="h-12 w-12 flex-shrink-0 bg-white rounded border border-gray-200 overflow-hidden flex items-center justify-center p-0.5">
+                            <div className="h-10 w-10 flex-shrink-0 bg-white rounded-md border border-gray-100 overflow-hidden flex items-center justify-center shadow-xs">
                               <img src={getProductImage(product)} alt="" className="h-full w-full object-contain" />
                             </div>
                             <div className="min-w-0">
-                              <span className="font-semibold text-gray-900 block truncate max-w-[500px]">
+                              <span className="font-bold text-gray-900 block truncate max-w-[500px]">
                                 {product.product_name}
                               </span>
-                              <span className="text-[10px] text-gray-400 block truncate max-w-[500px] mt-0.5 font-medium">
+                              <span className="text-[10px] text-gray-400 font-bold block truncate max-w-[500px] mt-0.5">
                                 {product.product_description || 'Premium retail product queued for next auction.'}
                               </span>
                             </div>
                           </div>
                         </td>
-                        <td className="px-5 py-4 align-middle text-right font-bold text-gray-900">
+                        <td className="px-6 py-4 align-middle text-right font-black text-gray-950">
                           ₹{parseFloat(product.product_mrp).toLocaleString('en-IN')}
                         </td>
-                        <td className="px-5 py-4 align-middle text-center">
+                        <td className="px-6 py-4 align-middle text-center">
                           <InlinePriority 
                             item={product} 
                             onSave={(val) => handleUpdatePriority(product.product_id, val)} 
                           />
                         </td>
-                        <td className="px-5 py-4 align-middle text-right">
+                        <td className="px-6 py-4 align-middle text-right">
                           <button
                             onClick={() => handleRemoveFromQueue(product.product_id, product.auction_priority)}
                             disabled={updatingId === product.product_id}
-                            className="px-2.5 py-1 text-red-600 hover:text-red-950 hover:bg-red-50 border border-transparent rounded font-semibold text-[11px] transition-all inline-flex items-center gap-1"
+                            className="px-2.5 py-1.5 text-red-600 hover:text-red-800 hover:bg-red-50/50 rounded-md font-bold text-[11px] transition-colors inline-flex items-center gap-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span>Remove</span>

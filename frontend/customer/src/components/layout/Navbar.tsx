@@ -783,41 +783,91 @@ export default function Navbar() {
         <div className="fixed inset-0 z-[100] flex">
           {/* Overlay */}
           <div
-            className="absolute inset-0 bg-black/70 transition-opacity animate-in fade-in duration-300"
+            className="absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-300"
             onClick={() => setMobileMenuOpen(false)}
           />
 
           {/* Sidebar Content */}
-          <div className="relative w-[280px] sm:w-[365px] bg-white shadow-2xl flex flex-col animate-slide-in h-full">
-            <div className="bg-[#232f3e] text-white p-4 flex items-center gap-3 shrink-0">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                </svg>
+          <div className="relative w-[280px] sm:w-[350px] bg-white shadow-2xl flex flex-col animate-slide-from-left h-full border-r border-brand-border">
+            {/* Header with Forest Green Gradient */}
+            <div className="bg-gradient-to-r from-brand-primary via-[#0d9561] to-[#0c8e5d] text-white p-5 flex items-center gap-4 shrink-0 shadow-md relative overflow-hidden">
+              {/* Abstract glow effects */}
+              <div className="absolute top-[-30%] right-[-10%] w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+              <div className="absolute bottom-[-20%] left-[-5%] w-24 h-24 bg-brand-primaryLight/10 rounded-full blur-lg pointer-events-none"></div>
+
+              {/* Greeting */}
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-brand-primaryLight/80 font-bold uppercase tracking-wider leading-none">Welcome</span>
+                <span className="text-base font-black text-white truncate leading-tight mt-1">
+                  {customer ? customer.name : 'Guest User'}
+                </span>
               </div>
-              <span className="text-lg font-bold">Hello, {customer ? customer.name.split(' ')[0] : 'Sign In'}</span>
-              <button className="ml-auto p-1 hover:bg-white/10 rounded-full" onClick={() => setMobileMenuOpen(false)}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+
+              {/* Close Button */}
+              <button
+                className="ml-auto p-1.5 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full text-white transition-all duration-200 relative z-10"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="overflow-y-auto flex-1 pb-10">
-              <div className="p-4 border-b border-gray-100">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Trending</h3>
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 pb-10 px-3 custom-scrollbar">
+              {/* Trending Section */}
+              <div className="py-4 border-b border-gray-100">
+                <h3 className="text-xs font-black text-brand-primary mb-3 uppercase tracking-widest flex items-center gap-2 px-2">
+                  <span className="w-1.5 h-3.5 bg-brand-primary rounded-full inline-block"></span>
+                  Trending
+                </h3>
                 <div className="space-y-1">
-                  <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Best Sellers</Link>
-                  <Link to="/category/all?sort=newest" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">New Arrivals</Link>
-                  <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-800 font-bold hover:bg-gray-100 -mx-4 px-4 py-3">All Products</Link>
+                  <Link
+                    to="/category/all"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:text-brand-primary hover:bg-brand-primaryLight/50 rounded-xl transition-all duration-200 group font-semibold"
+                  >
+                    <span className="flex-1 group-hover:translate-x-1 transition-transform">Best Sellers</span>
+                    <svg className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 group-hover:text-brand-primary transform translate-x-[-8px] group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </Link>
+
+                  <Link
+                    to="/category/all?sort=newest"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:text-brand-primary hover:bg-brand-primaryLight/50 rounded-xl transition-all duration-200 group font-semibold"
+                  >
+                    <span className="flex-1 group-hover:translate-x-1 transition-transform">New Arrivals</span>
+                    <svg className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 group-hover:text-brand-primary transform translate-x-[-8px] group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </Link>
+
+                  <Link
+                    to="/category/all"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:text-brand-primary hover:bg-brand-primaryLight/50 rounded-xl transition-all duration-200 group font-semibold"
+                  >
+                    <span className="flex-1 group-hover:translate-x-1 transition-transform">All Products</span>
+                    <svg className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 group-hover:text-brand-primary transform translate-x-[-8px] group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </Link>
                 </div>
               </div>
 
-              <div className="p-4 border-b border-gray-100">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Shop By Category</h3>
+              {/* Shop By Category Section */}
+              <div className="py-4 border-b border-gray-100">
+                <h3 className="text-xs font-black text-brand-primary mb-3 uppercase tracking-widest flex items-center gap-2 px-2">
+                  <span className="w-1.5 h-3.5 bg-brand-primary rounded-full inline-block"></span>
+                  Shop By Category
+                </h3>
                 <div className="space-y-1">
                   {navCategories.map(cat => (
-                    <div key={cat.id}>
+                    <div key={cat.id} className="mb-0.5">
                       <div
                         onClick={() => {
                           if (cat.children && cat.children.length > 0) {
@@ -827,38 +877,39 @@ export default function Navbar() {
                             setMobileMenuOpen(false);
                           }
                         }}
-                        className="block text-sm text-gray-700 flex justify-between items-center hover:bg-gray-100 -mx-4 px-4 py-3 group cursor-pointer"
+                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:text-brand-primary hover:bg-brand-primaryLight/50 rounded-xl transition-all duration-200 group cursor-pointer font-semibold"
                       >
-                        {cat.name}
+                        <span className="flex-1 group-hover:translate-x-1 transition-transform">{cat.name}</span>
                         {cat.children && cat.children.length > 0 && (
                           <svg
-                            className={`w-4 h-4 text-gray-400 group-hover:text-gray-900 transition-transform ${expandedCategory === cat.id ? 'rotate-90' : ''}`}
+                            className={`w-4 h-4 text-gray-400 group-hover:text-brand-primary transition-transform duration-200 shrink-0 ${expandedCategory === cat.id ? 'rotate-90 text-brand-primary' : ''}`}
                             fill="none"
                             stroke="currentColor"
+                            strokeWidth="2.5"
                             viewBox="0 0 24 24"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7-7" />
                           </svg>
                         )}
                       </div>
 
                       {expandedCategory === cat.id && cat.children && cat.children.length > 0 && (
-                        <div className="bg-gray-50 -mx-4 py-1 animate-in slide-in-from-top-2 duration-200">
+                        <div className="bg-brand-primaryLight/20 mx-1 mt-1 mb-2 rounded-xl py-1.5 border border-brand-primaryLight/40 animate-in slide-in-from-top-2 duration-200">
                           <Link
                             to={`/category/${cat.slug}`}
                             onClick={() => setMobileMenuOpen(false)}
-                            className="block text-sm text-gray-800 font-bold hover:bg-gray-100 pl-8 pr-4 py-2.5 transition-colors border-b border-gray-100"
+                            className="flex items-center gap-2 text-xs text-gray-800 font-extrabold hover:text-brand-primary pl-6 pr-4 py-2 transition-colors border-b border-brand-primaryLight/30"
                           >
-                            All {cat.name}
+                            <span>•</span> All {cat.name}
                           </Link>
                           {cat.children.map(sub => (
                             <Link
                               key={sub.id}
                               to={`/category/${sub.slug}`}
                               onClick={() => setMobileMenuOpen(false)}
-                              className="block text-sm text-gray-600 hover:bg-gray-100 pl-8 pr-4 py-2.5 transition-colors"
+                              className="flex items-center gap-2 text-xs text-gray-600 hover:text-brand-primary pl-6 pr-4 py-2 transition-colors font-semibold"
                             >
-                              {sub.name}
+                              <span>•</span> {sub.name}
                             </Link>
                           ))}
                         </div>
@@ -868,30 +919,62 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <div className="p-4 border-b border-gray-100">
-                <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Help & Settings</h3>
+              {/* Help & Settings Section */}
+              <div className="py-4">
+                <h3 className="text-xs font-black text-brand-primary mb-3 uppercase tracking-widest flex items-center gap-2 px-2">
+                  <span className="w-1.5 h-3.5 bg-brand-primary rounded-full inline-block"></span>
+                  Help & Settings
+                </h3>
                 <div className="space-y-1">
-                  <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Your Account</Link>
-                  <Link 
-                    to="/live-auction" 
-                    onClick={() => setMobileMenuOpen(false)} 
-                    className={`text-sm font-bold hover:bg-gray-100 -mx-4 px-4 py-3 flex items-center gap-1.5 transition-all duration-300 ${
-                      hasLiveAuctions 
-                        ? 'text-red-600 animate-pulse-fast' 
-                        : 'text-orange-600'
+                  <Link
+                    to="/account"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:text-brand-primary hover:bg-brand-primaryLight/50 rounded-xl transition-all duration-200 group font-semibold"
+                  >
+                    <span className="flex-1 group-hover:translate-x-1 transition-transform">Your Account</span>
+                  </Link>
+
+                  <Link
+                    to="/live-auction"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all duration-350 group font-bold ${
+                      hasLiveAuctions
+                        ? 'text-red-700 bg-red-50/70 hover:bg-red-100 hover:text-red-800'
+                        : 'text-orange-600 hover:bg-orange-50/50 hover:text-orange-700'
                     }`}
                   >
-                    <span className="relative flex h-2 w-2">
-                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${hasLiveAuctions ? 'bg-red-400' : 'bg-orange-400'}`}></span>
-                      <span className={`relative inline-flex rounded-full h-2 w-2 ${hasLiveAuctions ? 'bg-red-600' : 'bg-orange-600'}`}></span>
+                    <span className="flex-1 group-hover:translate-x-1 transition-transform flex items-center gap-2">
+                      Live Auctions
+                      <span className="relative flex h-2 w-2">
+                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${hasLiveAuctions ? 'bg-red-400' : 'bg-orange-400'}`}></span>
+                        <span className={`relative inline-flex rounded-full h-2 w-2 ${hasLiveAuctions ? 'bg-red-600' : 'bg-orange-600'}`}></span>
+                      </span>
                     </span>
-                    Live Auctions
                   </Link>
-                  <Link to="/customer-service" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Customer Service</Link>
+
+                  <Link
+                    to="/customer-service"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:text-brand-primary hover:bg-brand-primaryLight/50 rounded-xl transition-all duration-200 group font-semibold"
+                  >
+                    <span className="flex-1 group-hover:translate-x-1 transition-transform">Customer Service</span>
+                  </Link>
+
                   {customer ? (
-                    <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block w-full text-left text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Sign Out</button>
+                    <button
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group font-semibold w-full text-left"
+                    >
+                      <span className="flex-1 group-hover:translate-x-1 transition-transform">Sign Out</span>
+                    </button>
                   ) : (
-                    <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-gray-700 hover:bg-gray-100 -mx-4 px-4 py-3">Sign In</Link>
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm text-brand-primary hover:bg-brand-primaryLight/50 rounded-xl transition-all duration-200 group font-bold"
+                    >
+                      <span className="flex-1 group-hover:translate-x-1 transition-transform">Sign In</span>
+                    </Link>
                   )}
                 </div>
               </div>

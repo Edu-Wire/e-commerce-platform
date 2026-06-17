@@ -70,22 +70,24 @@ export default function Sidebar({ onClose }: SidebarProps) {
     (item) => !item.ownerOnly || admin?.role === 'owner'
   );
 
+  const isReportsActive = location.pathname.startsWith('/reports');
+
   return (
-    <div className="flex flex-col h-full w-64 bg-[#1e293b] text-gray-300 z-30">
+    <div className="flex flex-col h-full w-64 bg-[#F4F9F4] text-gray-700 border-r border-[#E2EAE2] z-30 font-sans">
       {/* Logo Section */}
-      <div className="flex items-center justify-between h-16 px-6 bg-[#17202e] flex-shrink-0">
+      <div className="flex items-center justify-between h-16 px-6 border-b border-[#E2EAE2] flex-shrink-0 bg-[#F4F9F4]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-amazon-orange rounded-lg flex items-center justify-center text-white font-black text-xl">
+          <div className="w-8 h-8 bg-[#0FA86E] rounded-lg flex items-center justify-center text-white font-black text-xl">
             S
           </div>
           <div className="flex items-baseline gap-0.5">
-            <span className="text-white font-bold text-xl tracking-tight">ShopNow</span>
-            <span className="text-amazon-orange text-xs font-bold">.in</span>
+            <span className="text-gray-900 font-bold text-xl tracking-tight">ShopNow</span>
+            <span className="text-[#0FA86E] text-xs font-bold">.in</span>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="lg:hidden text-gray-400 hover:text-white transition-colors"
+          className="lg:hidden text-gray-400 hover:text-gray-600 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -96,7 +98,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-6 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="mb-4 px-2">
-          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[2px] mb-4">Main Menu</h3>
+          <h3 className="text-[11px] font-extrabold text-[#7CA18A] uppercase tracking-widest mb-4">Main Menu</h3>
           <ul className="space-y-1.5">
             {visibleItems.map((item) => (
               <li key={item.to}>
@@ -105,16 +107,15 @@ export default function Sidebar({ onClose }: SidebarProps) {
                   end
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `group flex items-center gap-3 px-3 py-2.5 rounded text-sm font-semibold transition-all ${
-                      isActive
-                        ? 'bg-[#f0c14b] text-[#111827]'
-                        : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                    `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-extrabold transition-all tracking-wide ${isActive
+                      ? 'bg-[#DCEFDF] text-[#0FA86E]'
+                      : 'text-gray-600 hover:bg-[#EAF3EB] hover:text-[#0FA86E]'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <item.icon className={`w-5 h-5 ${isActive ? 'text-[#111827]' : 'text-gray-400 group-hover:text-white'}`} strokeWidth={2} />
+                      <item.icon className={`w-5 h-5 ${isActive ? 'text-[#0FA86E]' : 'text-gray-400 group-hover:text-[#0FA86E]'}`} strokeWidth={2.5} />
                       <span>{item.label}</span>
                     </>
                   )}
@@ -126,31 +127,29 @@ export default function Sidebar({ onClose }: SidebarProps) {
             <li>
               <button
                 onClick={() => setReportsOpen(!reportsOpen)}
-                className={`w-full group flex items-center justify-between px-3 py-2.5 rounded text-sm font-semibold transition-all ${
-                  location.pathname.startsWith('/reports')
-                    ? 'bg-[#334155] text-white'
-                    : 'text-gray-300 hover:bg-[#334155] hover:text-white'
-                }`}
+                className={`w-full group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-extrabold transition-all tracking-wide ${isReportsActive
+                  ? 'bg-[#DCEFDF] text-[#0FA86E]'
+                  : 'text-gray-600 hover:bg-[#EAF3EB] hover:text-[#0FA86E]'
+                  }`}
               >
                 <div className="flex items-center gap-3">
-                  <BarChart3 className={`w-5 h-5 ${location.pathname.startsWith('/reports') ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} strokeWidth={2} />
+                  <BarChart3 className={`w-5 h-5 ${isReportsActive ? 'text-[#0FA86E]' : 'text-gray-400 group-hover:text-[#0FA86E]'}`} strokeWidth={2.5} />
                   <span>Reports</span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${reportsOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${reportsOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {reportsOpen && (
-                <ul className="mt-1 ml-4 pl-3 border-l border-gray-600 space-y-1">
+                <ul className="mt-1 ml-4 pl-3 border-l border-[#DCEFDF] space-y-1">
                   {REPORT_SUB_ITEMS.map((subItem) => (
                     <li key={subItem.to}>
                       <NavLink
                         to={subItem.to}
                         onClick={onClose}
                         className={({ isActive }) =>
-                          `block px-3 py-1.5 rounded text-xs font-semibold transition-all ${
-                            isActive
-                              ? 'bg-[#f0c14b] text-[#111827]'
-                              : 'text-gray-400 hover:bg-[#334155] hover:text-white'
+                          `block px-3 py-2 rounded-lg text-xs font-extrabold transition-all tracking-wide ${isActive
+                            ? 'bg-[#DCEFDF] text-[#0FA86E]'
+                            : 'text-gray-500 hover:bg-[#EAF3EB] hover:text-[#0FA86E]'
                           }`
                         }
                       >
@@ -164,31 +163,30 @@ export default function Sidebar({ onClose }: SidebarProps) {
           </ul>
         </div>
 
-        {/* Quick Actions / Help (Mockup) */}
+        {/* Quick Actions / Help */}
         <div className="mt-8 px-2">
-          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[2px] mb-4">Support</h3>
+          <h3 className="text-[11px] font-extrabold text-[#7CA18A] uppercase tracking-widest mb-4">Support</h3>
           <ul className="space-y-1.5">
             <li>
-              <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold text-gray-300 hover:bg-[#334155] hover:text-white rounded transition-all group">
-                <HelpCircle className="w-5 h-5 text-gray-400 group-hover:text-white" strokeWidth={2} />
+              <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-extrabold text-gray-600 hover:bg-[#EAF3EB] hover:text-[#0FA86E] rounded-xl transition-all group tracking-wide">
+                <HelpCircle className="w-5 h-5 text-gray-400 group-hover:text-[#0FA86E]" strokeWidth={2.5} />
                 <span>Help Center</span>
               </button>
             </li>
             <li>
-              <NavLink 
-                to="/announcements" 
+              <NavLink
+                to="/announcements"
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded transition-all group ${
-                    isActive 
-                      ? 'bg-[#f0c14b] text-[#111827]' 
-                      : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                  `w-full flex items-center gap-3 px-3 py-2.5 text-sm font-extrabold rounded-xl transition-all group tracking-wide ${isActive
+                    ? 'bg-[#DCEFDF] text-[#0FA86E]'
+                    : 'text-gray-600 hover:bg-[#EAF3EB] hover:text-[#0FA86E]'
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <Megaphone className={`w-5 h-5 ${isActive ? 'text-[#111827]' : 'text-gray-400 group-hover:text-white'}`} strokeWidth={2} />
+                    <Megaphone className={`w-5 h-5 ${isActive ? 'text-[#0FA86E]' : 'text-gray-400 group-hover:text-[#0FA86E]'}`} strokeWidth={2.5} />
                     <span>Announcements</span>
                   </>
                 )}
@@ -199,14 +197,14 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* Footer / User Profile */}
-      <div className="p-4 bg-[#0f172a] flex-shrink-0">
-        <div className="flex items-center gap-3 p-2 bg-[#1e293b] rounded border border-[#334155] shadow-sm">
-          <div className="w-9 h-9 bg-amazon-orange text-white rounded flex items-center justify-center text-sm font-bold">
+      <div className="p-4 bg-[#EAF3EB] border-t border-[#DCEFDF] flex-shrink-0">
+        <div className="flex items-center gap-3 p-2 bg-white rounded-2xl border border-[#DCEFDF] shadow-2xs">
+          <div className="w-9 h-9 bg-[#DCEFDF] text-[#0FA86E] rounded-xl flex items-center justify-center text-sm font-black">
             {admin?.name?.charAt(0) ?? 'A'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-white truncate">{admin?.name}</p>
-            <p className="text-[10px] text-gray-400 truncate uppercase font-bold tracking-tight">{admin?.role}</p>
+            <p className="text-xs font-black text-gray-900 truncate leading-tight">{admin?.name}</p>
+            <p className="text-[10px] text-gray-400 truncate uppercase font-extrabold tracking-widest mt-0.5">{admin?.role}</p>
           </div>
         </div>
       </div>

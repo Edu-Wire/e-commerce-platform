@@ -8,7 +8,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { api } from '../lib/api';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
-import { removeBackground } from '@imgly/background-removal';
+
 
 // Outbid Retargeting Special Purchase Banner
 function OutbidOfferBanner({ offer, onDismiss, setBuyNowItem, navigate }: any) {
@@ -179,35 +179,7 @@ function LiveAuctionBannerWidget({ auction }: { auction: any }) {
     imageList.push(mainImage);
   }
 
-  const [processedImages, setProcessedImages] = useState<string[]>([]);
-
-  useEffect(() => {
-    let active = true;
-    const processImages = async () => {
-      const urls: string[] = [];
-      for (const url of imageList) {
-        try {
-          const blob = await removeBackground(url, {
-            publicPath: "https://static.imgly.com/@imgly/background-removal/1.4.3/dist/"
-          });
-          const objUrl = URL.createObjectURL(blob);
-          if (active) urls.push(objUrl);
-        } catch (error) {
-          console.error('Background removal failed for', url, error);
-          if (active) urls.push(url);
-        }
-      }
-      if (active) setProcessedImages(urls);
-    };
-
-    if (imageList.length > 0) {
-      processImages();
-    }
-
-    return () => { active = false; };
-  }, [JSON.stringify(imageList)]);
-
-  const displayImages = processedImages.length > 0 ? processedImages : imageList;
+  const displayImages = imageList;
 
   useEffect(() => {
     if (displayImages.length <= 1) return;
@@ -526,35 +498,7 @@ export default function HomePage() {
   }).filter(url => url !== '/placeholder.png');
 
 
-  const [processedHeroImages, setProcessedHeroImages] = useState<string[]>([]);
-
-  useEffect(() => {
-    let active = true;
-    const processImages = async () => {
-      const urls: string[] = [];
-      for (const url of heroImages) {
-        try {
-          const blob = await removeBackground(url, {
-            publicPath: "https://static.imgly.com/@imgly/background-removal/1.4.3/dist/"
-          });
-          const objUrl = URL.createObjectURL(blob);
-          if (active) urls.push(objUrl);
-        } catch (error) {
-          console.error('Background removal failed for', url, error);
-          if (active) urls.push(url);
-        }
-      }
-      if (active) setProcessedHeroImages(urls);
-    };
-
-    if (heroImages.length > 0) {
-      processImages();
-    }
-
-    return () => { active = false; };
-  }, [JSON.stringify(heroImages)]);
-
-  const displayHeroImages = processedHeroImages.length > 0 ? processedHeroImages : heroImages;
+  const displayHeroImages = heroImages;
 
   const [heroImageIndex, setHeroImageIndex] = useState(0);
 

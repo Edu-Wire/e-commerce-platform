@@ -95,7 +95,7 @@ function TreeItem({
     <div>
       <div
         className={`group flex items-center py-1.5 px-2 cursor-pointer rounded-md transition-all ${isSelected
-          ? 'bg-amazon-blue/10 text-amazon-blue border-l-4 border-amazon-blue pl-1'
+          ? 'bg-emerald-50 text-[#0FA86E] border-l-4 border-[#0FA86E] pl-1'
           : 'hover:bg-gray-100 text-gray-700'
           }`}
         style={{ paddingLeft: `${depth * 1.25 + 0.5}rem` }}
@@ -114,7 +114,7 @@ function TreeItem({
             <div className="w-3.5" />
           )}
         </button>
-        <div className={`mr-2 ${isSelected ? 'text-amazon-blue' : 'text-gray-400 group-hover:text-gray-500'}`}>
+        <div className={`mr-2 ${isSelected ? 'text-[#0FA86E]' : 'text-gray-400 group-hover:text-gray-500'}`}>
           {hasChildren ? (isExpanded ? <FolderOpen size={16} /> : <Folder size={16} />) : <Layers size={16} />}
         </div>
         <span className={`text-sm ${isSelected ? 'font-semibold' : 'font-medium'}`}>
@@ -285,34 +285,34 @@ export default function CategoriesPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-80px)]">
       {/* Top Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-white border-b border-gray-100">
         {/* Action Header Row */}
-        <div className="px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-extrabold text-amazon-navy tracking-tight">Manage Categories</h1>
+        <div className="px-6 py-6 flex items-center justify-between">
+          <h1 className="text-xl font-black text-gray-900 tracking-tight">Manage Categories</h1>
           <button
             onClick={handleStartAdd}
-            className="flex items-center gap-2 px-6 py-2 bg-amazon-orange text-white rounded-md text-sm font-bold hover:bg-amazon-orangeLight shadow-md transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#0FA86E] hover:bg-[#0d9561] text-white rounded-md text-xs font-bold shadow-xs transition-colors"
           >
-            <Plus size={18} />
+            <Plus size={16} />
             Add Category
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden p-4 md:p-6 gap-4 md:gap-6 bg-amazon-gray">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden p-4 md:p-6 gap-4 md:gap-6 bg-[#F4F9F4]">
         {/* Left Column: Category Browser */}
-        <div className="w-full lg:w-80 h-[40vh] lg:h-auto bg-white rounded-lg border border-gray-200 flex flex-col shadow-sm flex-shrink-0">
-          <div className="p-4 border-b border-gray-100 bg-gray-50/50 rounded-t-lg">
-            <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Folder size={18} className="text-amazon-blue" />
+        <div className="w-full lg:w-80 h-[40vh] lg:h-auto bg-white rounded-lg border border-gray-100 flex flex-col shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] flex-shrink-0">
+          <div className="p-4 border-b border-gray-100 bg-[#F4F9F4]/30 rounded-t-lg">
+            <h2 className="text-sm font-extrabold text-gray-900 mb-3 flex items-center gap-2 uppercase tracking-wider">
+              <Folder size={16} className="text-[#0FA86E]" />
               Categories
             </h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0FA86E]" size={15} />
               <input
                 type="text"
                 placeholder="Search categories..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-amazon-blue focus:border-amazon-blue transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -322,12 +322,12 @@ export default function CategoriesPage() {
             {isLoading ? (
               <div className="p-4 space-y-3">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="h-8 bg-gray-100 rounded-md animate-pulse" />
+                  <div key={i} className="h-8 bg-gray-50 rounded-md animate-pulse" />
                 ))}
               </div>
             ) : tree.length === 0 ? (
               <div className="text-center py-10">
-                <p className="text-sm text-gray-400">No categories found</p>
+                <p className="text-xs text-gray-400">No categories found</p>
               </div>
             ) : (
               <div className="space-y-1">
@@ -349,35 +349,35 @@ export default function CategoriesPage() {
         </div>
 
         {/* Right Column: Editor / Detail */}
-        <div className="flex-1 min-h-[50vh] bg-white rounded-lg border border-gray-200 flex flex-col shadow-sm overflow-hidden">
+        <div className="flex-1 min-h-[50vh] bg-white rounded-lg border border-gray-100 flex flex-col shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] overflow-hidden">
           {editMode ? (
             <div className="p-8 max-w-2xl mx-auto w-full">
               <div className="flex items-center justify-between mb-8">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  {selectedCategory ? <Edit2 size={20} className="text-amazon-blue" /> : <Plus size={20} className="text-amazon-blue" />}
+                <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  {selectedCategory ? <Edit2 size={18} className="text-[#0FA86E]" /> : <Plus size={18} className="text-[#0FA86E]" />}
                   {selectedCategory ? `Edit: ${selectedCategory.name}` : 'Create New Category'}
                 </h3>
                 <button onClick={() => setEditMode(false)} className="text-gray-400 hover:text-gray-600">
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
 
               <form onSubmit={handleSubmit(onCatSubmit)} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Category Name *</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Category Name *</label>
                   <input
                     {...register('name')}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-amazon-blue outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none bg-white transition-all"
                     placeholder="e.g. Laptops, Audio Gear"
                   />
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Parent Category</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Parent Category</label>
                   <select
                     {...register('parent_id')}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-amazon-blue outline-none appearance-none bg-no-repeat bg-[right_1rem_center]"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none appearance-none bg-no-repeat bg-[right_1rem_center] bg-white transition-all"
                     style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundSize: '1.25rem' }}
                   >
                     <option value="">Top Level (Root)</option>
@@ -390,22 +390,22 @@ export default function CategoriesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Icon / Emoji</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">Icon / Emoji</label>
                   <input
                     {...register('icon_url')}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-amazon-blue outline-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-md text-xs focus:ring-1 focus:ring-[#0FA86E] focus:border-[#0FA86E] outline-none bg-white transition-all"
                     placeholder="e.g. 💻 or image URL"
                   />
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-gray-50/50 border border-gray-100 rounded-lg">
                   <input
                     type="checkbox"
                     {...register('is_active')}
                     id="is_active"
-                    className="w-5 h-5 accent-amazon-blue rounded border-gray-300"
+                    className="w-4 h-4 accent-[#0FA86E] rounded border-gray-300"
                   />
-                  <label htmlFor="is_active" className="text-sm font-medium text-gray-700 cursor-pointer">
+                  <label htmlFor="is_active" className="text-xs font-bold text-gray-700 cursor-pointer">
                     Active (visible to customers)
                   </label>
                 </div>
@@ -414,15 +414,15 @@ export default function CategoriesPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 py-2.5 bg-amazon-orange text-white rounded-md text-sm font-bold hover:bg-amazon-orangeLight shadow-md disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 bg-[#0FA86E] hover:bg-[#0d9561] text-white rounded-md text-xs font-bold disabled:opacity-60 transition-colors flex items-center justify-center gap-2 shadow-xs"
                   >
-                    {isSubmitting ? <LoadingSpinner size="sm" /> : <Save size={18} />}
+                    {isSubmitting ? <LoadingSpinner size="sm" /> : <Save size={16} />}
                     Save Category
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditMode(false)}
-                    className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-md text-sm font-bold hover:bg-gray-50 transition-all"
+                    className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-md text-xs font-bold hover:bg-gray-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -436,19 +436,19 @@ export default function CategoriesPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-2xl font-bold text-gray-900">{selectedCategory.name}</h3>
-                      <span className={`px-2 py-0.5 text-[10px] uppercase font-black rounded ${selectedCategory.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      <h3 className="text-xl font-black text-gray-900 tracking-tight">{selectedCategory.name}</h3>
+                      <span className={`px-2 py-0.5 text-[9px] uppercase font-black rounded-sm border ${selectedCategory.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100'}`}>
                         {selectedCategory.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500">ID: <span className="font-mono">{selectedCategory.id}</span></p>
+                    <p className="text-xs text-gray-400 font-medium">ID: <span className="font-mono">{selectedCategory.id}</span></p>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={handleStartEdit}
-                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 shadow-sm"
+                      className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
                     >
-                      <Edit2 size={16} />
+                      <Edit2 size={14} />
                       Edit Details
                     </button>
                   </div>
@@ -458,13 +458,13 @@ export default function CategoriesPage() {
               {/* Tabs / Sub-sections */}
               <div className="flex-1 flex flex-col overflow-hidden bg-white">
                 <div className="flex border-b border-gray-200 px-6">
-                  <button className="px-4 py-3 text-sm font-bold border-b-2 border-amazon-orange text-amazon-orange">
+                  <button className="px-4 py-3 text-xs font-bold border-b-2 border-[#0FA86E] text-[#0FA86E]">
                     Attributes
                   </button>
-                  <button className="px-4 py-3 text-sm font-bold text-gray-500 hover:text-gray-700">
+                  <button className="px-4 py-3 text-xs font-bold text-gray-400 hover:text-gray-600">
                     Settings
                   </button>
-                  <button className="px-4 py-3 text-sm font-bold text-gray-500 hover:text-gray-700">
+                  <button className="px-4 py-3 text-xs font-bold text-gray-400 hover:text-gray-600">
                     Audit Logs
                   </button>
                 </div>
@@ -472,13 +472,13 @@ export default function CategoriesPage() {
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <div className="p-6 pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900">Attribute Definitions</h4>
-                      <p className="text-xs text-gray-500">Define specifications required for products in this category</p>
+                      <h4 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider">Attribute Definitions</h4>
+                      <p className="text-xs text-gray-400 font-medium">Define specifications required for products in this category</p>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={addSpecRow}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-amazon-blue text-white rounded text-xs font-bold hover:bg-amazon-blue/90"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-100 text-[#0FA86E] hover:bg-[#0FA86E] hover:text-white rounded-md text-xs font-bold transition-all"
                       >
                         <Plus size={14} />
                         Add Attribute
@@ -486,7 +486,7 @@ export default function CategoriesPage() {
                       <button
                         onClick={() => void handleSaveSpecs()}
                         disabled={saveSpecsMutation.isPending}
-                        className="flex items-center gap-1.5 px-4 py-1.5 bg-amazon-orange text-white rounded text-xs font-bold hover:bg-amazon-orangeLight disabled:opacity-60 shadow-sm"
+                        className="flex items-center gap-1.5 px-4 py-1.5 bg-[#0FA86E] hover:bg-[#0d9561] text-white rounded-md text-xs font-bold transition-all disabled:opacity-60 shadow-xs"
                       >
                         {saveSpecsMutation.isPending ? <LoadingSpinner size="sm" /> : <Save size={14} />}
                         Save Changes
@@ -498,19 +498,19 @@ export default function CategoriesPage() {
                     {specRows.length === 0 ? (
                       <div className="text-center py-20 border-2 border-dashed border-gray-100 rounded-xl">
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Settings size={32} className="text-gray-300" />
+                          <Settings size={32} className="text-[#0FA86E]/40" />
                         </div>
                         <h5 className="text-sm font-bold text-gray-900">No attributes defined</h5>
-                        <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
+                        <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
                           Click "Add Attribute" to start defining technical specifications for products.
                         </p>
                       </div>
                     ) : (
-                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="border border-gray-100 rounded-lg overflow-hidden shadow-xs">
                         <div className="overflow-x-auto">
                           <table className="w-full min-w-[600px] text-left border-collapse text-xs">
                             <thead>
-                              <tr className="bg-gray-50 border-b border-gray-200 uppercase text-gray-500 font-bold">
+                              <tr className="bg-[#F4F9F4]/50 border-b border-gray-100 uppercase text-gray-400 font-extrabold text-[10px] tracking-wider">
                                 <th className="px-4 py-3">Attribute Name / Key</th>
                                 <th className="px-4 py-3">Data Type</th>
                                 <th className="px-4 py-3">Mandatory</th>
@@ -526,13 +526,13 @@ export default function CategoriesPage() {
                                       <input
                                         value={row.spec_label}
                                         onChange={(e) => updateSpecRow(idx, 'spec_label', e.target.value)}
-                                        className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none font-bold"
+                                        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md focus:border-[#0FA86E] focus:ring-1 focus:ring-[#0FA86E] outline-none font-bold bg-white text-xs transition-all"
                                         placeholder="e.g. RAM Size"
                                       />
                                       <input
                                         value={row.spec_key}
                                         onChange={(e) => updateSpecRow(idx, 'spec_key', e.target.value)}
-                                        className="w-full px-2 py-1 border border-gray-200 rounded focus:border-amazon-blue outline-none text-[10px] font-mono text-gray-400"
+                                        className="w-full px-2.5 py-1 border border-gray-200 rounded-md focus:border-[#0FA86E] focus:ring-1 focus:ring-[#0FA86E] outline-none text-[10px] font-mono text-gray-400 bg-white transition-all"
                                         placeholder="ram_size"
                                       />
                                     </div>
@@ -541,7 +541,7 @@ export default function CategoriesPage() {
                                     <select
                                       value={row.spec_type}
                                       onChange={(e) => updateSpecRow(idx, 'spec_type', e.target.value)}
-                                      className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none bg-white"
+                                      className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md focus:border-[#0FA86E] focus:ring-1 focus:ring-[#0FA86E] outline-none bg-white text-xs transition-all"
                                     >
                                       <option value="text">Text Field</option>
                                       <option value="number">Numeric</option>
@@ -551,7 +551,7 @@ export default function CategoriesPage() {
                                   </td>
                                   <td className="px-4 py-3">
                                     <label className="flex items-center gap-2 cursor-pointer group">
-                                      <div className={`w-8 h-4 rounded-full relative transition-colors ${row.is_required ? 'bg-amazon-blue' : 'bg-gray-200'}`}>
+                                      <div className={`w-8 h-4 rounded-full relative transition-colors ${row.is_required ? 'bg-[#0FA86E]' : 'bg-gray-200'}`}>
                                         <input
                                           type="checkbox"
                                           className="sr-only"
@@ -560,7 +560,7 @@ export default function CategoriesPage() {
                                         />
                                         <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${row.is_required ? 'translate-x-4' : ''}`} />
                                       </div>
-                                      <span className={row.is_required ? 'text-amazon-blue font-bold' : 'text-gray-400'}>
+                                      <span className={`text-xs ${row.is_required ? 'text-[#0FA86E] font-bold' : 'text-gray-400'}`}>
                                         {row.is_required ? 'Required' : 'Optional'}
                                       </span>
                                     </label>
@@ -570,7 +570,7 @@ export default function CategoriesPage() {
                                       <textarea
                                         value={row.spec_options}
                                         onChange={(e) => updateSpecRow(idx, 'spec_options', e.target.value)}
-                                        className="w-full px-2 py-1.5 border border-gray-200 rounded focus:border-amazon-blue outline-none resize-none text-[10px]"
+                                        className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md focus:border-[#0FA86E] focus:ring-1 focus:ring-[#0FA86E] outline-none resize-none text-[10px] bg-white transition-all"
                                         rows={2}
                                         placeholder="Enter options separated by commas (e.g. 8GB, 16GB)"
                                       />
@@ -581,9 +581,9 @@ export default function CategoriesPage() {
                                   <td className="px-4 py-3 text-center">
                                     <button
                                       onClick={() => removeSpecRow(idx)}
-                                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
+                                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded border border-transparent hover:border-gray-200 transition-colors shadow-xs"
                                     >
-                                      <Trash2 size={16} />
+                                      <Trash2 size={14} />
                                     </button>
                                   </td>
                                 </tr>
@@ -598,12 +598,12 @@ export default function CategoriesPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-20 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center p-20 text-center bg-white">
               <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                <Search size={40} className="text-gray-200" />
+                <Search size={40} className="text-[#0FA86E]/30" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Category Selected</h3>
-              <p className="text-sm text-gray-500 max-w-sm">
+              <h3 className="text-sm font-extrabold text-gray-900 mb-2 uppercase tracking-wider">No Category Selected</h3>
+              <p className="text-xs text-gray-400 max-w-sm font-medium leading-relaxed">
                 Select a category from the tree on the left to manage its attributes, or click "Add Category" to create a new classification.
               </p>
             </div>
