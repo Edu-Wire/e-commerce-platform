@@ -468,9 +468,11 @@ export default function ProductDetailPage() {
             )}
 
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-gray-900">₹{(displayPrice * quantity).toLocaleString('en-IN')}</span>
-              {product.mrp > displayPrice && (
-                <span className="text-gray-400 line-through text-lg">₹{(product.mrp * quantity).toLocaleString('en-IN')}</span>
+              <span className="text-3xl font-bold text-gray-900">₹{Number(displayPrice * quantity).toLocaleString('en-IN')}</span>
+              {Number(product.mrp) > Number(displayPrice) && (
+                <span className="text-gray-500 text-lg">
+                  M.R.P.: <span className="line-through">₹{Number(product.mrp * quantity).toLocaleString('en-IN')}</span>
+                </span>
               )}
             </div>
 
@@ -506,8 +508,15 @@ export default function ProductDetailPage() {
 
           {/* Column 3: Buy Box */}
           <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col h-full">
-            <h2 className="text-3xl font-bold text-gray-900 mb-1">₹{(displayPrice * quantity).toLocaleString('en-IN')}</h2>
-            <p className="text-xs text-gray-500 mb-4">Inclusive of all taxes</p>
+            <div className="mb-4">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-gray-900">₹{Number(displayPrice * quantity).toLocaleString('en-IN')}</span>
+                {Number(product.mrp) > Number(displayPrice) && (
+                  <span className="text-gray-400 line-through text-base">₹{Number(product.mrp * quantity).toLocaleString('en-IN')}</span>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Inclusive of all taxes</p>
+            </div>
 
             <div className={`flex items-center gap-1.5 font-bold text-sm mb-4 ${isOutOfStock ? 'text-red-500' : 'text-green-600'}`}>
               {isOutOfStock ? (

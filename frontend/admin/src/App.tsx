@@ -13,6 +13,7 @@ import BulkUploadPage from './pages/BulkUploadPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import UsersPage from './pages/UsersPage';
+import CustomersPage from './pages/CustomersPage';
 import SettingsPage from './pages/SettingsPage';
 import AnnouncementsPage from './pages/AnnouncementsPage';
 import QueuePage from './pages/QueuePage';
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/:id" element={<OrderDetailPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/customers" element={<CustomersPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
         <Route path="/reports/:type" element={<ReportsPage />} />

@@ -232,18 +232,7 @@ export default function OrdersPage() {
                       </div>
 
                       <div className="space-y-2">
-                        {order.status === 'pending' && (
-                          <button
-                            onClick={() =>
-                              (order as { notes?: string }).notes === 'AUCTION_WIN'
-                                ? navigate('/live-auction/payments')
-                                : navigate(`/orders/${order.id}`)
-                            }
-                            className="w-full py-2 bg-green-700 hover:bg-green-800 text-white font-bold rounded-xl shadow-sm text-center text-[12px] transition-colors"
-                          >
-                            Pay Now
-                          </button>
-                        )}
+                        {/* Removed Pay Now button */}
                         <button 
                           onClick={() => navigate(`/orders/${order.id}`)}
                           className="w-full py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold rounded-xl shadow-sm text-center text-[12px] transition-all"

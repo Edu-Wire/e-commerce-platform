@@ -17,17 +17,40 @@ export async function getStats(req: Request, res: Response): Promise<void> {
       total_products: string;
       active_products: string;
       low_stock_count: string;
+      out_of_stock_count: string;
+      total_inventory: string;
     }>(
       `SELECT
          COUNT(*) as total_products,
          COUNT(*) FILTER (WHERE is_active = true) as active_products,
-         COUNT(*) FILTER (WHERE stock_quantity <= minimum_stock_alert) as low_stock_count
+         COUNT(*) FILTER (WHERE is_active = true AND stock_quantity > 0 AND stock_quantity <= minimum_stock_alert) as low_stock_count,
+         COUNT(*) FILTER (WHERE is_active = true AND stock_quantity = 0) as out_of_stock_count,
+         COALESCE(SUM(stock_quantity) FILTER (WHERE is_active = true), 0) as total_inventory
        FROM products`
     );
 
-    // Today's orders
-    const todayOrders = await queryOne<{ today_orders: string }>(
-      `SELECT COUNT(*) as today_orders FROM orders WHERE created_at >= CURRENT_DATE`
+    // Units sold (total items across non-cancelled/refunded orders)
+    const unitsSoldStats = await queryOne<{ units_sold: string }>(
+      `SELECT COALESCE(SUM((item->>'quantity')::int), 0) as units_sold
+       FROM orders
+       CROSS JOIN LATERAL jsonb_array_elements(items) AS item
+       WHERE status NOT IN ('cancelled', 'refunded')`
+    );
+
+    // Revenue last 30 days
+    const revenueLast30DaysStats = await queryOne<{ revenue_last_30_days: string }>(
+      `SELECT COALESCE(SUM(total_selling_price), 0) as revenue_last_30_days
+       FROM orders
+       WHERE status NOT IN ('cancelled', 'refunded')
+         AND created_at >= NOW() - INTERVAL '30 days'`
+    );
+
+    // Total orders & Pending orders
+    const orderStats = await queryOne<{ total_orders: string; pending_orders: string }>(
+      `SELECT
+         COUNT(*) as total_orders,
+         COUNT(*) FILTER (WHERE status = 'pending') as pending_orders
+       FROM orders`
     );
 
     // Total revenue
@@ -95,12 +118,17 @@ export async function getStats(req: Request, res: Response): Promise<void> {
 
     const result = success({
       // flat fields matching frontend DashboardStats type
-      total_products:  parseInt(productStats?.total_products  || '0'),
-      active_products: parseInt(productStats?.active_products || '0'),
-      low_stock_items: parseInt(productStats?.low_stock_count || '0'),
-      todays_orders:   parseInt(todayOrders?.today_orders     || '0'),
-      total_revenue:   parseFloat(revenueStats?.total_revenue || '0'),
-      total_customers: parseInt(customerStats?.total_customers || '0'),
+      total_products:        parseInt(productStats?.total_products      || '0'),
+      active_products:       parseInt(productStats?.active_products     || '0'),
+      low_stock_items:       parseInt(productStats?.low_stock_count     || '0'),
+      out_of_stock_items:    parseInt(productStats?.out_of_stock_count  || '0'),
+      total_inventory:       parseInt(productStats?.total_inventory     || '0'),
+      total_orders:          parseInt(orderStats?.total_orders          || '0'),
+      pending_orders:        parseInt(orderStats?.pending_orders        || '0'),
+      total_revenue:         parseFloat(revenueStats?.total_revenue     || '0'),
+      units_sold:            parseInt(unitsSoldStats?.units_sold        || '0'),
+      revenue_last_30_days:  parseFloat(revenueLast30DaysStats?.revenue_last_30_days || '0'),
+      total_customers:       parseInt(customerStats?.total_customers    || '0'),
 
       // chart: category → "category", total_sales → "revenue"
       sales_by_category: salesByCategory.map((r) => ({

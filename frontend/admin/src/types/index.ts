@@ -187,8 +187,13 @@ export interface DashboardStats {
   total_products: number;
   active_products: number;
   low_stock_items: number;
-  todays_orders: number;
+  out_of_stock_items: number;
+  total_inventory: number;
+  total_orders: number;
+  pending_orders: number;
   total_revenue: number;
+  units_sold: number;
+  revenue_last_30_days: number;
   total_customers: number;
   sales_by_category: { category: string; revenue: number }[];
   orders_last_30_days: { date: string; orders: number; revenue: number }[];

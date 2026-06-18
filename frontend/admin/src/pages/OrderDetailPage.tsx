@@ -60,8 +60,9 @@ export default function OrderDetailPage() {
     );
   }
 
-  const totalMrp = order.items.reduce((s, item) => s + item.unit_price * item.quantity, 0);
-  const savings = totalMrp - (order.total_amount || 0) + (order.discount_amount || 0);
+  const totalMrp = parseFloat(String(order.total_mrp || 0));
+  const totalSellingPrice = parseFloat(String(order.total_selling_price || 0));
+  const savings = parseFloat(String(order.total_savings || 0));
 
   return (
     <div className="min-h-full bg-[#F4F9F4] -m-6 p-4 sm:p-6 text-gray-700 font-sans antialiased">
@@ -171,7 +172,7 @@ export default function OrderDetailPage() {
                 )}
                 <div className="flex justify-between text-base font-black text-gray-950 pt-3 border-t border-gray-100">
                   <span>Total Amount</span>
-                  <span>₹{(order.total_amount || 0).toLocaleString('en-IN')}</span>
+                  <span>₹{totalSellingPrice.toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>

@@ -394,7 +394,7 @@ export default function AIChatbot() {
           </div>
 
           {/* SVG Robot Mascot */}
-          <div className="robot-floating w-24 h-28 relative">
+          <div className="robot-floating w-20 h-24 relative">
             <svg
               width="100%"
               height="100%"

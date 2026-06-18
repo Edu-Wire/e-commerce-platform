@@ -6,7 +6,7 @@ import { Product } from '../../types';
 
 export async function getInventory(req: Request, res: Response): Promise<void> {
   try {
-    const { low_stock, category, category_id, search } = req.query;
+    const { low_stock, out_of_stock, category, category_id, search } = req.query;
     const { page, limit } = getPaginationParams(req.query as Record<string, unknown>);
     const offset = getOffset(page, limit);
 
@@ -30,7 +30,11 @@ export async function getInventory(req: Request, res: Response): Promise<void> {
       params.push(parseInt(String(category_id), 10));
     }
     if (low_stock === 'true') {
-      conditions.push('p.stock_quantity <= p.minimum_stock_alert');
+      // Low stock: has some stock but at or below the alert threshold
+      conditions.push('p.stock_quantity > 0 AND p.stock_quantity <= p.minimum_stock_alert');
+    }
+    if (out_of_stock === 'true') {
+      conditions.push('p.stock_quantity = 0');
     }
     if (search) {
       conditions.push(`(p.name ILIKE $${paramIdx} OR p.sku ILIKE $${paramIdx})`);

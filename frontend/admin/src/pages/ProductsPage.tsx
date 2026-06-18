@@ -23,15 +23,19 @@ export default function ProductsPage() {
   const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<ProductFilters>(() => {
     const search = searchParams.get('search') || undefined;
-    return { page: 1, limit: 10, search };
+    const is_active = searchParams.get('is_active') || undefined;
+    return { page: 1, limit: 10, search, is_active };
   });
 
-  // Sync with URL search param
+  // Sync with URL search params
   useEffect(() => {
     const search = searchParams.get('search');
-    if (search !== null) {
-      setFilters(f => ({ ...f, search, page: 1 }));
-    }
+    const is_active = searchParams.get('is_active');
+    setFilters(f => ({
+      ...f,
+      ...(search !== null ? { search, page: 1 } : {}),
+      ...(is_active !== null ? { is_active, page: 1 } : {}),
+    }));
   }, [searchParams]);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
