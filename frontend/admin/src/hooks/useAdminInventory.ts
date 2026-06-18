@@ -8,6 +8,7 @@ export interface InventoryFilters {
   search?: string;
   category_id?: string;
   low_stock?: boolean;
+  out_of_stock?: boolean;
 }
 
 interface InventoryListResponse {

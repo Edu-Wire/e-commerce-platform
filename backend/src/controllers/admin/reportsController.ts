@@ -365,30 +365,47 @@ export async function getReportData(req: Request, res: Response): Promise<void> 
 
       case 'seller': {
         const b2bSellers = await query<any>(
-          `SELECT id, company_name as company, name as owner, is_active as status 
-           FROM customers 
-           WHERE customer_type = 'b2b'`
+          `SELECT 
+             c.id, 
+             c.company_name as company, 
+             c.name as owner, 
+             c.is_active as status,
+             (SELECT COALESCE(SUM(o.total_selling_price), 0) FROM orders o WHERE o.customer_id = c.id AND o.status NOT IN ('cancelled', 'refunded')) as total_spent,
+             (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.id AND o.status NOT IN ('cancelled', 'refunded')) as total_orders,
+             (SELECT ROUND(AVG(rating), 1) FROM product_reviews r WHERE r.customer_id = c.id) as avg_rating
+           FROM customers c 
+           WHERE c.customer_type = 'b2b'`
         );
 
+        const totalGmv = b2bSellers.reduce((acc: number, s: any) => acc + parseFloat(s.total_spent || 0), 0);
+        const verifiedCount = b2bSellers.filter((s: any) => s.status).length;
+        const pendingCount = b2bSellers.filter((s: any) => !s.status).length;
+        
+        const ratedSellers = b2bSellers.filter((s: any) => s.avg_rating !== null);
+        const avgRating = ratedSellers.length > 0 
+          ? (ratedSellers.reduce((acc: number, s: any) => acc + parseFloat(s.avg_rating || 0), 0) / ratedSellers.length).toFixed(1) 
+          : 'N/A';
+
         stats = [
-          { label: 'Verified Sellers', value: b2bSellers.length, change: '+9.4%', isPositive: true },
-          { label: 'Pending Verification', value: '0', change: '0', isPositive: true },
-          { label: 'Total Merchant GMV', value: '₹34,80,000', change: '+21.5%', isPositive: true },
-          { label: 'Avg Merchant Rating', value: '4.6 / 5.0', change: '+0.5%', isPositive: true },
+          { label: 'Verified Sellers', value: verifiedCount, change: '+0.0%', isPositive: true },
+          { label: 'Pending Verification', value: pendingCount, change: '0', isPositive: true },
+          { label: 'Total Merchant GMV', value: `₹${totalGmv.toLocaleString('en-IN')}`, change: '+0.0%', isPositive: true },
+          { label: 'Avg Merchant Rating', value: avgRating === 'N/A' ? 'N/A' : `${avgRating} / 5.0`, change: '+0.0%', isPositive: true },
         ];
 
-        chartData = [
-          { date: 'TechHub', RevenueGenerated: 850000, ListingsCount: 120 },
-          { date: 'FashionQ', RevenueGenerated: 1200000, ListingsCount: 340 },
-        ];
+        chartData = b2bSellers.map((s: any) => ({
+          date: s.company || s.owner || 'Seller',
+          RevenueGenerated: parseFloat(s.total_spent || 0),
+          ListingsCount: parseInt(s.total_orders || 0)
+        }));
 
-        tableData = b2bSellers.map(s => ({
+        tableData = b2bSellers.map((s: any) => ({
           id: `SEL-${s.id}`,
           company: s.company || 'Direct Wholesale Corp',
           owner: s.owner,
-          sales: '₹4,50,000',
-          listings: 24,
-          rating: '4.5',
+          sales: `₹${parseFloat(s.total_spent || 0).toLocaleString('en-IN')}`,
+          listings: parseInt(s.total_orders || 0),
+          rating: s.avg_rating !== null ? parseFloat(s.avg_rating).toFixed(1) : 'N/A',
           status: s.status ? 'Verified' : 'Suspended'
         }));
         break;

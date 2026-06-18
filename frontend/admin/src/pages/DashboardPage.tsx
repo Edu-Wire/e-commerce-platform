@@ -19,7 +19,6 @@ import {
   Package,
   ShoppingCart,
   CheckCircle2,
-  AlertTriangle,
   ClipboardList,
   IndianRupee,
   Users,
@@ -161,10 +160,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button className="bg-white hover:bg-gray-50 text-[#0FA86E] border border-[#0FA86E] text-xs font-bold py-2.5 px-4 rounded-md shadow-xs transition-colors flex items-center gap-1.5">
+            <Link to="/reports/seller" className="bg-white hover:bg-gray-50 text-[#0FA86E] border border-[#0FA86E] text-xs font-bold py-2.5 px-4 rounded-md shadow-xs transition-colors flex items-center gap-1.5">
               <LineChart className="w-3.5 h-3.5" />
               <span>Seller Performance</span>
-            </button>
+            </Link>
             <button className="bg-[#0FA86E] hover:bg-[#0d9561] text-white text-xs font-bold py-2.5 px-4 rounded-md shadow-sm transition-colors flex items-center gap-1.5">
               <Package className="w-3.5 h-3.5" />
               <span>Inventory Planning</span>
@@ -184,38 +183,42 @@ export default function DashboardPage() {
                 icon={<Package className="w-5 h-5 text-emerald-700" />}
                 iconBg="bg-emerald-50"
                 trend={{ value: 12, direction: 'up' }}
+                to="/products"
               />
               <StatsCard
                 title="Active Products"
                 value={stats?.active_products ?? 0}
                 icon={<CheckCircle2 className="w-5 h-5 text-cyan-700" />}
                 iconBg="bg-cyan-50"
+                to="/products"
               />
               <StatsCard
-                title="Low Stock"
-                value={stats?.low_stock_items ?? 0}
-                icon={<AlertTriangle className="w-5 h-5 text-amber-700" />}
+                title="Total Inventory"
+                value={stats?.total_inventory ?? 0}
+                icon={<Package className="w-5 h-5 text-amber-700" />}
                 iconBg="bg-amber-50"
-                trend={{ value: 5, direction: 'down' }}
+                to="/inventory"
               />
               <StatsCard
-                title="Today's Orders"
-                value={stats?.todays_orders ?? 0}
+                title="Total Orders"
+                value={stats?.total_orders ?? 0}
                 icon={<ClipboardList className="w-5 h-5 text-blue-700" />}
                 iconBg="bg-blue-50"
-                trend={{ value: 8, direction: 'up' }}
+                to="/orders"
               />
               <StatsCard
                 title="Total Revenue"
                 value={fmt(stats?.total_revenue ?? 0)}
                 icon={<IndianRupee className="w-5 h-5 text-violet-700" />}
                 iconBg="bg-violet-50"
+                to="/reports/revenue"
               />
               <StatsCard
                 title="Total Customers"
                 value={stats?.total_customers ?? 0}
                 icon={<Users className="w-5 h-5 text-rose-700" />}
                 iconBg="bg-rose-50"
+                to="/customers"
               />
             </>
           )}
@@ -240,22 +243,41 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3.5 text-xs">
-              <div className="p-4 bg-[#FFFBEB] border border-[#FDE8C4] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-[#B25E00] uppercase tracking-wider">Low Stock Alerts</p>
-                <p className="text-3xl font-black text-[#B25E00] mt-2">{stats?.low_stock_items ?? 0}</p>
-              </div>
-              <div className="p-4 bg-[#FEF2F2] border border-[#F8B4B4] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-[#9B1C1C] uppercase tracking-wider">Out of Stock</p>
-                <p className="text-3xl font-black text-[#9B1C1C] mt-2">0</p>
-              </div>
-              <div className="p-4 bg-[#F0F9EB] border border-[#C2E7B0] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-[#2E7D32] uppercase tracking-wider">Active SKUs</p>
-                <p className="text-3xl font-black text-[#2E7D32] mt-2">{stats?.active_products ?? 0}</p>
-              </div>
-              <div className="p-4 bg-gray-50 border border-gray-200 rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Total SKUs</p>
+              {/* Low Stock Alerts → /inventory?filter=low_stock */}
+              <Link
+                to="/inventory?filter=low_stock"
+                className="p-4 bg-[#FFFBEB] border border-[#FDE8C4] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-[#F59E0B] hover:ring-2 hover:ring-[#FDE8C4] transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-[#B25E00] uppercase tracking-wider group-hover:text-[#92400e]">Low Stock Alerts</p>
+                <p className="text-3xl font-black text-[#B25E00] mt-2 group-hover:text-[#92400e]">{stats?.low_stock_items ?? 0}</p>
+              </Link>
+
+              {/* Out of Stock → /inventory?filter=out_of_stock */}
+              <Link
+                to="/inventory?filter=out_of_stock"
+                className="p-4 bg-[#FEF2F2] border border-[#F8B4B4] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-[#EF4444] hover:ring-2 hover:ring-[#FEE2E2] transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-[#9B1C1C] uppercase tracking-wider group-hover:text-[#7f1d1d]">Out of Stock</p>
+                <p className="text-3xl font-black text-[#9B1C1C] mt-2 group-hover:text-[#7f1d1d]">{stats?.out_of_stock_items ?? 0}</p>
+              </Link>
+
+              {/* Active SKUs → /products?is_active=true */}
+              <Link
+                to="/products?is_active=true"
+                className="p-4 bg-[#F0F9EB] border border-[#C2E7B0] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-[#16A34A] hover:ring-2 hover:ring-[#D1FAE5] transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-[#2E7D32] uppercase tracking-wider group-hover:text-[#166534]">Active SKUs</p>
+                <p className="text-3xl font-black text-[#2E7D32] mt-2 group-hover:text-[#166534]">{stats?.active_products ?? 0}</p>
+              </Link>
+
+              {/* Total SKUs → /products */}
+              <Link
+                to="/products"
+                className="p-4 bg-gray-50 border border-gray-200 rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-gray-400 hover:ring-2 hover:ring-gray-100 transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider group-hover:text-gray-700">Total SKUs</p>
                 <p className="text-3xl font-black text-gray-900 mt-2">{stats?.total_products ?? 0}</p>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -275,24 +297,43 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3.5 text-xs">
-              <div className="p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-[#1D4ED8] uppercase tracking-wider">Pending Orders</p>
-                <p className="text-3xl font-black text-[#1D4ED8] mt-2">{stats?.todays_orders ?? 0}</p>
-              </div>
-              <div className="p-4 bg-[#FAF5FF] border border-[#E9D5FF] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-[#6B21A8] uppercase tracking-wider">Total Customers</p>
-                <p className="text-3xl font-black text-[#6B21A8] mt-2">{stats?.total_customers ?? 0}</p>
-              </div>
-              <div className="p-4 bg-[#F0F9EB] border border-[#C2E7B0] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-[#2E7D32] uppercase tracking-wider">Order Revenue (30D)</p>
-                <p className="text-3xl font-black text-[#2E7D32] mt-2">
-                  {fmt((stats?.total_revenue ?? 0) / (stats?.total_products || 1))}
+              {/* Pending Orders → /orders?status=pending */}
+              <Link
+                to="/orders?status=pending"
+                className="p-4 bg-[#EFF6FF] border border-[#BFDBFE] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-[#3B82F6] hover:ring-2 hover:ring-[#DBEAFE] transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-[#1D4ED8] uppercase tracking-wider group-hover:text-[#1e3a8a]">Pending Orders</p>
+                <p className="text-3xl font-black text-[#1D4ED8] mt-2 group-hover:text-[#1e3a8a]">{stats?.pending_orders ?? 0}</p>
+              </Link>
+
+              {/* Total Customers → /customers */}
+              <Link
+                to="/customers"
+                className="p-4 bg-[#FAF5FF] border border-[#E9D5FF] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-[#A855F7] hover:ring-2 hover:ring-[#F3E8FF] transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-[#6B21A8] uppercase tracking-wider group-hover:text-[#581c87]">Total Customers</p>
+                <p className="text-3xl font-black text-[#6B21A8] mt-2 group-hover:text-[#581c87]">{stats?.total_customers ?? 0}</p>
+              </Link>
+
+              {/* Order Revenue (30D) → /reports/order */}
+              <Link
+                to="/reports/order"
+                className="p-4 bg-[#F0F9EB] border border-[#C2E7B0] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-[#16A34A] hover:ring-2 hover:ring-[#D1FAE5] transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-[#2E7D32] uppercase tracking-wider group-hover:text-[#166534]">Order Revenue (30D)</p>
+                <p className="text-3xl font-black text-[#2E7D32] mt-2 group-hover:text-[#166534]">
+                  {fmt(stats?.revenue_last_30_days ?? 0)}
                 </p>
-              </div>
-              <div className="p-4 bg-[#F0F9EB] border border-[#C2E7B0] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs">
-                <p className="text-[10px] font-extrabold text-[#2E7D32] uppercase tracking-wider">Total Revenue</p>
-                <p className="text-3xl font-black text-[#2E7D32] mt-2">{fmt(stats?.total_revenue ?? 0)}</p>
-              </div>
+              </Link>
+
+              {/* Total Revenue → /reports/revenue */}
+              <Link
+                to="/reports/revenue"
+                className="p-4 bg-[#F0F9EB] border border-[#C2E7B0] rounded-md flex flex-col justify-between min-h-[95px] shadow-2xs hover:shadow-md hover:border-[#16A34A] hover:ring-2 hover:ring-[#D1FAE5] transition-all cursor-pointer group"
+              >
+                <p className="text-[10px] font-extrabold text-[#2E7D32] uppercase tracking-wider group-hover:text-[#166534]">Total Revenue</p>
+                <p className="text-3xl font-black text-[#2E7D32] mt-2 group-hover:text-[#166534]">{fmt(stats?.total_revenue ?? 0)}</p>
+              </Link>
             </div>
           </div>
         </div>
@@ -374,11 +415,11 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-col border-l border-gray-200 pl-5">
                 <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Units Sold</span>
-                <span className="text-xl font-black text-gray-900 mt-1">{stats?.total_products ?? 0}</span>
+                <span className="text-xl font-black text-gray-900 mt-1">{stats?.units_sold ?? 0}</span>
               </div>
               <div className="flex flex-col border-l border-gray-200 pl-5">
                 <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Avg. Order Value</span>
-                <span className="text-xl font-black text-gray-900 mt-1">{fmt((stats?.total_revenue ?? 0) / (stats?.total_products || 1))}</span>
+                <span className="text-xl font-black text-gray-900 mt-1">{fmt((stats?.total_revenue ?? 0) / (stats?.total_orders || 1))}</span>
               </div>
             </div>
           </div>
@@ -439,7 +480,7 @@ export default function DashboardPage() {
 
             <div className="border-t border-gray-50 pt-4 mt-5 flex justify-between items-center text-xs font-bold">
               <span className="text-gray-400 font-semibold">Performance details</span>
-              <a href="#" className="text-[#0FA86E] hover:text-[#0d9561] hover:underline">Performance Details</a>
+              <Link to="/reports/seller" className="text-[#0FA86E] hover:text-[#0d9561] hover:underline">Performance Details</Link>
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ import {
   Upload,
   ClipboardList,
   Users,
+  UserCircle,
   Settings,
   HelpCircle,
   Megaphone,
@@ -37,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Auction History', icon: History, to: '/auctions/history' },
   { label: 'Bulk Upload', icon: Upload, to: '/bulk-upload' },
   { label: 'Orders', icon: ClipboardList, to: '/orders' },
+  { label: 'Customers', icon: UserCircle, to: '/customers' },
   { label: 'Users', icon: Users, to: '/users', ownerOnly: true },
   { label: 'Settings', icon: Settings, to: '/settings' },
 ];

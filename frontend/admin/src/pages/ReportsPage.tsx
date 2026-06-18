@@ -2,24 +2,12 @@ import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../lib/api';
 import {
-  ResponsiveContainer,
-  AreaChart, Area,
-  BarChart, Bar,
-  LineChart, Line,
-  PieChart, Pie,
-  Cell,
-  XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend
-} from 'recharts';
-import {
   Download, Printer, Search, Calendar,
   TrendingUp, TrendingDown, Users, Package, Tags, ClipboardList,
   Hourglass, CreditCard, DollarSign, Percent, Bell, Shield,
   ShoppingBag, RefreshCw
 } from 'lucide-react';
 
-// Theme colors matching the premium style
-const COLORS = ['#FF9900', '#232F3E', '#007600', '#CC0C39', '#0066C0', '#7E57C2', '#26A69A', '#EC407A'];
 
 interface ReportConfig {
   title: string;
@@ -613,10 +601,9 @@ export default function ReportsPage() {
   }, [fetchedData, activeReport]);
 
   // Data generator / source
-  const { chartData, tableData } = useMemo(() => {
-    if (fetchedData?.chartData && fetchedData?.tableData) {
+  const { tableData } = useMemo(() => {
+    if (fetchedData?.tableData) {
       return {
-        chartData: fetchedData.chartData,
         tableData: fetchedData.tableData
       };
     }
@@ -824,74 +811,7 @@ export default function ReportsPage() {
         {/* Main Section Grid (Chart and Table) */}
         <div className="grid grid-cols-1 gap-4">
 
-          {/* Chart Component Card */}
-          <div className="bg-white rounded border border-gray-300 shadow-sm p-5 print:border-none print:shadow-none relative overflow-hidden">
-            {loading && (
-              <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <RefreshCw className="w-6 h-6 text-[#e77600] animate-spin" />
-                  <span className="text-xs font-semibold text-gray-600">Retrieving ledger analytics...</span>
-                </div>
-              </div>
-            )}
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Analytics Overview</h3>
-            <div className="h-64 sm:h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                {activeReport.chartType === 'line' ? (
-                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eaeaea" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                    {activeReport.chartKeys.map((key, index) => (
-                      <Line key={key} type="monotone" dataKey={key} stroke={COLORS[index % COLORS.length]} strokeWidth={2.5} activeDot={{ r: 6 }} />
-                    ))}
-                  </LineChart>
-                ) : activeReport.chartType === 'bar' ? (
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eaeaea" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                    {activeReport.chartKeys.map((key, index) => (
-                      <Bar key={key} dataKey={key} fill={COLORS[index % COLORS.length]} radius={[4, 4, 0, 0]} />
-                    ))}
-                  </BarChart>
-                ) : activeReport.chartType === 'area' ? (
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eaeaea" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                    {activeReport.chartKeys.map((key, index) => (
-                      <Area key={key} type="monotone" dataKey={key} fill={COLORS[index % COLORS.length]} stroke={COLORS[index % COLORS.length]} fillOpacity={0.2} />
-                    ))}
-                  </AreaChart>
-                ) : (
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {chartData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                  </PieChart>
-                )}
-              </ResponsiveContainer>
-            </div>
-          </div>
+
 
           {/* Table Component Card */}
           <div className="bg-white rounded border border-gray-300 shadow-sm overflow-hidden print:border-none print:shadow-none relative">

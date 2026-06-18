@@ -572,32 +572,7 @@ export default function HomePage() {
                           className={`absolute inset-0 m-auto max-h-[170px] sm:max-h-[190px] w-auto object-contain transform hover:scale-105 transition-all duration-700 ease-in-out mix-blend-multiply ${idx === heroImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                         />
                       ))}
-                      {displayHeroImages.length > 1 && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setHeroImageIndex((prev) => (prev - 1 + displayHeroImages.length) % displayHeroImages.length);
-                            }}
-                            className="absolute left-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
-                          >
-                            <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setHeroImageIndex((prev) => (prev + 1) % displayHeroImages.length);
-                            }}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 z-[25] w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95 border border-slate-100"
-                          >
-                            <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                            </svg>
-                          </button>
-                        </>
-                      )}
+                      {/* Removed manual navigation arrows */}
                     </div>
                   )}
                 </div>
@@ -731,11 +706,11 @@ export default function HomePage() {
       {/* Customers Also Loved */}
       <section className="bg-white py-10">
         <div className="max-w-[1500px] mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Customers Also Loved</h2>
-            <Link to="/category/all?sort=newest" className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-brand-primary transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-2xl font-bold text-gray-900">Customers Also Loved</h2>
+            <Link to="/category/all?sort=newest" className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-brand-primaryHover bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full transition-colors border border-gray-100">
               View All
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
 
@@ -781,10 +756,10 @@ export default function HomePage() {
         <div className="max-w-[1500px] mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-gray-100 pb-4 gap-2">
             <div className="flex items-end gap-3">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Latest Deals for This Week</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Latest Deals for This Week</h2>
               <p className="text-sm text-gray-400 hidden sm:block pb-1">Don't miss out on this week's deals</p>
             </div>
-            <Link to="/category/all?sort=price_asc" className="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-brand-primary transition-colors whitespace-nowrap">
+            <Link to="/category/all?sort=price_asc" className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-brand-primaryHover bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full transition-colors border border-gray-100 whitespace-nowrap">
               View All
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
@@ -806,9 +781,6 @@ export default function HomePage() {
               ))
             ) : dealsData?.data?.slice(2, 4).map((product: any, idx: number) => {
               const discount = Math.round(product.discount_percentage) || 15;
-              const available = product.stock_quantity || 20;
-              const sold = (product.id * 7) % 50 + 10; // Pseudo-random deterministic sold count
-              const percentSold = (sold / (available + sold)) * 100;
 
               let imgUrl = '/placeholder.png';
               try {
@@ -854,15 +826,7 @@ export default function HomePage() {
                       <span className="text-[#ef4444] font-black text-xl">₹{product.selling_price.toLocaleString('en-IN')}</span>
                     </div>
 
-                    <div className="mt-4">
-                      <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-gradient-to-r from-orange-400 to-[#ef4444] h-1.5 rounded-full" style={{ width: `${percentSold}%` }}></div>
-                      </div>
-                      <div className="flex items-center justify-between mt-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                        <span>Available: <span className="text-gray-800">{available}</span></span>
-                        <span>Sold: <span className="text-gray-800">{sold}</span></span>
-                      </div>
-                    </div>
+                    {/* Removed Available / Sold progress bar and text */}
                   </div>
                 </div>
               );

@@ -552,25 +552,6 @@ export default function ProductFormPage() {
             </FormSection>
           )}
 
-          {/* Shipping & Dimensions */}
-          <FormSection title="Shipping & Dimensions">
-            <FieldRow>
-              <Field label="Item Weight (grams)">
-                <input type="number" {...register('weight_grams')} className={INPUT_CLS} placeholder="500" />
-              </Field>
-              <div className="grid grid-cols-3 gap-2">
-                <Field label="L (cm)">
-                  <input type="number" step="0.1" {...register('length_cm')} className={INPUT_CLS} placeholder="30" />
-                </Field>
-                <Field label="W (cm)">
-                  <input type="number" step="0.1" {...register('width_cm')} className={INPUT_CLS} placeholder="20" />
-                </Field>
-                <Field label="H (cm)">
-                  <input type="number" step="0.1" {...register('height_cm')} className={INPUT_CLS} placeholder="10" />
-                </Field>
-              </div>
-            </FieldRow>
-          </FormSection>
 
           {/* Discovery */}
           <FormSection title="Discovery">

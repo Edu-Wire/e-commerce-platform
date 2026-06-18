@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface StatsCardProps {
   title: string;
@@ -10,6 +11,7 @@ interface StatsCardProps {
     direction: 'up' | 'down';
   };
   iconBg?: string;
+  to?: string;
 }
 
 export default function StatsCard({
@@ -19,9 +21,10 @@ export default function StatsCard({
   icon,
   trend,
   iconBg = 'bg-[#ECFDF5]',
+  to,
 }: StatsCardProps) {
-  return (
-    <div className="bg-white rounded-lg border border-gray-100 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] p-5 flex flex-col justify-between hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 group cursor-default">
+  const cardContent = (
+    <div className={`bg-white rounded-lg border border-gray-100 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] p-5 flex flex-col justify-between hover:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 group h-full ${to ? 'cursor-pointer' : 'cursor-default'}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="h-8 flex items-start">
@@ -54,4 +57,14 @@ export default function StatsCard({
       </div>
     </div>
   );
+
+  if (to) {
+    return (
+      <Link to={to} className="block h-full">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 }

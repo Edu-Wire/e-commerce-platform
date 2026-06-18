@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { 
   Search, 
@@ -49,9 +49,19 @@ function StatusBadge({ status }: { status: OrderStatus }) {
 
 export default function OrdersPage() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<OrderFilters>({ page: 1, limit: 10, status: '', order_type: '' });
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<OrderFilters>(() => {
+    const status = (searchParams.get('status') as OrderStatus | '') || '';
+    return { page: 1, limit: 10, status, order_type: '' };
+  });
   const [searchField, setSearchField] = useState<'all' | 'id' | 'name' | 'email'>('all');
   const [searchVal, setSearchVal] = useState('');
+
+  // Sync when URL changes (e.g. dashboard click-through)
+  useEffect(() => {
+    const status = (searchParams.get('status') as OrderStatus | '') || '';
+    setFilters(f => ({ ...f, status, page: 1 }));
+  }, [searchParams]);
   
   const { data, isLoading, refetch, isFetching } = useAdminOrders({
     ...filters,

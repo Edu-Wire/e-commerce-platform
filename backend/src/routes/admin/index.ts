@@ -9,6 +9,7 @@ import orderRoutes from './orders';
 import settingsRoutes from './settings';
 import auctionRoutes from './auctions';
 import reportsRoutes from './reports';
+import customersRoutes from './customers';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/orders', orderRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/auctions', auctionRoutes);
 router.use('/reports', reportsRoutes);
+router.use('/customers', customersRoutes);
 
 // Direct route to avoid 404 issues with nested routers
 import { updateAuctionStatus } from '../../controllers/admin/inventoryController';

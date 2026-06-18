@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   Search,
@@ -93,7 +93,20 @@ const DEFAULT_COLUMNS = [
 ];
 
 export default function InventoryPage() {
-  const [filters, setFilters] = useState<InventoryFilters>({ page: 1, limit: 12 });
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<InventoryFilters>(() => {
+    const filter = searchParams.get('filter');
+    if (filter === 'low_stock') return { page: 1, limit: 12, low_stock: true };
+    if (filter === 'out_of_stock') return { page: 1, limit: 12, out_of_stock: true };
+    return { page: 1, limit: 12 };
+  });
+
+  // Sync when URL changes (e.g. back navigation)
+  useEffect(() => {
+    const filter = searchParams.get('filter');
+    if (filter === 'low_stock') setFilters({ page: 1, limit: 12, low_stock: true });
+    else if (filter === 'out_of_stock') setFilters({ page: 1, limit: 12, out_of_stock: true });
+  }, [searchParams]);
   const { data, isLoading } = useAdminInventory(filters);
   const { data: categories } = useAdminCategories();
   const updateMutation = useUpdateStock();
@@ -231,6 +244,11 @@ export default function InventoryPage() {
         {/* Filters Panel */}
         <div className="bg-white p-4 border border-gray-100 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            {/* Products listed count — left-aligned */}
+            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider whitespace-nowrap">
+              {meta?.total ?? items.length} products listed
+            </span>
+
             {/* Search input */}
             <div className="relative flex-1 min-w-[240px]">
               <input
@@ -257,7 +275,7 @@ export default function InventoryPage() {
 
             {/* Low stock only filter */}
             <button
-              onClick={() => setFilters(f => ({ ...f, low_stock: !f.low_stock, page: 1 }))}
+              onClick={() => setFilters(f => ({ ...f, low_stock: !f.low_stock, out_of_stock: false, page: 1 }))}
               className={`px-3 py-2 text-xs font-bold rounded-md border transition-all ${filters.low_stock
                   ? 'bg-amber-50 border-amber-100 text-amber-700'
                   : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -265,10 +283,21 @@ export default function InventoryPage() {
             >
               Low stock only
             </button>
+
+            {/* Out of stock only filter */}
+            <button
+              onClick={() => setFilters(f => ({ ...f, out_of_stock: !f.out_of_stock, low_stock: false, page: 1 }))}
+              className={`px-3 py-2 text-xs font-bold rounded-md border transition-all ${filters.out_of_stock
+                  ? 'bg-rose-50 border-rose-100 text-rose-700'
+                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+            >
+              Out of stock only
+            </button>
           </div>
 
           <div className="flex items-center gap-3">
-            {(filters.search || filters.category_id || filters.low_stock) && (
+            {(filters.search || filters.category_id || filters.low_stock || filters.out_of_stock) && (
               <button
                 onClick={() => setFilters({ page: 1, limit: 12 })}
                 className="text-xs text-[#0FA86E] hover:underline font-bold"
@@ -276,9 +305,6 @@ export default function InventoryPage() {
                 Clear all filters
               </button>
             )}
-            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-              {meta?.total ?? items.length} products listed
-            </span>
           </div>
         </div>
 
